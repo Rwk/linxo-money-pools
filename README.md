@@ -7,11 +7,12 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
 - A clean and minimal Next.js foundation using the App Router.
 - A place to build future money pool workflows powered by Linxo Payments.
 - A small, testable codebase with strict TypeScript and unit tests.
+- A Prisma persistence layer targeting PostgreSQL.
 
 ## What this project is not
 
 - It is not connected to Linxo Payments yet.
-- It does not include authentication, a database, or production business flows yet.
+- It does not include authentication or production business flows yet.
 - It does not store any real credential or secret.
 
 ## Planned stack
@@ -19,6 +20,8 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
 - Next.js
 - TypeScript in strict mode
 - Tailwind CSS
+- Prisma
+- PostgreSQL
 - Vitest
 - ESLint
 - Prettier
@@ -57,6 +60,18 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
   npm run lint
   ```
 
+- Validate the Prisma schema:
+
+  ```bash
+  DATABASE_URL="postgresql://postgres:postgres@localhost:5432/linxo_money_pools?schema=public" npm run db:validate
+  ```
+
+- Generate the Prisma client:
+
+  ```bash
+  DATABASE_URL="postgresql://postgres:postgres@localhost:5432/linxo_money_pools?schema=public" npm run db:generate
+  ```
+
 - Format the codebase:
 
   ```bash
@@ -66,3 +81,9 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
 ## Security note
 
 Production credentials must never be committed to the repository. Only placeholder values belong in tracked environment files such as `.env.example`.
+
+## Database note
+
+The project uses Prisma with PostgreSQL. Supabase is the intended free PostgreSQL provider for future development. Configure `DATABASE_URL` through environment variables only, and never commit a production connection string.
+
+Useful Prisma development commands are documented in [docs/database.md](/home/raph/projects/linxo-money-pools/docs/database.md).
