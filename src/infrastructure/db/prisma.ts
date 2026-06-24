@@ -1,13 +1,23 @@
-import { PrismaClient } from "@prisma/client";
+import "server-only";
 
-const globalForPrisma = globalThis as {
+import { PrismaPg } from "@prisma/adapter-pg";
+
+import { PrismaClient } from "@/generated/prisma/client";
+
+const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
+
+const adapter = new PrismaPg({
+  connectionString:
+    process.env.DATABASE_URL ??
+    "postgresql://postgres:postgres@localhost:5432/linxo_money_pools"
+});
 
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"]
+    adapter
   });
 
 if (process.env.NODE_ENV !== "production") {

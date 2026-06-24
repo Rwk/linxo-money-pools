@@ -1,12 +1,14 @@
 # Database
 
-This project uses Prisma with PostgreSQL for persistence.
+This project uses Prisma 7 with PostgreSQL for persistence.
 
 Supabase is the intended free PostgreSQL provider for later development, but this repository must never commit production credentials.
 
 ## Environment variable
 
 Set `DATABASE_URL` through environment variables or an untracked local file such as `.env.local`.
+
+Prisma 7 reads the database URL from `prisma.config.ts`, not from the `datasource` block in `schema.prisma`.
 
 Example placeholder:
 

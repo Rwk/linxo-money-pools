@@ -63,13 +63,13 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
 - Validate the Prisma schema:
 
   ```bash
-  DATABASE_URL="postgresql://postgres:postgres@localhost:5432/linxo_money_pools?schema=public" npm run db:validate
+  npm run db:validate
   ```
 
 - Generate the Prisma client:
 
   ```bash
-  DATABASE_URL="postgresql://postgres:postgres@localhost:5432/linxo_money_pools?schema=public" npm run db:generate
+  npm run db:generate
   ```
 
 - Format the codebase:
@@ -84,6 +84,8 @@ Production credentials must never be committed to the repository. Only placehold
 
 ## Database note
 
-The project uses Prisma with PostgreSQL. Supabase is the intended free PostgreSQL provider for future development. Configure `DATABASE_URL` through environment variables only, and never commit a production connection string.
+The project uses Prisma 7 with PostgreSQL. Prisma CLI reads the database URL from `prisma.config.ts`, which in turn reads `process.env.DATABASE_URL` and falls back to a clearly local-only PostgreSQL URL for development commands such as `prisma validate` and `prisma generate`.
+
+Supabase is the intended free PostgreSQL provider for future development. Configure `DATABASE_URL` through environment variables only, and never commit a production connection string.
 
 Useful Prisma development commands are documented in [docs/database.md](/home/raph/projects/linxo-money-pools/docs/database.md).
