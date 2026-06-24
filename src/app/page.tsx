@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
+import { poolThemes } from "@/config/pool-themes";
 
 export default function HomePage() {
+  const featuredThemes = [
+    poolThemes.BIRTHDAY,
+    poolThemes.WEDDING,
+    poolThemes.FAREWELL
+  ];
+
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
       <section className="w-full max-w-xl rounded-[2rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur md:p-10">
@@ -17,6 +24,10 @@ export default function HomePage() {
               participants join through private links, powered by Linxo
               Payments.
             </p>
+            <p className="max-w-lg text-sm leading-6 text-[var(--muted)]">
+              Event-themed pools will support birthdays, weddings, farewells,
+              births, and more.
+            </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -26,6 +37,18 @@ export default function HomePage() {
             <Button disabled variant="secondary">
               Join a pool
             </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {featuredThemes.map((theme) => (
+              <span
+                key={theme.label}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${theme.cardClassName} ${theme.accentClassName}`}
+              >
+                <span aria-hidden="true">{theme.emoji}</span>
+                {theme.label}
+              </span>
+            ))}
           </div>
         </div>
       </section>
