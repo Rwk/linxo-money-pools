@@ -12,7 +12,7 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
 ## What this project is not
 
 - It is not connected to Linxo Payments yet.
-- It does not include authentication or production business flows yet.
+- It does not include pool creation or Linxo Payments production flows yet.
 - It does not store any real credential or secret.
 
 ## Planned stack
@@ -44,6 +44,15 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
 
    ```bash
    npm run dev
+   ```
+
+4. To test Google sign-in locally, add placeholder values first, then replace them with real Google OAuth credentials in your untracked `.env.local`:
+
+   ```bash
+   AUTH_SECRET=replace-with-a-local-secret
+   AUTH_GOOGLE_ID=replace-with-your-google-client-id
+   AUTH_GOOGLE_SECRET=replace-with-your-google-client-secret
+   NEXTAUTH_URL=http://localhost:3000
    ```
 
 ## Run checks
@@ -89,3 +98,18 @@ The project uses Prisma 7 with PostgreSQL. Prisma CLI reads the database URL fro
 Supabase is the intended free PostgreSQL provider for future development. Configure `DATABASE_URL` through environment variables only, and never commit a production connection string.
 
 Useful Prisma development commands are documented in [docs/database.md](/home/raph/projects/linxo-money-pools/docs/database.md).
+
+## Authentication
+
+- Authentication uses Auth.js with the Prisma adapter and Google OAuth.
+- Only users with a valid `@linxo.com` Google account can sign in.
+- The public home page stays accessible without authentication.
+- The dashboard at `/dashboard` is protected server-side.
+
+## Manual Google OAuth setup
+
+1. Create a Google OAuth client in Google Cloud for a web application.
+2. Add `http://localhost:3000/api/auth/callback/google` as an authorized redirect URI for local development.
+3. Add your deployed `/api/auth/callback/google` URL for each non-local environment.
+4. Put the client ID and client secret in `.env.local` as `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`.
+5. Set `AUTH_SECRET` to a strong random value and keep it private.
