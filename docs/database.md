@@ -8,6 +8,8 @@ Prisma migrations must be applied before testing Google sign-in end-to-end.
 
 Prisma 7 reads the database URL from `prisma.config.ts`, not from the `datasource` block in `schema.prisma`.
 
+`prisma.config.ts` explicitly loads `.env.local` first and `.env` second, so `DATABASE_URL` must be set there before running migrations.
+
 ## Supabase setup
 
 1. Create a Supabase project.
