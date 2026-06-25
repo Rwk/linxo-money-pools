@@ -2,43 +2,73 @@
 
 This project uses Prisma 7 with PostgreSQL for persistence.
 
-Supabase is the intended free PostgreSQL provider for later development, but this repository must never commit production credentials.
+Supabase is the intended PostgreSQL provider for this project. Auth.js uses the Prisma Adapter, so the database is required for end-to-end Google authentication because users, accounts, and sessions are persisted there.
 
-## Environment variable
-
-Set `DATABASE_URL` through environment variables or an untracked local file such as `.env.local`.
+Prisma migrations must be applied before testing Google sign-in end-to-end.
 
 Prisma 7 reads the database URL from `prisma.config.ts`, not from the `datasource` block in `schema.prisma`.
 
-Example placeholder:
+## Supabase setup
 
-```bash
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/linxo_money_pools?schema=public"
+1. Create a Supabase project.
+2. Open `Project Settings` > `Database`.
+3. Copy the PostgreSQL connection string.
+4. Put it in your untracked `.env.local` file as `DATABASE_URL`.
+5. For Vercel, add the same value to the project environment variables.
+6. Run Prisma client generation:
+
+   ```bash
+   npm run db:generate
+   ```
+
+7. Run Prisma migrations:
+
+   ```bash
+   npm run db:migrate:dev
+   ```
+
+8. Validate the schema when needed:
+
+   ```bash
+   npm run db:validate
+   ```
+
+## Required environment variables
+
+Use environment variables only. Never commit real values.
+
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+AUTH_SECRET="replace-with-a-generated-secret"
+AUTH_GOOGLE_ID="replace-with-google-client-id"
+AUTH_GOOGLE_SECRET="replace-with-google-client-secret"
+NEXTAUTH_URL="http://localhost:3000"
 ```
+
+`NEXTAUTH_URL` remains useful for local development and deployed callback handling.
+
+Production and preview environments must use platform-managed environment variables. Secrets and database URLs must never be committed to the repository.
 
 ## Useful commands
 
-Generate the Prisma client:
-
 ```bash
 npm run db:generate
-```
-
-Validate the Prisma schema:
-
-```bash
 npm run db:validate
-```
-
-Create a local development migration later when a database is available:
-
-```bash
 npm run db:migrate:dev
+npm run db:studio
 ```
+
+## Security note
+
+- Never commit `.env.local`.
+- Never commit production credentials.
+- Rotate credentials immediately if they are accidentally exposed.
+- This public repository does not include deployable production configuration.
 
 ## Data handling constraints
 
+- Auth.js persists users, linked accounts, and sessions in PostgreSQL through Prisma.
 - Store money amounts as decimal values, not cents.
 - Do not store IBANs.
-- Do not store birth date, birth city, or birth country.
-- Store only Linxo Payments reference identifiers when needed.
+- Do not store beneficiary KYC details.
+- Store only Linxo reference identifiers for bank or KYC-related resources when needed.

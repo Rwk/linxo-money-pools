@@ -55,6 +55,9 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
    NEXTAUTH_URL=http://localhost:3000
    ```
 
+5. Configure PostgreSQL before testing Google authentication end-to-end.
+   Setup steps and migration commands are documented in [docs/database.md](/home/raph/projects/linxo-money-pools/docs/database.md).
+
 ## Run checks
 
 - Run the test suite:
@@ -81,6 +84,12 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
   npm run db:generate
   ```
 
+- Open Prisma Studio:
+
+  ```bash
+  npm run db:studio
+  ```
+
 - Format the codebase:
 
   ```bash
@@ -91,13 +100,15 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
 
 Production credentials must never be committed to the repository. Only placeholder values belong in tracked environment files such as `.env.example`.
 
+- Never commit `.env.local`.
+- Rotate credentials immediately if they are accidentally exposed.
+- This public repository does not include deployable production configuration.
+
 ## Database note
 
-The project uses Prisma 7 with PostgreSQL. Prisma CLI reads the database URL from `prisma.config.ts`, which in turn reads `process.env.DATABASE_URL` and falls back to a clearly local-only PostgreSQL URL for development commands such as `prisma validate` and `prisma generate`.
+The project uses Prisma 7 with PostgreSQL, and Supabase is the intended provider. Prisma CLI reads the database URL from `prisma.config.ts`, which in turn reads `process.env.DATABASE_URL`.
 
-Supabase is the intended free PostgreSQL provider for future development. Configure `DATABASE_URL` through environment variables only, and never commit a production connection string.
-
-Useful Prisma development commands are documented in [docs/database.md](/home/raph/projects/linxo-money-pools/docs/database.md).
+Auth.js depends on PostgreSQL because users, accounts, and sessions are stored through the Prisma Adapter. Setup details are documented in [docs/database.md](/home/raph/projects/linxo-money-pools/docs/database.md).
 
 ## Authentication
 
