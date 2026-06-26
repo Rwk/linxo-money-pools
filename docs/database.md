@@ -10,6 +10,8 @@ Prisma 7 reads the database URL from `prisma.config.ts`, not from the `datasourc
 
 `prisma.config.ts` explicitly loads `.env.local` first and `.env` second, so `DATABASE_URL` must be set there before running migrations.
 
+At runtime, Prisma uses `@prisma/adapter-pg` in the server-only Prisma singleton. Supabase connections use SSL, and the current runtime setup accepts the Supabase or Supavisor certificate chain for local and serverless compatibility. A future hardening step can provide a CA certificate and switch back to strict certificate validation.
+
 ## Supabase setup
 
 1. Create a Supabase project.
@@ -17,19 +19,20 @@ Prisma 7 reads the database URL from `prisma.config.ts`, not from the `datasourc
 3. Copy the PostgreSQL connection string.
 4. Put it in your untracked `.env.local` file as `DATABASE_URL`.
 5. For Vercel, add the same value to the project environment variables.
-6. Run Prisma client generation:
+6. Keep the Supabase connection string in SSL mode.
+7. Run Prisma client generation:
 
    ```bash
    npm run db:generate
    ```
 
-7. Run Prisma migrations:
+8. Run Prisma migrations:
 
    ```bash
    npm run db:migrate:dev
    ```
 
-8. Validate the schema when needed:
+9. Validate the schema when needed:
 
    ```bash
    npm run db:validate
@@ -66,6 +69,7 @@ npm run db:studio
 - Never commit production credentials.
 - Rotate credentials immediately if they are accidentally exposed.
 - This public repository does not include deployable production configuration.
+- Do not disable TLS globally; runtime SSL handling is scoped to the Prisma PostgreSQL adapter.
 
 ## Data handling constraints
 
