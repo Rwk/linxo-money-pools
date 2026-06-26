@@ -1,0 +1,37 @@
+# Linxo Payments OpenAPI Types
+
+Linxo Payments OpenAPI is public and documented at `https://developers.linxo.com/payments/reference-direct-payment-api`.
+
+TypeScript types are generated from the public OpenAPI YAML:
+
+- `https://developers.linxo.com/swaggers/payments/swagger-payments-api.yaml`
+
+## Regenerate types
+
+Run:
+
+```bash
+npm run linxo:generate-types
+```
+
+This command regenerates:
+
+- `src/generated/linxo-payments-api.ts`
+
+The generated file is committed so the repository stays reproducible and does not require network access during builds.
+
+## Runtime integration
+
+Runtime HTTP calls are intentionally not implemented yet.
+
+When runtime integration is added, it should remain:
+
+- hand-written
+- server-only
+- typed using the generated OpenAPI types
+
+## Secrets
+
+Secrets and API credentials must be provided through environment variables and must never be committed.
+
+Do not expose Linxo client credentials to the browser.
