@@ -125,6 +125,12 @@ Auth.js depends on PostgreSQL because users, accounts, and sessions are stored t
 
 Product scope notes are documented in [docs/pools.md](docs/pools.md).
 
+## Documentation
+
+- Money pool scope and product notes: [docs/pools.md](docs/pools.md)
+- Database setup and Prisma notes: [docs/database.md](docs/database.md)
+- Linxo Payments OpenAPI type generation: [docs/linxo-payments.md](docs/linxo-payments.md)
+
 ## Manual Google OAuth setup
 
 1. Create a Google OAuth client in Google Cloud for a web application.
