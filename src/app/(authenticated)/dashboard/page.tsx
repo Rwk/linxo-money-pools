@@ -1,22 +1,19 @@
-import { redirect } from "next/navigation";
+import Link from "next/link";
 
-import { auth } from "@/auth";
-import { isLinxoEmail } from "@/auth/linxo-email-domain";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { requireLinxoSession } from "@/features/auth/require-linxo-session";
+import { listPoolsByCreatorId } from "@/features/pools/data-access/pool-repository";
+import { PoolCard } from "@/features/pools/components/pool-card";
+import { toPoolCardViewModel } from "@/features/pools/presenters/pool-presenters";
 
 export default async function DashboardPage() {
-  const session = await auth();
-  const email = session?.user?.email;
-
-  if (!session?.user?.id || !isLinxoEmail(email)) {
-    redirect("/sign-in?error=AccessDenied");
-  }
-
-  const displayName = session.user.name ?? email;
+  const user = await requireLinxoSession();
+  const pools = await listPoolsByCreatorId(user.id);
+  const displayName = user.name ?? user.email;
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
-      <section className="w-full max-w-2xl rounded-[2rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur md:p-10">
+    <main className="px-4 py-10 sm:px-6">
+      <section className="mx-auto w-full max-w-5xl rounded-[2rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur md:p-10">
         <div className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-3">
@@ -27,17 +24,47 @@ export default async function DashboardPage() {
                 <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
                   Welcome, {displayName}
                 </h1>
-                <p className="text-sm text-[var(--muted)]">{email}</p>
+                <p className="text-sm text-[var(--muted)]">{user.email}</p>
               </div>
             </div>
             <SignOutButton />
           </div>
 
-          <div className="rounded-[1.5rem] border border-[var(--surface-border)] bg-white/70 p-5">
-            <p className="text-base leading-7 text-slate-900">
-              Your money pools will appear here.
-            </p>
+          <div className="flex flex-col gap-3 rounded-[1.5rem] border border-[var(--surface-border)] bg-white/70 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold text-slate-950">
+                Your money pools
+              </h2>
+              <p className="text-sm leading-6 text-[var(--muted)]">
+                Create and manage pools that are visible only through a private
+                public link.
+              </p>
+            </div>
+            <Link
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--accent-foreground)] shadow-[0_14px_30px_rgba(15,118,110,0.18)] transition"
+              href="/dashboard/pools/new"
+            >
+              Create a money pool
+            </Link>
           </div>
+
+          {pools.length === 0 ? (
+            <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-white/70 p-6">
+              <p className="text-base leading-7 text-slate-900">
+                You have not created a money pool yet.
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                Start with a title, event type, closing date, and collector
+                display name. Online contributions will come in a later step.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {pools.map((pool) => (
+                <PoolCard key={pool.id} pool={toPoolCardViewModel(pool)} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </main>

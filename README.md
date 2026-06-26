@@ -56,7 +56,7 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
    ```
 
 5. Configure PostgreSQL before testing Google authentication end-to-end.
-   Setup steps and migration commands are documented in [docs/database.md](/home/raph/projects/linxo-money-pools/docs/database.md).
+   Setup steps and migration commands are documented in [docs/database.md](docs/database.md).
 
 ## Run checks
 
@@ -108,7 +108,7 @@ Production credentials must never be committed to the repository. Only placehold
 
 The project uses Prisma 7 with PostgreSQL, and Supabase is the intended provider. Prisma CLI reads the database URL from `prisma.config.ts`, which in turn reads `process.env.DATABASE_URL`.
 
-Auth.js depends on PostgreSQL because users, accounts, and sessions are stored through the Prisma Adapter. Setup details are documented in [docs/database.md](/home/raph/projects/linxo-money-pools/docs/database.md).
+Auth.js depends on PostgreSQL because users, accounts, and sessions are stored through the Prisma Adapter. Setup details are documented in [docs/database.md](docs/database.md).
 
 ## Authentication
 
@@ -116,6 +116,14 @@ Auth.js depends on PostgreSQL because users, accounts, and sessions are stored t
 - Only users with a valid `@linxo.com` Google account can sign in.
 - The public home page stays accessible without authentication.
 - The dashboard at `/dashboard` is protected server-side.
+
+## Money pools
+
+- Authenticated Linxo employees can create and manage their own money pools.
+- Public pool pages are accessible only through a non-guessable slug link.
+- Online payments are intentionally not implemented yet.
+
+Product scope notes are documented in [docs/pools.md](docs/pools.md).
 
 ## Manual Google OAuth setup
 
