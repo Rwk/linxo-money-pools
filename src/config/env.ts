@@ -1,7 +1,5 @@
 type EnvShape = {
   NEXT_PUBLIC_APP_NAME: string;
-  LINXO_PAYMENTS_API_BASE_URL: string;
-  LINXO_PAYMENTS_API_KEY: string;
 };
 
 function readEnvString(
@@ -19,17 +17,6 @@ function readEnvString(
 
 export function getEnv(): EnvShape {
   return {
-    NEXT_PUBLIC_APP_NAME: readEnvString(
-      "NEXT_PUBLIC_APP_NAME",
-      "Linxo Money Pools"
-    ),
-    LINXO_PAYMENTS_API_BASE_URL: readEnvString(
-      "LINXO_PAYMENTS_API_BASE_URL",
-      "https://api-placeholder.linxo.example"
-    ),
-    LINXO_PAYMENTS_API_KEY: readEnvString(
-      "LINXO_PAYMENTS_API_KEY",
-      "replace-me"
-    )
+    NEXT_PUBLIC_APP_NAME: readEnvString("NEXT_PUBLIC_APP_NAME", "Linxo Money Pools")
   };
 }

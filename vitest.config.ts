@@ -8,7 +8,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": "/src"
+      "@": "/src",
+      "server-only": "/src/tests/test-support/server-only.ts"
     }
   }
 });

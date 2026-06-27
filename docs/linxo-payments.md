@@ -22,7 +22,13 @@ The generated file is committed so the repository stays reproducible and does no
 
 ## Runtime integration
 
-Runtime HTTP calls are intentionally not implemented yet.
+Runtime HTTP calls now have a server-only foundation:
+
+- OAuth2 client credentials token retrieval with in-memory caching
+- Typed Linxo Payments HTTP client methods for order creation and order URL shortening
+- Forced `ask_for_alias=false` when shortening order authorization URLs for this product
+
+The application UI still does not create orders or redirect contributors to Linxo yet.
 
 When runtime integration is added, it should remain:
 
