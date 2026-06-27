@@ -25,6 +25,10 @@ function readRequiredEnv(key: string): string {
   return value.trim();
 }
 
+function isPlaceholderValue(value: string): boolean {
+  return value.startsWith("replace-with-");
+}
+
 function normalizeBaseUrl(baseUrl: string): string {
   return baseUrl.replace(/\/+$/, "");
 }
@@ -38,6 +42,12 @@ export function getLinxoPaymentsConfig(): LinxoPaymentsConfig {
   const clientId = readRequiredEnv("LINXO_PAYMENTS_CLIENT_ID");
   const clientSecret = readRequiredEnv("LINXO_PAYMENTS_CLIENT_SECRET");
   const environmentValue = readRequiredEnv("LINXO_PAYMENTS_ENVIRONMENT");
+
+  if (isPlaceholderValue(clientId) || isPlaceholderValue(clientSecret)) {
+    throw new LinxoPaymentsConfigurationError(
+      "Linxo Payments credentials must be configured with non-placeholder values."
+    );
+  }
 
   if (!isLinxoEnvironment(environmentValue)) {
     throw new LinxoPaymentsConfigurationError(

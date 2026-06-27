@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
+import { CollectorAccountSetupForm } from "@/features/pools/components/collector-account-setup-form";
 import { findPoolByIdForCreator } from "@/features/pools/data-access/pool-repository";
 import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
 import { toPoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
@@ -52,6 +53,11 @@ export default async function PoolManagementPage({
         </div>
 
         <PoolDetailSections pool={toPoolDetailViewModel(pool)} />
+        <CollectorAccountSetupForm
+          collectorAliasId={pool.collectorAliasId}
+          poolId={pool.id}
+          poolStatus={pool.status}
+        />
       </section>
     </main>
   );

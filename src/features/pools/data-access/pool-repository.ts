@@ -30,6 +30,7 @@ const poolBaseSelect = {
   closingDate: true,
   creatorId: true,
   collectorDisplayName: true,
+  collectorAliasId: true,
   createdAt: true,
   updatedAt: true,
   closedAt: true,
@@ -128,6 +129,26 @@ export async function createPoolRecord(
   });
 
   return pool;
+}
+
+export async function updatePoolCollectorAliasId(input: {
+  poolId: string;
+  creatorId: string;
+  collectorAliasId: string;
+}): Promise<void> {
+  const result = await prisma.pool.updateMany({
+    where: {
+      id: input.poolId,
+      creatorId: input.creatorId
+    },
+    data: {
+      collectorAliasId: input.collectorAliasId
+    }
+  });
+
+  if (result.count !== 1) {
+    throw new Error("Pool collector alias could not be updated.");
+  }
 }
 
 export function mapContributionToDomainContribution(

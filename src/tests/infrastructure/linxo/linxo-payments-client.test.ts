@@ -95,4 +95,98 @@ describe("LinxoPaymentsClient", () => {
       requestId: "linxo-request-id"
     });
   });
+
+  it("creates an account alias with bearer auth and request id", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: "alias_123",
+          user_reference: "pool_creator:user_123",
+          label: "Linxo Team",
+          account: {
+            schema: "SEPA",
+            iban: "FR7630006000011234567890189"
+          }
+        }),
+        {
+          status: 201,
+          headers: {
+            "content-type": "application/json",
+            "X-FWD-Request-ID": "linxo-request-id"
+          }
+        }
+      )
+    );
+
+    const client = new LinxoPaymentsClient({
+      fetch: fetchMock,
+      config,
+      tokenService: createTokenService()
+    });
+
+    await expect(
+      client.createAccountAlias({
+        userReference: "pool_creator:user_123",
+        label: "Linxo Team",
+        account: {
+          schema: "SEPA",
+          iban: "FR7630006000011234567890189"
+        }
+      })
+    ).resolves.toEqual({
+      id: "alias_123"
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://pay.oxlin.io/v1/alias",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer bearer-token",
+          "X-FWD-Request-ID": expect.any(String)
+        })
+      })
+    );
+  });
+
+  it("sanitizes alias creation errors so they do not expose secrets", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: "BAD_PARAMETER",
+          error_description: "IBAN FR7630006000011234567890189 is invalid"
+        }),
+        {
+          status: 400,
+          headers: {
+            "content-type": "application/json",
+            "X-FWD-Request-ID": "linxo-request-id"
+          }
+        }
+      )
+    );
+
+    const client = new LinxoPaymentsClient({
+      fetch: fetchMock,
+      config,
+      tokenService: createTokenService()
+    });
+
+    await expect(
+      client.createAccountAlias({
+        userReference: "pool_creator:user_123",
+        label: "Linxo Team",
+        account: {
+          schema: "SEPA",
+          iban: "FR7630006000011234567890189"
+        }
+      })
+    ).rejects.toMatchObject({
+      name: "LinxoPaymentsApiError",
+      status: 400,
+      code: "BAD_PARAMETER",
+      description: "IBAN [redacted-iban] is invalid",
+      requestId: "linxo-request-id"
+    });
+  });
 });

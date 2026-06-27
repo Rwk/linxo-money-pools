@@ -26,9 +26,20 @@ Runtime HTTP calls now have a server-only foundation:
 
 - OAuth2 client credentials token retrieval with in-memory caching
 - Typed Linxo Payments HTTP client methods for order creation and order URL shortening
+- Typed Linxo Payments account alias creation for collector account setup
 - Forced `ask_for_alias=false` when shortening order authorization URLs for this product
 
 The application UI still does not create orders or redirect contributors to Linxo yet.
+
+## Collector account setup
+
+Before a pool can receive contributions in a future step, the pool creator must
+configure a collector account in the protected dashboard.
+
+- The app sends the submitted IBAN to Linxo server-side through `POST /v1/alias`
+- The app stores only the returned Linxo `alias_id` in `Pool.collectorAliasId`
+- The app does not store IBAN, BIC, account number or beneficiary KYC data locally
+- Future payment orders will use `beneficiary: { schema: "ALIAS", alias_id }`
 
 When runtime integration is added, it should remain:
 

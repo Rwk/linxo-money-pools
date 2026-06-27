@@ -33,3 +33,9 @@ export type LinxoRunningOrder =
 
 export type LinxoOrderPaymentMethod =
   components["schemas"]["PaymentMethods"][number];
+
+export type LinxoCreateAliasRequest =
+  operations["postAlias"]["requestBody"]["content"]["application/json"];
+
+export type LinxoCreateAliasResponse =
+  operations["postAlias"]["responses"][201]["content"]["application/json"];

@@ -8,6 +8,8 @@ import {
   LinxoPaymentsNetworkError
 } from "@/infrastructure/linxo/linxo-payments-errors";
 import type {
+  LinxoCreateAliasRequest,
+  LinxoCreateAliasResponse,
   LinxoCreateOrderRequest,
   LinxoErrorResponse,
   LinxoOrder,
@@ -54,6 +56,18 @@ function serializeShortenQueryParams(
   return searchParams.toString();
 }
 
+function sanitizeLinxoErrorDescription(
+  description: string | undefined
+): string | undefined {
+  if (!description) {
+    return undefined;
+  }
+
+  return description
+    .replace(/\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/g, "[redacted-iban]")
+    .replace(/Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi, "Bearer [redacted-token]");
+}
+
 export class LinxoPaymentsClient {
   private readonly fetch: FetchLike;
   private readonly config: LinxoPaymentsConfig;
@@ -80,6 +94,53 @@ export class LinxoPaymentsClient {
       path: "/v1/orders",
       body: input
     });
+  }
+
+  async createAccountAlias(input: {
+    userReference: string;
+    label: string;
+    account: {
+      schema: "SEPA";
+      iban: string;
+    };
+  }): Promise<{
+    id: string;
+  }> {
+    const body: LinxoCreateAliasRequest = {
+      user_reference: input.userReference,
+      label: input.label,
+      account: input.account
+    };
+
+    try {
+      const response = await this.requestJson<LinxoCreateAliasResponse>({
+        method: "POST",
+        path: "/v1/alias",
+        body
+      });
+
+      return {
+        id: response.id
+      };
+    } catch (error) {
+      if (error instanceof LinxoPaymentsApiError) {
+        throw new LinxoPaymentsApiError({
+          message: "Linxo Payments alias creation failed.",
+          status: error.status,
+          code: error.code,
+          description: sanitizeLinxoErrorDescription(error.description),
+          requestId: error.requestId
+        });
+      }
+
+      if (error instanceof LinxoPaymentsNetworkError) {
+        throw new LinxoPaymentsNetworkError(
+          "Failed to reach Linxo Payments alias endpoint."
+        );
+      }
+
+      throw error;
+    }
   }
 
   async shortenOrderAuthUrl(input: {
