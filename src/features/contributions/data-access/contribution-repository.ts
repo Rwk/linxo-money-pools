@@ -111,6 +111,17 @@ export async function findContributionStatusRecordById(
   });
 }
 
+export async function findContributionStatusRecordByLinxoOrderId(
+  linxoOrderId: string
+): Promise<ContributionStatusRecord | null> {
+  return prisma.contribution.findUnique({
+    where: {
+      linxoOrderId
+    },
+    select: contributionStatusSelect
+  });
+}
+
 export async function updateContributionStatusSnapshot(input: {
   contributionId: string;
   linxoOrderStatus?: LinxoOrderStatus;

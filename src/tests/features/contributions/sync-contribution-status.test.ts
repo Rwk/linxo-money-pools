@@ -2,6 +2,7 @@ import { CashInStatus } from "@/generated/prisma/client";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  syncContributionStatusByOrderId,
   syncContributionStatusForReturn
 } from "@/features/contributions/services/sync-contribution-status";
 
@@ -129,5 +130,95 @@ describe("syncContributionStatusForReturn", () => {
     );
     expect(result?.contribution.cashInStatus).toBe("PENDING");
     expect(updateContributionStatusSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("updates an in-progress contribution to executed through webhook sync", async () => {
+    const updateContributionStatusSnapshot = vi.fn().mockResolvedValue(undefined);
+
+    const result = await syncContributionStatusByOrderId("order_123", {
+      findContributionById: vi.fn(),
+      findContributionByLinxoOrderId: vi.fn().mockResolvedValue({
+        ...createContributionRecord(),
+        linxoOrderStatus: "AUTHORIZED",
+        linxoPaymentStatus: "SUBMITTED"
+      }),
+      getRunningOrder: vi.fn().mockResolvedValue({
+        id: "order_123",
+        order_status: "CLOSED",
+        redirect_url: "https://app.test/return",
+        instructions: [
+          {
+            id: "instruction_123",
+            amount: "12.00",
+            currency: "EUR",
+            beneficiary: {
+              schema: "ALIAS",
+              alias_id: "alias_123"
+            },
+            label: "Contribution",
+            payments: [
+              {
+                id: "payment_123",
+                status: "EXECUTED",
+                amount: "12.00",
+                currency: "EUR",
+                creation_date: "2026-06-28T10:00:00.000Z"
+              }
+            ]
+          }
+        ]
+      }),
+      updateContributionStatusSnapshot,
+      now: () => new Date("2026-06-28T10:00:00.000Z")
+    });
+
+    expect(result).toMatchObject({
+      status: "synced"
+    });
+    if (result.status === "synced") {
+      expect(result.contribution.cashInStatus).toBe("EXECUTED");
+      expect(result.contribution.returnedAt).toBeUndefined();
+    }
+    expect(updateContributionStatusSnapshot).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cashInStatus: CashInStatus.EXECUTED,
+        linxoOrderStatus: "CLOSED",
+        linxoPaymentStatus: "EXECUTED",
+        returnedAt: undefined
+      })
+    );
+  });
+
+  it("updates an in-progress contribution to rejected through webhook sync", async () => {
+    const updateContributionStatusSnapshot = vi.fn().mockResolvedValue(undefined);
+
+    const result = await syncContributionStatusByOrderId("order_123", {
+      findContributionById: vi.fn(),
+      findContributionByLinxoOrderId: vi.fn().mockResolvedValue({
+        ...createContributionRecord(),
+        linxoOrderStatus: "AUTHORIZED",
+        linxoPaymentStatus: "SUBMITTED"
+      }),
+      getRunningOrder: vi.fn().mockResolvedValue({
+        id: "order_123",
+        order_status: "REJECTED",
+        redirect_url: "https://app.test/return"
+      }),
+      updateContributionStatusSnapshot,
+      now: () => new Date("2026-06-28T10:00:00.000Z")
+    });
+
+    expect(result).toMatchObject({
+      status: "synced"
+    });
+    if (result.status === "synced") {
+      expect(result.contribution.cashInStatus).toBe("REJECTED");
+    }
+    expect(updateContributionStatusSnapshot).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cashInStatus: CashInStatus.REJECTED,
+        linxoOrderStatus: "REJECTED"
+      })
+    );
   });
 });

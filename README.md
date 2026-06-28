@@ -130,6 +130,7 @@ Product scope notes are documented in [docs/pools.md](docs/pools.md).
 - Money pool scope and product notes: [docs/pools.md](docs/pools.md)
 - Database setup and Prisma notes: [docs/database.md](docs/database.md)
 - Linxo Payments OpenAPI type generation: [docs/linxo-payments.md](docs/linxo-payments.md)
+- Linxo Payments webhook setup: [docs/linxo-webhooks.md](docs/linxo-webhooks.md)
 
 ## Manual Google OAuth setup
 

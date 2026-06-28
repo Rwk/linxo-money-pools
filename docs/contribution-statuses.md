@@ -74,4 +74,5 @@ order from Linxo Payments, updates raw local statuses, derives
 If the refresh fails, the app keeps the existing contribution state safe and
 shows a neutral message asking the user to check again later.
 
-Webhooks and status polling will be added later.
+Order webhooks can also refresh the latest Linxo order state. Polling may be
+added later as a fallback.

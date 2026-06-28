@@ -5,6 +5,7 @@ import { getCashInStatus } from "@/domain/payment/cash-in-status";
 import type { Contribution } from "@/domain/pool/pool.types";
 import {
   findContributionStatusRecordById,
+  findContributionStatusRecordByLinxoOrderId,
   type ContributionStatusRecord,
   updateContributionStatusSnapshot
 } from "@/features/contributions/data-access/contribution-repository";
@@ -15,6 +16,9 @@ type SyncContributionStatusDependencies = {
   findContributionById: (
     contributionId: string
   ) => Promise<ContributionStatusRecord | null>;
+  findContributionByLinxoOrderId: (
+    linxoOrderId: string
+  ) => Promise<ContributionStatusRecord | null>;
   getRunningOrder: (orderId: string) => Promise<LinxoRunningOrder>;
   updateContributionStatusSnapshot: typeof updateContributionStatusSnapshot;
   now: () => Date;
@@ -22,6 +26,7 @@ type SyncContributionStatusDependencies = {
 
 const defaultDependencies: SyncContributionStatusDependencies = {
   findContributionById: findContributionStatusRecordById,
+  findContributionByLinxoOrderId: findContributionStatusRecordByLinxoOrderId,
   getRunningOrder: (orderId) => new LinxoPaymentsClient().getRunningOrder(orderId),
   updateContributionStatusSnapshot,
   now: () => new Date()
@@ -37,6 +42,15 @@ export type ContributionReturnViewModel = {
   contribution: Contribution;
   syncWarning?: string;
 };
+
+export type SyncContributionStatusResult =
+  | {
+      status: "not_found";
+    }
+  | {
+      status: "synced";
+      contribution: Contribution;
+    };
 
 function mapRecordToContribution(
   contribution: ContributionStatusRecord
@@ -121,31 +135,78 @@ function toPrismaCashInStatus(
   }
 }
 
-function buildUpdatedContribution(input: {
-  existing: ContributionStatusRecord;
-  order: LinxoRunningOrder;
-  now: Date;
-}): Contribution {
-  const instruction = input.order.instructions?.[0];
+async function synchronizeContributionRecord(input: {
+  contribution: ContributionStatusRecord;
+  dependencies: SyncContributionStatusDependencies;
+  setReturnedAt: boolean;
+}): Promise<Contribution> {
+  if (!input.contribution.linxoOrderId) {
+    return mapRecordToContribution(input.contribution);
+  }
+
+  const now = input.dependencies.now();
+  const order = await input.dependencies.getRunningOrder(
+    input.contribution.linxoOrderId
+  );
+  const instruction = order.instructions?.[0];
   const payment = instruction?.payments?.[0];
   const linxoSettlementStatus =
-    input.existing.linxoSettlementStatus ?? undefined;
-  const cashInStatus = getCashInStatus({
-    linxoOrderStatus: input.order.order_status,
-    linxoPaymentStatus: payment?.status,
-    linxoSettlementStatus
-  });
-
-  return {
-    ...mapRecordToContribution(input.existing),
-    linxoOrderStatus: input.order.order_status,
+    input.contribution.linxoSettlementStatus ?? undefined;
+  const updatedContribution: Contribution = {
+    ...mapRecordToContribution(input.contribution),
+    linxoOrderStatus: order.order_status,
     linxoInstructionId: instruction?.id ?? undefined,
     linxoPaymentId: payment?.id ?? undefined,
-    linxoSettlementId: input.existing.linxoSettlementId ?? undefined,
+    linxoSettlementId: input.contribution.linxoSettlementId ?? undefined,
     linxoPaymentStatus: payment?.status,
     linxoSettlementStatus,
-    cashInStatus,
-    returnedAt: input.existing.returnedAt ?? input.now
+    cashInStatus: getCashInStatus({
+      linxoOrderStatus: order.order_status,
+      linxoPaymentStatus: payment?.status,
+      linxoSettlementStatus
+    }),
+    returnedAt:
+      input.setReturnedAt
+        ? input.contribution.returnedAt ?? now
+        : input.contribution.returnedAt ?? undefined
+  };
+
+  await input.dependencies.updateContributionStatusSnapshot({
+    contributionId: input.contribution.id,
+    linxoOrderStatus: updatedContribution.linxoOrderStatus,
+    linxoPaymentStatus: updatedContribution.linxoPaymentStatus,
+    linxoSettlementStatus: updatedContribution.linxoSettlementStatus,
+    linxoInstructionId: updatedContribution.linxoInstructionId,
+    linxoPaymentId: updatedContribution.linxoPaymentId,
+    linxoSettlementId: updatedContribution.linxoSettlementId,
+    cashInStatus: toPrismaCashInStatus(updatedContribution.cashInStatus),
+    returnedAt: updatedContribution.returnedAt
+  });
+
+  return updatedContribution;
+}
+
+export async function syncContributionStatusByOrderId(
+  linxoOrderId: string,
+  dependencies: SyncContributionStatusDependencies = defaultDependencies
+): Promise<SyncContributionStatusResult> {
+  const contribution = await dependencies.findContributionByLinxoOrderId(
+    linxoOrderId
+  );
+
+  if (!contribution) {
+    return {
+      status: "not_found"
+    };
+  }
+
+  return {
+    status: "synced",
+    contribution: await synchronizeContributionRecord({
+      contribution,
+      dependencies,
+      setReturnedAt: false
+    })
   };
 }
 
@@ -176,26 +237,11 @@ export async function syncContributionStatusForReturn(
   }
 
   try {
-    const now = dependencies.now();
-    const order = await dependencies.getRunningOrder(contribution.linxoOrderId);
-    const updatedContribution = buildUpdatedContribution({
-      existing: contribution,
-      order,
-      now
+    const updatedContribution = await synchronizeContributionRecord({
+      contribution,
+      dependencies,
+      setReturnedAt: true
     });
-
-    await dependencies.updateContributionStatusSnapshot({
-      contributionId: contribution.id,
-      linxoOrderStatus: updatedContribution.linxoOrderStatus,
-      linxoPaymentStatus: updatedContribution.linxoPaymentStatus,
-      linxoSettlementStatus: updatedContribution.linxoSettlementStatus,
-      linxoInstructionId: updatedContribution.linxoInstructionId,
-      linxoPaymentId: updatedContribution.linxoPaymentId,
-      linxoSettlementId: updatedContribution.linxoSettlementId,
-      cashInStatus: toPrismaCashInStatus(updatedContribution.cashInStatus),
-      returnedAt: updatedContribution.returnedAt
-    });
-
     const statusCopy = getReturnStatusCopy(updatedContribution);
 
     return {
