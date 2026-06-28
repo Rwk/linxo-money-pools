@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { buildContributionPayPath } from "@/features/contributions/domain/payment-handoff";
 import {
   ContributionPaymentInitiationError,
   ContributionPoolClosedError,
@@ -92,11 +93,13 @@ export async function createContributionOrderAction(
     };
   }
 
-  let payerRedirectUrl: string;
+  let contributionId: string;
+  let paymentAccessToken: string;
 
   try {
     const result = await createContributionOrderForPool(validation.data);
-    payerRedirectUrl = result.redirectUrl;
+    contributionId = result.contributionId;
+    paymentAccessToken = result.paymentAccessToken;
   } catch (error) {
     logCreateContributionFailure({
       poolSlug: validation.data.poolSlug,
@@ -110,5 +113,5 @@ export async function createContributionOrderAction(
     };
   }
 
-  redirect(payerRedirectUrl);
+  redirect(buildContributionPayPath(contributionId, paymentAccessToken));
 }

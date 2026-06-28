@@ -4,13 +4,16 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn()
 }));
 
-vi.mock("@/features/contributions/services/create-contribution-order-service", () => ({
-  ContributionPoolClosedError: class ContributionPoolClosedError extends Error {},
-  ContributionPoolNotFoundError: class ContributionPoolNotFoundError extends Error {},
-  ContributionPoolNotReadyError: class ContributionPoolNotReadyError extends Error {},
-  ContributionPaymentInitiationError: class ContributionPaymentInitiationError extends Error {},
-  createContributionOrderForPool: vi.fn()
-}));
+vi.mock(
+  "@/features/contributions/services/create-contribution-order-service",
+  () => ({
+    ContributionPoolClosedError: class ContributionPoolClosedError extends Error {},
+    ContributionPoolNotFoundError: class ContributionPoolNotFoundError extends Error {},
+    ContributionPoolNotReadyError: class ContributionPoolNotReadyError extends Error {},
+    ContributionPaymentInitiationError: class ContributionPaymentInitiationError extends Error {},
+    createContributionOrderForPool: vi.fn()
+  })
+);
 
 import { createContributionOrderAction } from "@/features/contributions/actions/create-contribution-order";
 import { createContributionOrderForPool } from "@/features/contributions/services/create-contribution-order-service";
@@ -23,7 +26,7 @@ describe("createContributionOrderAction", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
   });
 
-  it("does not require authentication and redirects to the payer URL", async () => {
+  it("does not require authentication and redirects to the internal handoff page", async () => {
     const redirectError = new Error("NEXT_REDIRECT");
     const formData = new FormData();
     formData.set("poolSlug", "team-gift");
@@ -35,7 +38,7 @@ describe("createContributionOrderAction", () => {
 
     vi.mocked(createContributionOrderForPool).mockResolvedValue({
       contributionId: "contribution_123",
-      redirectUrl: "https://short.linxo.test/order_123"
+      paymentAccessToken: "payment_token_123"
     });
     vi.mocked(redirect).mockImplementation(() => {
       throw redirectError;
@@ -58,6 +61,9 @@ describe("createContributionOrderAction", () => {
       displayAsAnonymous: false,
       hideAmount: false
     });
+    expect(redirect).toHaveBeenCalledWith(
+      "/contributions/contribution_123/pay?token=payment_token_123"
+    );
   });
 
   it("returns validation errors without creating a contribution", async () => {
@@ -75,8 +81,12 @@ describe("createContributionOrderAction", () => {
     );
 
     expect(createContributionOrderForPool).not.toHaveBeenCalled();
-    expect(result.fieldErrors.contributorFirstName).toBe("First name is required.");
-    expect(result.fieldErrors.contributorLastName).toBe("Last name is required.");
+    expect(result.fieldErrors.contributorFirstName).toBe(
+      "First name is required."
+    );
+    expect(result.fieldErrors.contributorLastName).toBe(
+      "Last name is required."
+    );
     expect(result.fieldErrors.contributorEmail).toBe(
       "Enter a valid email address."
     );

@@ -33,7 +33,7 @@ The app does not store:
 ## Notes
 
 - The app uses `short_auth_url` for payer links when available.
-- QR code UI will be added later.
+- The payer is sent to an internal handoff page before Linxo authorization. See [Payment handoff](./payment-handoff.md).
 - Contribution status is not final when the visitor returns from Linxo.
 - Beneficiary setup is alias-based: future orders use the collector `alias_id`.
 - Contribution status rules and visibility are documented in [Contribution statuses](./contribution-statuses.md).

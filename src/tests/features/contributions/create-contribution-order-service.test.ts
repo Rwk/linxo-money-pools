@@ -82,10 +82,16 @@ describe("createContributionOrderForPool", () => {
     ).rejects.toBeInstanceOf(ContributionPoolNotReadyError);
   });
 
-  it("creates an alias-based Linxo order with exactly one payment method", async () => {
+  it("creates an alias-based Linxo order with exactly one payment method and keeps the return route unchanged", async () => {
     const createContributionRecord = vi.fn().mockResolvedValue({
-      id: "contribution_123"
+      id: "contribution_123",
+      paymentAccessToken: "payment_token_123"
     });
+    const buildReturnUrl = vi
+      .fn()
+      .mockReturnValue(
+        "https://app.test/contributions/contribution_123/return?pool_slug=team-gift&token=payment_token_123"
+      );
     const createOrder = vi.fn().mockResolvedValue({
       id: "order_123",
       order_status: "NEW",
@@ -96,12 +102,12 @@ describe("createContributionOrderForPool", () => {
     const shortenOrderAuthUrl = vi.fn().mockResolvedValue({
       shortAuthUrl: "https://short.linxo.test/order_123"
     });
-    const updateContributionAfterOrderCreation = vi.fn().mockResolvedValue(
-      undefined
-    );
-    const markContributionInitiationFailed = vi.fn().mockResolvedValue(
-      undefined
-    );
+    const updateContributionAfterOrderCreation = vi
+      .fn()
+      .mockResolvedValue(undefined);
+    const markContributionInitiationFailed = vi
+      .fn()
+      .mockResolvedValue(undefined);
 
     const result = await createContributionOrderForPool(
       {
@@ -121,19 +127,20 @@ describe("createContributionOrderForPool", () => {
         markContributionInitiationFailed,
         createOrder,
         shortenOrderAuthUrl,
-        buildReturnUrl: vi
-          .fn()
-          .mockReturnValue(
-            "https://app.test/contributions/contribution_123/return?pool_slug=team-gift"
-          )
+        buildReturnUrl
       }
     );
 
+    expect(buildReturnUrl).toHaveBeenCalledWith({
+      contributionId: "contribution_123",
+      poolSlug: "team-gift",
+      paymentAccessToken: "payment_token_123"
+    });
     expect(createOrder).toHaveBeenCalledWith({
       user_reference: "contribution_123",
       email: "jane@example.com",
       redirect_url:
-        "https://app.test/contributions/contribution_123/return?pool_slug=team-gift",
+        "https://app.test/contributions/contribution_123/return?pool_slug=team-gift&token=payment_token_123",
       payment_methods: ["INITIATED_INSTANT_TRANSFER"],
       instructions: [
         {
@@ -148,6 +155,7 @@ describe("createContributionOrderForPool", () => {
         }
       ]
     });
+    expect(createContributionRecord).toHaveBeenCalled();
     expect(shortenOrderAuthUrl).toHaveBeenCalledWith({
       orderId: "order_123"
     });
@@ -161,7 +169,7 @@ describe("createContributionOrderForPool", () => {
     expect(markContributionInitiationFailed).not.toHaveBeenCalled();
     expect(result).toEqual({
       contributionId: "contribution_123",
-      redirectUrl: "https://short.linxo.test/order_123"
+      paymentAccessToken: "payment_token_123"
     });
   });
 
@@ -195,11 +203,12 @@ describe("createContributionOrderForPool", () => {
       {
         findPoolBySlug: vi.fn().mockResolvedValue(openReadyPool),
         createContributionRecord: vi.fn().mockResolvedValue({
-          id: "contribution_123"
+          id: "contribution_123",
+          paymentAccessToken: "payment_token_123"
         }),
-        updateContributionAfterOrderCreation: vi.fn().mockResolvedValue(
-          undefined
-        ),
+        updateContributionAfterOrderCreation: vi
+          .fn()
+          .mockResolvedValue(undefined),
         markContributionInitiationFailed: vi.fn().mockResolvedValue(undefined),
         createOrder,
         shortenOrderAuthUrl,
@@ -208,6 +217,9 @@ describe("createContributionOrderForPool", () => {
     );
 
     expect(calls).toEqual(["createOrder", "shorten"]);
-    expect(result.redirectUrl).toBe("https://auth.linxo.test/order_123");
+    expect(result).toEqual({
+      contributionId: "contribution_123",
+      paymentAccessToken: "payment_token_123"
+    });
   });
 });
