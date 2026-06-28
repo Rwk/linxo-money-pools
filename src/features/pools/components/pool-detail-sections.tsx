@@ -85,9 +85,9 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
           Contribution and payment status
         </h2>
         <p className="mt-3 text-sm leading-6 text-slate-700">
-          Online contributions are not available yet in this development step.
-          This page will display payment progress and participant activity once
-          the contribution flow is implemented.
+          This page shows the contribution history already recorded for the
+          pool. Payment status can still evolve after the payer returns from
+          Linxo and their bank.
         </p>
       </section>
 

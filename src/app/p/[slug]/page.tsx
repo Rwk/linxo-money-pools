@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { isPoolReadyForPayments } from "@/domain/pool/pool.payments";
+import { PublicContributionForm } from "@/features/contributions/components/public-contribution-form";
 import { findPoolBySlug } from "@/features/pools/data-access/pool-repository";
 import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
 import { toPoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
@@ -20,6 +22,10 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
   }
 
   const viewModel = toPoolDetailViewModel(pool);
+  const isReadyForPayments = isPoolReadyForPayments({
+    status: pool.status,
+    collectorAliasId: pool.collectorAliasId
+  });
 
   return (
     <main className="px-4 py-10 sm:px-6">
@@ -32,28 +38,39 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
             Public money pool page
           </h1>
           <p className="max-w-3xl text-base leading-7 text-[var(--muted)]">
-            This page is visible to anyone with the link. Online contributions
-            are intentionally disabled until the payment integration step is
-            implemented.
+            This page is visible to anyone with the link. Contributions are
+            initiated through Linxo Payments and authorized from the payer bank
+            account.
           </p>
         </div>
 
-        <PoolDetailSections pool={viewModel} />
-
-        <section className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6">
-          <h2 className="text-lg font-semibold text-amber-950">
-            Online contribution is coming next
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-amber-900">
-            This pool is visible and shareable, but online contribution is not
-            available yet in this development step.
-          </p>
-          {pool.status === "CLOSED" ? (
-            <p className="mt-3 text-sm font-semibold text-amber-950">
-              This money pool is closed.
+        {pool.status !== "OPEN" ? (
+          <section className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6">
+            <h2 className="text-lg font-semibold text-amber-950">
+              This money pool is closed
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-amber-900">
+              New contributions are no longer accepted for this pool.
             </p>
-          ) : null}
-        </section>
+          </section>
+        ) : isReadyForPayments ? (
+          <PublicContributionForm
+            collectorDisplayName={pool.collectorDisplayName}
+            poolSlug={pool.slug}
+          />
+        ) : (
+          <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
+            <h2 className="text-lg font-semibold text-slate-950">
+              Online contributions are not available yet for this pool.
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-slate-700">
+              The collector account still needs to be configured before this
+              pool can receive online contributions.
+            </p>
+          </section>
+        )}
+
+        <PoolDetailSections pool={viewModel} />
 
         <Link
           className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/80 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"

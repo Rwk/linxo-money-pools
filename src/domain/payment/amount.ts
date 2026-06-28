@@ -1,3 +1,5 @@
+import Decimal from "decimal.js";
+
 const DECIMAL_PATTERN = /^\d+(?:[.,]\d{1,2})?$/;
 
 function normalizeDecimalSeparator(value: string): string {
@@ -20,9 +22,9 @@ export function normalizeAmountInput(value: string): string {
   }
 
   const normalizedValue = normalizeDecimalSeparator(trimmedValue);
-  const amount = Number(normalizedValue);
+  const amount = new Decimal(normalizedValue);
 
-  if (!Number.isFinite(amount) || amount <= 0) {
+  if (!amount.isFinite() || amount.lte(0)) {
     throw new Error("Amount must be greater than zero.");
   }
 

@@ -205,7 +205,9 @@ export class LinxoPaymentsClient {
         message: "Linxo Payments API request failed.",
         status: response.status,
         code: errorBody?.error,
-        description: errorBody?.error_description,
+        description: sanitizeLinxoErrorDescription(
+          errorBody?.error_description
+        ),
         requestId: response.headers.get("X-FWD-Request-ID") ?? requestId
       });
     }
