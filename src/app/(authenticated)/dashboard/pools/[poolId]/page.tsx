@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
+import { RefreshPoolContributionStatusesForm } from "@/features/contributions/components/refresh-pool-contribution-statuses-form";
 import { CollectorAccountSetupForm } from "@/features/pools/components/collector-account-setup-form";
 import { findPoolByIdForCreator } from "@/features/pools/data-access/pool-repository";
 import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
@@ -53,6 +54,7 @@ export default async function PoolManagementPage({
         </div>
 
         <PoolDetailSections pool={toPrivatePoolDetailViewModel(pool)} />
+        <RefreshPoolContributionStatusesForm poolId={pool.id} />
         <CollectorAccountSetupForm
           collectorAliasId={pool.collectorAliasId}
           poolId={pool.id}
