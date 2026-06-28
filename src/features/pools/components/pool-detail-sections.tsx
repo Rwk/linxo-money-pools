@@ -2,6 +2,10 @@ import Link from "next/link";
 
 import { PoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
 
+function EmptyContributionState({ message }: { message: string }) {
+  return <p className="mt-3 text-sm leading-6 text-slate-700">{message}</p>;
+}
+
 export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
   return (
     <div className="space-y-6">
@@ -58,7 +62,7 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
 
       <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
         <h2 className="text-lg font-semibold text-slate-950">Pool totals</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm text-[var(--muted)]">Confirmed</p>
             <p className="mt-1 text-xl font-semibold text-slate-950">
@@ -66,15 +70,9 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm text-[var(--muted)]">Pending</p>
+            <p className="text-sm text-[var(--muted)]">In progress</p>
             <p className="mt-1 text-xl font-semibold text-slate-950">
-              {pool.pendingAmountLabel}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm text-[var(--muted)]">Failed</p>
-            <p className="mt-1 text-xl font-semibold text-slate-950">
-              {pool.failedAmountLabel}
+              {pool.inProgressAmountLabel}
             </p>
           </div>
         </div>
@@ -85,26 +83,26 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
           Contribution and payment status
         </h2>
         <p className="mt-3 text-sm leading-6 text-slate-700">
-          This page shows the contribution history already recorded for the
-          pool. Payment status can still evolve after the payer returns from
-          Linxo and their bank.
+          Returning from Linxo Payments does not prove that a payment has been
+          executed. Public pages only show confirmed and in-progress
+          contributions.
         </p>
       </section>
 
       <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
         <h2 className="text-lg font-semibold text-slate-950">
-          Participant list
+          {pool.mode === "public"
+            ? "Visible contributions"
+            : "Visible contributions"}
         </h2>
-        {pool.contributions.length === 0 ? (
-          <p className="mt-3 text-sm leading-6 text-slate-700">
-            No contributions have been recorded yet.
-          </p>
-        ) : (
+        {pool.visibleContributionCount === 0 ? (
+          <EmptyContributionState message="No confirmed or in-progress contributions are visible yet." />
+        ) : pool.mode === "public" ? (
           <ul className="mt-4 space-y-3">
-            {pool.contributions.map((contribution) => (
+            {pool.visibleContributions.map((contribution) => (
               <li
                 key={contribution.id}
-                className="flex flex-col gap-1 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <p className="font-semibold text-slate-950">
@@ -114,14 +112,130 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
                     {contribution.createdDateLabel}
                   </p>
                 </div>
-                <p className="text-sm font-semibold text-slate-950">
-                  {contribution.amountLabel}
-                </p>
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-900">
+                    {contribution.statusLabel}
+                  </span>
+                  <p className="text-sm font-semibold text-slate-950">
+                    {contribution.amountLabel}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {pool.visibleContributions.map((contribution) => (
+              <li
+                key={contribution.id}
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="font-semibold text-slate-950">
+                      {contribution.contributorLabel}
+                    </p>
+                    <Link
+                      className="text-sm text-teal-700 underline-offset-4 transition hover:underline"
+                      href={contribution.contributorEmailHref}
+                    >
+                      {contribution.contributorEmail}
+                    </Link>
+                    <p className="text-sm text-[var(--muted)]">
+                      Created {contribution.createdDateLabel}
+                    </p>
+                    {contribution.returnedDateLabel ? (
+                      <p className="text-sm text-[var(--muted)]">
+                        Returned {contribution.returnedDateLabel}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="space-y-1 text-sm text-slate-700 sm:text-right">
+                    <p className="font-semibold text-slate-950">
+                      {contribution.amountLabel}
+                    </p>
+                    <p>{contribution.selectedPaymentMethodLabel}</p>
+                    <p>{contribution.cashInStatusLabel}</p>
+                  </div>
+                </div>
+                {contribution.rawStatuses.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {contribution.rawStatuses.map((status) => (
+                      <span
+                        key={status}
+                        className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200"
+                      >
+                        {status}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      {pool.mode === "private" ? (
+        <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
+          <h2 className="text-lg font-semibold text-slate-950">
+            Incomplete or failed contributions
+          </h2>
+          {pool.incompleteContributionCount === 0 ? (
+            <EmptyContributionState message="No incomplete or failed contributions need attention right now." />
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {pool.incompleteContributions.map((contribution) => (
+                <li
+                  key={contribution.id}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-1">
+                      <p className="font-semibold text-slate-950">
+                        {contribution.contributorLabel}
+                      </p>
+                      <Link
+                        className="text-sm text-teal-700 underline-offset-4 transition hover:underline"
+                        href={contribution.contributorEmailHref}
+                      >
+                        {contribution.contributorEmail}
+                      </Link>
+                      <p className="text-sm text-[var(--muted)]">
+                        Created {contribution.createdDateLabel}
+                      </p>
+                      {contribution.returnedDateLabel ? (
+                        <p className="text-sm text-[var(--muted)]">
+                          Returned {contribution.returnedDateLabel}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className="space-y-1 text-sm text-slate-700 sm:text-right">
+                      <p className="font-semibold text-slate-950">
+                        {contribution.amountLabel}
+                      </p>
+                      <p>{contribution.selectedPaymentMethodLabel}</p>
+                      <p>{contribution.cashInStatusLabel}</p>
+                    </div>
+                  </div>
+                  {contribution.rawStatuses.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {contribution.rawStatuses.map((status) => (
+                        <span
+                          key={status}
+                          className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200"
+                        >
+                          {status}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ) : null}
     </div>
   );
 }

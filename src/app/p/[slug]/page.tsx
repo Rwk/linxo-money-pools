@@ -5,7 +5,7 @@ import { isPoolReadyForPayments } from "@/domain/pool/pool.payments";
 import { PublicContributionForm } from "@/features/contributions/components/public-contribution-form";
 import { findPoolBySlug } from "@/features/pools/data-access/pool-repository";
 import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
-import { toPoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
+import { toPublicPoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
 
 type PublicPoolPageProps = {
   params: Promise<{
@@ -21,7 +21,7 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
     notFound();
   }
 
-  const viewModel = toPoolDetailViewModel(pool);
+  const viewModel = toPublicPoolDetailViewModel(pool);
   const isReadyForPayments = isPoolReadyForPayments({
     status: pool.status,
     collectorAliasId: pool.collectorAliasId

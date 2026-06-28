@@ -36,3 +36,4 @@ The app does not store:
 - QR code UI will be added later.
 - Contribution status is not final when the visitor returns from Linxo.
 - Beneficiary setup is alias-based: future orders use the collector `alias_id`.
+- Contribution status rules and visibility are documented in [Contribution statuses](./contribution-statuses.md).

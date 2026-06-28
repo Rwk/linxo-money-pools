@@ -23,57 +23,70 @@ function createContribution(
     hideAmount: false,
     selectedPaymentMethod: "STANDARD",
     linxoOrderStatus: "NEW",
+    cashInStatus: "PENDING",
     createdAt: new Date("2026-06-01T12:00:00.000Z"),
     ...overrides
   };
 }
 
 describe("computePoolTotals", () => {
-  it("correctly separates collected, executed, pending and failed amounts", () => {
+  it("keeps public totals limited to confirmed and in-progress contributions", () => {
     const totals = computePoolTotals([
       createContribution({
         id: "collected",
         amount: "12.50",
         linxoOrderStatus: "CLOSED",
         linxoPaymentStatus: "EXECUTED",
-        linxoSettlementStatus: "SETTLED"
+        linxoSettlementStatus: "SETTLED",
+        cashInStatus: "COLLECTED"
       }),
       createContribution({
         id: "executed",
         amount: "8.40",
         linxoOrderStatus: "CLOSED",
-        linxoPaymentStatus: "EXECUTED"
+        linxoPaymentStatus: "EXECUTED",
+        cashInStatus: "EXECUTED"
       }),
       createContribution({
         id: "pending",
         amount: "5.10",
+        linxoOrderId: "order_pending",
         linxoOrderStatus: "AUTHORIZED",
-        linxoPaymentStatus: "SUBMITTED"
+        linxoPaymentStatus: "SUBMITTED",
+        cashInStatus: "PENDING"
+      }),
+      createContribution({
+        id: "new",
+        amount: "7.00",
+        linxoOrderId: "order_new",
+        linxoOrderStatus: "NEW",
+        cashInStatus: "PENDING"
       }),
       createContribution({
         id: "rejected",
         amount: "2.00",
-        linxoOrderStatus: "REJECTED"
+        linxoOrderStatus: "REJECTED",
+        cashInStatus: "REJECTED"
       }),
       createContribution({
         id: "cancelled",
         amount: "3.00",
         linxoOrderStatus: "CLOSED",
-        linxoPaymentStatus: "CANCELLED"
+        linxoPaymentStatus: "CANCELLED",
+        cashInStatus: "CANCELLED"
       }),
       createContribution({
         id: "expired",
         amount: "4.00",
-        linxoOrderStatus: "EXPIRED"
+        linxoOrderStatus: "EXPIRED",
+        cashInStatus: "EXPIRED"
       })
     ]);
 
     expect(totals).toEqual({
-      collectedAmount: "12.50",
-      executedAmount: "8.40",
-      pendingAmount: "5.10",
-      failedAmount: "9.00",
-      displayedConfirmedAmount: "20.90"
+      confirmedAmount: "20.90",
+      inProgressAmount: "5.10",
+      incompleteAmount: "16.00"
     });
   });
 
@@ -84,19 +97,20 @@ describe("computePoolTotals", () => {
         amount: "10.10",
         linxoOrderStatus: "CLOSED",
         linxoPaymentStatus: "EXECUTED",
-        linxoSettlementStatus: "SETTLED"
+        linxoSettlementStatus: "SETTLED",
+        cashInStatus: "COLLECTED"
       }),
       createContribution({
         id: "second",
         amount: "0.20",
         linxoOrderStatus: "CLOSED",
         linxoPaymentStatus: "EXECUTED",
-        linxoSettlementStatus: "SETTLED"
+        linxoSettlementStatus: "SETTLED",
+        cashInStatus: "COLLECTED"
       })
     ]);
 
-    expect(totals.collectedAmount).toBe("10.30");
-    expect(totals.displayedConfirmedAmount).toBe("10.30");
+    expect(totals.confirmedAmount).toBe("10.30");
   });
 });
 

@@ -14,10 +14,17 @@ const contributionSelect = {
   displayAsAnonymous: true,
   hideAmount: true,
   selectedPaymentMethod: true,
+  linxoOrderId: true,
+  linxoInstructionId: true,
+  linxoPaymentId: true,
+  linxoSettlementId: true,
   linxoOrderStatus: true,
   linxoPaymentStatus: true,
   linxoSettlementStatus: true,
+  cashInStatus: true,
   createdAt: true
+  ,
+  returnedAt: true
 } satisfies Prisma.ContributionSelect;
 
 const poolBaseSelect = {
@@ -164,10 +171,16 @@ export function mapContributionToDomainContribution(
     | "displayAsAnonymous"
     | "hideAmount"
     | "selectedPaymentMethod"
+    | "linxoOrderId"
+    | "linxoInstructionId"
+    | "linxoPaymentId"
+    | "linxoSettlementId"
     | "linxoOrderStatus"
     | "linxoPaymentStatus"
     | "linxoSettlementStatus"
+    | "cashInStatus"
     | "createdAt"
+    | "returnedAt"
   >
 ) {
   return {
@@ -181,9 +194,16 @@ export function mapContributionToDomainContribution(
     displayAsAnonymous: contribution.displayAsAnonymous,
     hideAmount: contribution.hideAmount,
     selectedPaymentMethod: contribution.selectedPaymentMethod,
-    linxoOrderStatus: contribution.linxoOrderStatus ?? "NEW",
+    linxoOrderId: contribution.linxoOrderId ?? undefined,
+    linxoInstructionId: contribution.linxoInstructionId ?? undefined,
+    linxoPaymentId: contribution.linxoPaymentId ?? undefined,
+    linxoSettlementId: contribution.linxoSettlementId ?? undefined,
+    linxoOrderStatus: contribution.linxoOrderStatus ?? undefined,
     linxoPaymentStatus: contribution.linxoPaymentStatus ?? undefined,
     linxoSettlementStatus: contribution.linxoSettlementStatus ?? undefined,
+    cashInStatus: contribution.cashInStatus,
     createdAt: contribution.createdAt
+    ,
+    returnedAt: contribution.returnedAt ?? undefined
   };
 }

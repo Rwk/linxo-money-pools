@@ -7,6 +7,11 @@ describe("getCashInStatus", () => {
     expect(getCashInStatus({ linxoOrderStatus: "NEW" })).toBe("PENDING");
   });
 
+  it("returns pending for missing or incomplete status information", () => {
+    expect(getCashInStatus({})).toBe("PENDING");
+    expect(getCashInStatus({ linxoOrderStatus: "CLOSED" })).toBe("PENDING");
+  });
+
   it("returns pending for an authorized order with a submitted payment", () => {
     expect(
       getCashInStatus({
@@ -73,9 +78,5 @@ describe("getCashInStatus", () => {
         linxoSettlementStatus: "MANUALLY_SETTLED"
       })
     ).toBe("COLLECTED");
-  });
-
-  it("returns pending for unknown or incomplete closed combinations", () => {
-    expect(getCashInStatus({ linxoOrderStatus: "CLOSED" })).toBe("PENDING");
   });
 });

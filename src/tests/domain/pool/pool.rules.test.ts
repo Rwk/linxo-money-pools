@@ -37,6 +37,7 @@ function createContribution(
     hideAmount: false,
     selectedPaymentMethod: "STANDARD",
     linxoOrderStatus: "NEW",
+    cashInStatus: "PENDING",
     createdAt: new Date("2026-06-01T12:00:00.000Z"),
     ...overrides
   };

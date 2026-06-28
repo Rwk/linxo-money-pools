@@ -16,7 +16,7 @@ export const CASH_IN_STATUSES = [
 export type CashInStatus = (typeof CASH_IN_STATUSES)[number];
 
 export type CashInStatusInput = {
-  linxoOrderStatus: LinxoOrderStatus;
+  linxoOrderStatus?: LinxoOrderStatus;
   linxoPaymentStatus?: LinxoPaymentStatus;
   linxoSettlementStatus?: LinxoSettlementStatus;
 };

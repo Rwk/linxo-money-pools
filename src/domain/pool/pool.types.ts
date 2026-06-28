@@ -69,8 +69,14 @@ export type Contribution = {
   displayAsAnonymous: boolean;
   hideAmount: boolean;
   selectedPaymentMethod: PaymentMethod;
-  linxoOrderStatus: LinxoOrderStatus;
+  linxoOrderId?: string;
+  linxoInstructionId?: string;
+  linxoPaymentId?: string;
+  linxoSettlementId?: string;
+  linxoOrderStatus?: LinxoOrderStatus;
   linxoPaymentStatus?: LinxoPaymentStatus;
   linxoSettlementStatus?: LinxoSettlementStatus;
+  cashInStatus: import("@/domain/payment/cash-in-status").CashInStatus;
   createdAt: Date;
+  returnedAt?: Date;
 };

@@ -5,7 +5,7 @@ import { requireLinxoSession } from "@/features/auth/require-linxo-session";
 import { CollectorAccountSetupForm } from "@/features/pools/components/collector-account-setup-form";
 import { findPoolByIdForCreator } from "@/features/pools/data-access/pool-repository";
 import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
-import { toPoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
+import { toPrivatePoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
 
 type PoolManagementPageProps = {
   params: Promise<{
@@ -52,7 +52,7 @@ export default async function PoolManagementPage({
           </div>
         </div>
 
-        <PoolDetailSections pool={toPoolDetailViewModel(pool)} />
+        <PoolDetailSections pool={toPrivatePoolDetailViewModel(pool)} />
         <CollectorAccountSetupForm
           collectorAliasId={pool.collectorAliasId}
           poolId={pool.id}

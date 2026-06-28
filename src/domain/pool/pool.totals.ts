@@ -1,29 +1,28 @@
 import Decimal from "decimal.js";
 
 import { Contribution } from "@/domain/pool/pool.types";
-import { getCashInStatus } from "@/domain/payment/cash-in-status";
+import {
+  isContributionConfirmed,
+  isContributionInProgressForPublicDisplay
+} from "@/domain/pool/pool.visibility";
 
 type PoolTotals = {
-  collectedAmount: string;
-  executedAmount: string;
-  pendingAmount: string;
-  failedAmount: string;
-  displayedConfirmedAmount: string;
+  confirmedAmount: string;
+  inProgressAmount: string;
+  incompleteAmount: string;
 };
 
 type MutablePoolTotals = {
-  collectedAmount: Decimal;
-  executedAmount: Decimal;
-  pendingAmount: Decimal;
-  failedAmount: Decimal;
+  confirmedAmount: Decimal;
+  inProgressAmount: Decimal;
+  incompleteAmount: Decimal;
 };
 
 function createZeroTotals(): MutablePoolTotals {
   return {
-    collectedAmount: new Decimal(0),
-    executedAmount: new Decimal(0),
-    pendingAmount: new Decimal(0),
-    failedAmount: new Decimal(0)
+    confirmedAmount: new Decimal(0),
+    inProgressAmount: new Decimal(0),
+    incompleteAmount: new Decimal(0)
   };
 }
 
@@ -38,30 +37,21 @@ function formatDecimal(amount: Decimal): string {
 export function computePoolTotals(contributions: Contribution[]): PoolTotals {
   const totals = contributions.reduce<MutablePoolTotals>((current, contribution) => {
     const amount = toDecimal(contribution.amount);
-    const cashInStatus = getCashInStatus(contribution);
 
-    if (cashInStatus === "COLLECTED") {
-      current.collectedAmount = current.collectedAmount.plus(amount);
-    } else if (cashInStatus === "EXECUTED") {
-      current.executedAmount = current.executedAmount.plus(amount);
-    } else if (cashInStatus === "PENDING") {
-      current.pendingAmount = current.pendingAmount.plus(amount);
+    if (isContributionConfirmed(contribution)) {
+      current.confirmedAmount = current.confirmedAmount.plus(amount);
+    } else if (isContributionInProgressForPublicDisplay(contribution)) {
+      current.inProgressAmount = current.inProgressAmount.plus(amount);
     } else {
-      current.failedAmount = current.failedAmount.plus(amount);
+      current.incompleteAmount = current.incompleteAmount.plus(amount);
     }
 
     return current;
   }, createZeroTotals());
 
-  const displayedConfirmedAmount = totals.collectedAmount.plus(
-    totals.executedAmount
-  );
-
   return {
-    collectedAmount: formatDecimal(totals.collectedAmount),
-    executedAmount: formatDecimal(totals.executedAmount),
-    pendingAmount: formatDecimal(totals.pendingAmount),
-    failedAmount: formatDecimal(totals.failedAmount),
-    displayedConfirmedAmount: formatDecimal(displayedConfirmedAmount)
+    confirmedAmount: formatDecimal(totals.confirmedAmount),
+    inProgressAmount: formatDecimal(totals.inProgressAmount),
+    incompleteAmount: formatDecimal(totals.incompleteAmount)
   };
 }
