@@ -75,6 +75,9 @@ https://your-public-domain.example/api/linxo/webhooks/payments?token=<LINXO_WEBH
 2. Open the dashboard and confirm the existing pool list loads.
 3. Create a new pool.
 4. Configure the collector account from the pool management page.
+   For test environments, use the Authorized Account request samples documented
+   in [Linxo Payments integration](./linxo-payments.md). The Linxo documentation
+   explicitly expects those samples in Sandbox Mode.
 5. Open the public page from its private link.
 6. Submit a contribution.
 7. Open the payment handoff page.

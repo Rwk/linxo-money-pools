@@ -50,7 +50,7 @@ More details are documented in [docs/security.md](docs/security.md).
 - Pool creation
 - Pool editing
 - Pool close / reopen lifecycle
-- Collector account setup through Linxo alias creation
+- Collector account setup through Linxo authorized account registration and alias creation
 - Public contribution form
 - Linxo order creation
 - Short payment URL generation with `ask_for_alias=false`

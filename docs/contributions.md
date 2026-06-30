@@ -37,5 +37,7 @@ The app does not store:
 - The payer is sent to an internal handoff page before Linxo authorization. See [Payment handoff](./payment-handoff.md).
 - Contribution status is not final when the visitor returns from Linxo.
 - Verified contributions are sent directly to the collector account.
-- Beneficiary setup is alias-based: future orders use the collector `alias_id`.
+- Beneficiary setup remains alias-based for payment orders: collector setup
+  stores a safe Linxo `authorized_account_id` and a Linxo `alias_id`, while the
+  current order flow still uses the `alias_id`.
 - Contribution status rules and visibility are documented in [Contribution statuses](./contribution-statuses.md).

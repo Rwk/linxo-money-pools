@@ -1,6 +1,15 @@
 export type SetupCollectorAccountFormValues = {
   accountHolderName: string;
   iban: string;
+  entityType: "NATURAL_PERSON" | "COMPANY";
+  firstName: string;
+  surname: string;
+  birthDate: string;
+  birthCity: string;
+  birthCountry: string;
+  companyName: string;
+  nationalIdentification: string;
+  companyCountry: string;
 };
 
 export type SetupCollectorAccountActionState = {
@@ -12,7 +21,16 @@ export type SetupCollectorAccountActionState = {
 export function getSetupCollectorAccountDefaultValues(): SetupCollectorAccountFormValues {
   return {
     accountHolderName: "",
-    iban: ""
+    iban: "",
+    entityType: "NATURAL_PERSON",
+    firstName: "",
+    surname: "",
+    birthDate: "",
+    birthCity: "",
+    birthCountry: "",
+    companyName: "",
+    nationalIdentification: "",
+    companyCountry: ""
   };
 }
 
@@ -34,7 +52,15 @@ export function normalizeSetupCollectorAccountFormState(
     values: {
       ...getSetupCollectorAccountDefaultValues(),
       ...(state?.values ?? {}),
-      iban: ""
+      iban: "",
+      firstName: "",
+      surname: "",
+      birthDate: "",
+      birthCity: "",
+      birthCountry: "",
+      companyName: "",
+      nationalIdentification: "",
+      companyCountry: ""
     },
     fieldErrors: state?.fieldErrors ?? {},
     formError: state?.formError ?? null

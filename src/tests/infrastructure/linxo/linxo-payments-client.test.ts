@@ -149,6 +149,150 @@ describe("LinxoPaymentsClient", () => {
     );
   });
 
+  it("creates an authorized account with hal+json and returns only safe references", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: "authorized_account_123",
+          service_level: "SEPA",
+          identification: {
+            schema: "SEPA",
+            iban: "FR7630006000011234567890189",
+            name: "Linxo Team"
+          },
+          entity: {
+            type: "NATURAL_PERSON",
+            firstname: "Jane",
+            surname: "Doe",
+            birth_date: "1990-01-15",
+            birth_city: "Paris",
+            birth_country: "FR"
+          }
+        }),
+        {
+          status: 201,
+          headers: {
+            "content-type": "application/hal+json",
+            "X-FWD-Request-ID": "linxo-request-id"
+          }
+        }
+      )
+    );
+
+    const client = new LinxoPaymentsClient({
+      fetch: fetchMock,
+      config,
+      tokenService: createTokenService()
+    });
+
+    await expect(
+      client.createAuthorizedAccount({
+        identification: {
+          schema: "SEPA",
+          iban: "FR7630006000011234567890189",
+          name: "Linxo Team"
+        },
+        entity: {
+          type: "NATURAL_PERSON",
+          firstname: "Jane",
+          surname: "Doe",
+          birth_date: "1990-01-15",
+          birth_city: "Paris",
+          birth_country: "FR"
+        }
+      })
+    ).resolves.toEqual({
+      id: "authorized_account_123",
+      serviceLevel: "SEPA"
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://pay.oxlin.io/v1/authorized_accounts",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer bearer-token",
+          Accept: "application/hal+json, application/json",
+          "Content-Type": "application/hal+json",
+          "X-FWD-Request-ID": expect.any(String)
+        })
+      })
+    );
+  });
+
+  it("retries authorized account creation with application/json when hal+json is rejected", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(null, {
+          status: 415,
+          headers: {
+            "content-type": "application/json",
+            "X-FWD-Request-ID": "linxo-request-id-1"
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: "authorized_account_123",
+            service_level: "FULL"
+          }),
+          {
+            status: 201,
+            headers: {
+              "content-type": "application/json",
+              "X-FWD-Request-ID": "linxo-request-id-2"
+            }
+          }
+        )
+      );
+
+    const client = new LinxoPaymentsClient({
+      fetch: fetchMock,
+      config,
+      tokenService: createTokenService()
+    });
+
+    await expect(
+      client.createAuthorizedAccount({
+        identification: {
+          schema: "SEPA",
+          iban: "FR7630006000011234567890189",
+          name: "Linxo Team"
+        },
+        entity: {
+          type: "COMPANY",
+          company_name: "World Corp",
+          national_identification: "439826121",
+          country: "FR"
+        }
+      })
+    ).resolves.toEqual({
+      id: "authorized_account_123",
+      serviceLevel: "FULL"
+    });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://pay.oxlin.io/v1/authorized_accounts",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          "Content-Type": "application/hal+json"
+        })
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://pay.oxlin.io/v1/authorized_accounts",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          "Content-Type": "application/json"
+        })
+      })
+    );
+  });
+
   it("sanitizes alias creation errors so they do not expose secrets", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(
@@ -186,6 +330,53 @@ describe("LinxoPaymentsClient", () => {
       status: 400,
       code: "BAD_PARAMETER",
       description: "IBAN [redacted-iban] is invalid",
+      requestId: "linxo-request-id"
+    });
+  });
+
+  it("sanitizes authorized account creation errors so they do not expose IBAN or KYC values", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: "BAD_PARAMETER",
+          error_description:
+            "IBAN FR7630006000011234567890189 is invalid for Jane Doe"
+        }),
+        {
+          status: 400,
+          headers: {
+            "content-type": "application/json",
+            "X-FWD-Request-ID": "linxo-request-id"
+          }
+        }
+      )
+    );
+
+    const client = new LinxoPaymentsClient({
+      fetch: fetchMock,
+      config,
+      tokenService: createTokenService()
+    });
+
+    await expect(
+      client.createAuthorizedAccount({
+        identification: {
+          schema: "SEPA",
+          iban: "FR7630006000011234567890189",
+          name: "Linxo Team"
+        },
+        entity: {
+          type: "COMPANY",
+          company_name: "World Corp",
+          national_identification: "439826121",
+          country: "FR"
+        }
+      })
+    ).rejects.toMatchObject({
+      name: "LinxoPaymentsApiError",
+      status: 400,
+      code: "BAD_PARAMETER",
+      description: "IBAN [redacted-iban] is invalid for Jane Doe",
       requestId: "linxo-request-id"
     });
   });

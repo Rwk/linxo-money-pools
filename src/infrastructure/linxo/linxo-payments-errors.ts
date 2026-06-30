@@ -55,3 +55,10 @@ export class LinxoPaymentsNetworkError extends Error {
     this.name = "LinxoPaymentsNetworkError";
   }
 }
+
+export class LinxoPaymentsResponseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "LinxoPaymentsResponseError";
+  }
+}

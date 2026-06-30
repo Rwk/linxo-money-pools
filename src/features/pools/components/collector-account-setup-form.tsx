@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { isPoolReadyForPayments } from "@/domain/pool/pool.payments";
 import { setupCollectorAccountAction } from "@/features/pools/actions/setup-collector-account";
@@ -28,6 +28,7 @@ export function CollectorAccountSetupForm(props: {
     initialSetupCollectorAccountActionState
   );
   const safeState = normalizeSetupCollectorAccountFormState(state);
+  const [entityType, setEntityType] = useState(safeState.values.entityType);
   const readyForPayments = isPoolReadyForPayments({
     status: props.poolStatus,
     collectorAliasId: props.collectorAliasId
@@ -43,7 +44,9 @@ export function CollectorAccountSetupForm(props: {
           <p className="text-sm leading-6 text-slate-700">
             Configure the account that receives contributions directly through
             Linxo Payments. The IBAN is sent server-side to Linxo only and is
-            never stored locally.
+            never stored locally. The KYC details below are sent securely to
+            Linxo to register the collector account and are not stored by this
+            app.
           </p>
         </div>
 
@@ -65,8 +68,8 @@ export function CollectorAccountSetupForm(props: {
                 Collector account not configured yet.
               </p>
               <p className="mt-2">
-                Contributors cannot pay this pool until a Linxo collector alias
-                is created for it.
+                Contributors cannot pay this pool until Linxo returns the safe
+                collector references required for this pool.
               </p>
             </div>
 
@@ -115,10 +118,220 @@ export function CollectorAccountSetupForm(props: {
                 <FieldError message={safeState.fieldErrors.iban} />
               </div>
 
+              <div className="space-y-2">
+                <label
+                  className="text-sm font-semibold text-slate-900"
+                  htmlFor="entityType"
+                >
+                  Entity type
+                </label>
+                <select
+                  className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                  defaultValue={safeState.values.entityType}
+                  id="entityType"
+                  name="entityType"
+                  onChange={(event) =>
+                    setEntityType(
+                      event.target.value as "NATURAL_PERSON" | "COMPANY"
+                    )
+                  }
+                  required
+                >
+                  <option value="NATURAL_PERSON">Natural person</option>
+                  <option value="COMPANY">Company</option>
+                </select>
+                <FieldError message={safeState.fieldErrors.entityType} />
+              </div>
+
+              {entityType === "NATURAL_PERSON" ? (
+                <section className="space-y-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-semibold text-slate-950">
+                      Natural person details
+                    </h3>
+                    <p className="text-sm leading-6 text-slate-700">
+                      These details are required by Linxo to register the
+                      collector account.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label
+                        className="text-sm font-semibold text-slate-900"
+                        htmlFor="firstName"
+                      >
+                        First name
+                      </label>
+                      <input
+                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                        defaultValue={safeState.values.firstName}
+                        id="firstName"
+                        maxLength={120}
+                        name="firstName"
+                        placeholder="Guy"
+                        required
+                      />
+                      <FieldError message={safeState.fieldErrors.firstName} />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label
+                        className="text-sm font-semibold text-slate-900"
+                        htmlFor="surname"
+                      >
+                        Surname
+                      </label>
+                      <input
+                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                        defaultValue={safeState.values.surname}
+                        id="surname"
+                        maxLength={120}
+                        name="surname"
+                        placeholder="Mauve"
+                        required
+                      />
+                      <FieldError message={safeState.fieldErrors.surname} />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-3">
+                    <div className="space-y-2">
+                      <label
+                        className="text-sm font-semibold text-slate-900"
+                        htmlFor="birthDate"
+                      >
+                        Birth date
+                      </label>
+                      <input
+                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                        defaultValue={safeState.values.birthDate}
+                        id="birthDate"
+                        name="birthDate"
+                        required
+                        type="date"
+                      />
+                      <FieldError message={safeState.fieldErrors.birthDate} />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label
+                        className="text-sm font-semibold text-slate-900"
+                        htmlFor="birthCity"
+                      >
+                        Birth city
+                      </label>
+                      <input
+                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                        defaultValue={safeState.values.birthCity}
+                        id="birthCity"
+                        maxLength={120}
+                        name="birthCity"
+                        placeholder="Paris"
+                        required
+                      />
+                      <FieldError message={safeState.fieldErrors.birthCity} />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label
+                        className="text-sm font-semibold text-slate-900"
+                        htmlFor="birthCountry"
+                      >
+                        Birth country
+                      </label>
+                      <input
+                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm uppercase tracking-[0.08em] text-slate-950 outline-none transition focus:border-slate-400"
+                        defaultValue={safeState.values.birthCountry}
+                        id="birthCountry"
+                        maxLength={2}
+                        name="birthCountry"
+                        placeholder="FR"
+                        required
+                      />
+                      <FieldError message={safeState.fieldErrors.birthCountry} />
+                    </div>
+                  </div>
+                </section>
+              ) : (
+                <section className="space-y-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-semibold text-slate-950">
+                      Company details
+                    </h3>
+                    <p className="text-sm leading-6 text-slate-700">
+                      These details are required by Linxo to register the
+                      collector account.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label
+                      className="text-sm font-semibold text-slate-900"
+                      htmlFor="companyName"
+                    >
+                      Company name
+                    </label>
+                    <input
+                      className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                      defaultValue={safeState.values.companyName}
+                      id="companyName"
+                      maxLength={160}
+                      name="companyName"
+                      placeholder="World Corp"
+                      required
+                    />
+                    <FieldError message={safeState.fieldErrors.companyName} />
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label
+                        className="text-sm font-semibold text-slate-900"
+                        htmlFor="nationalIdentification"
+                      >
+                        National identification
+                      </label>
+                      <input
+                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                        defaultValue={safeState.values.nationalIdentification}
+                        id="nationalIdentification"
+                        maxLength={120}
+                        name="nationalIdentification"
+                        placeholder="439826121"
+                        required
+                      />
+                      <FieldError
+                        message={safeState.fieldErrors.nationalIdentification}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label
+                        className="text-sm font-semibold text-slate-900"
+                        htmlFor="companyCountry"
+                      >
+                        Country
+                      </label>
+                      <input
+                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm uppercase tracking-[0.08em] text-slate-950 outline-none transition focus:border-slate-400"
+                        defaultValue={safeState.values.companyCountry}
+                        id="companyCountry"
+                        maxLength={2}
+                        name="companyCountry"
+                        placeholder="FR"
+                        required
+                      />
+                      <FieldError message={safeState.fieldErrors.companyCountry} />
+                    </div>
+                  </div>
+                </section>
+              )}
+
               <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-700">
-                Only the Linxo alias id is stored on the pool. IBAN, BIC,
-                account number, and beneficiary KYC data are not stored in the
-                local database.
+                Only safe Linxo references are stored on the pool. IBAN, BIC,
+                account number, birth data, and company or natural person KYC
+                details are not stored in the local database.
               </div>
 
               <Button disabled={isPending} type="submit">

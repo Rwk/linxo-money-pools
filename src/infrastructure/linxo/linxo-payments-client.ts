@@ -8,6 +8,8 @@ import {
   LinxoPaymentsNetworkError
 } from "@/infrastructure/linxo/linxo-payments-errors";
 import type {
+  LinxoCreateAuthorizedAccountRequest,
+  LinxoCreateAuthorizedAccountResponse,
   LinxoCreateAliasRequest,
   LinxoCreateAliasResponse,
   LinxoCreateOrderRequest,
@@ -27,11 +29,18 @@ type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string
 async function readJsonSafely<T>(response: Response): Promise<T | null> {
   const contentType = response.headers.get("content-type") ?? "";
 
-  if (!contentType.includes("application/json")) {
+  if (
+    !contentType.includes("application/json") &&
+    !contentType.includes("application/hal+json")
+  ) {
     return null;
   }
 
-  return (await response.json()) as T;
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
 }
 
 function buildUrl(baseUrl: string, path: string): string {
@@ -94,6 +103,90 @@ export class LinxoPaymentsClient {
       path: "/v1/orders",
       body: input
     });
+  }
+
+  async createAuthorizedAccount(input: {
+    identification: {
+      schema: "SEPA";
+      iban: string;
+      name: string;
+    };
+    entity:
+      | {
+          type: "NATURAL_PERSON";
+          firstname: string;
+          surname: string;
+          birth_date: string;
+          birth_city: string;
+          birth_country: string;
+        }
+      | {
+          type: "COMPANY";
+          company_name: string;
+          national_identification: string;
+          country: string;
+        };
+  }): Promise<{
+    id: string;
+    serviceLevel?: string;
+  }> {
+    const body: LinxoCreateAuthorizedAccountRequest = {
+      identification: input.identification,
+      entity: input.entity
+    };
+
+    try {
+      const response = await this.requestAuthorizedAccount(body);
+
+      return {
+        id: response.id ?? "",
+        serviceLevel: response.service_level
+      };
+    } catch (error) {
+      if (error instanceof LinxoPaymentsApiError) {
+        throw new LinxoPaymentsApiError({
+          message: "Linxo Payments authorized account creation failed.",
+          status: error.status,
+          code: error.code,
+          description: sanitizeLinxoErrorDescription(error.description),
+          requestId: error.requestId
+        });
+      }
+
+      if (error instanceof LinxoPaymentsNetworkError) {
+        throw new LinxoPaymentsNetworkError(
+          "Failed to reach Linxo Payments authorized account endpoint."
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  private async requestAuthorizedAccount(
+    body: LinxoCreateAuthorizedAccountRequest
+  ): Promise<LinxoCreateAuthorizedAccountResponse> {
+    try {
+      return await this.requestJson<LinxoCreateAuthorizedAccountResponse>({
+        method: "POST",
+        path: "/v1/authorized_accounts",
+        body,
+        accept: "application/hal+json, application/json",
+        contentType: "application/hal+json"
+      });
+    } catch (error) {
+      if (!(error instanceof LinxoPaymentsApiError) || error.status !== 415) {
+        throw error;
+      }
+
+      return this.requestJson<LinxoCreateAuthorizedAccountResponse>({
+        method: "POST",
+        path: "/v1/authorized_accounts",
+        body,
+        accept: "application/hal+json, application/json",
+        contentType: "application/json"
+      });
+    }
   }
 
   async createAccountAlias(input: {
@@ -173,6 +266,8 @@ export class LinxoPaymentsClient {
     method: "GET" | "POST";
     path: string;
     body?: JsonValue;
+    accept?: string;
+    contentType?: string;
   }): Promise<T> {
     const accessToken = await this.tokenService.getAccessToken();
     const requestId = randomUUID();
@@ -184,8 +279,8 @@ export class LinxoPaymentsClient {
         method: input.method,
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          "Content-Type": input.contentType ?? "application/json",
+          Accept: input.accept ?? "application/json",
           "X-FWD-Request-ID": requestId
         },
         body: input.body === undefined ? undefined : JSON.stringify(input.body),

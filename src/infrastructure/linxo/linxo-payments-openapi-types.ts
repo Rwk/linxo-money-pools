@@ -39,3 +39,31 @@ export type LinxoCreateAliasRequest =
 
 export type LinxoCreateAliasResponse =
   operations["postAlias"]["responses"][201]["content"]["application/json"];
+
+export type LinxoCreateAuthorizedAccountRequest = {
+  identification: {
+    schema: "SEPA";
+    iban: string;
+    name: string;
+  };
+  entity:
+    | {
+        type: "NATURAL_PERSON";
+        firstname: string;
+        surname: string;
+        birth_date: string;
+        birth_city: string;
+        birth_country: components["schemas"]["CountryCode"];
+      }
+    | {
+        type: "COMPANY";
+        company_name: string;
+        national_identification: string;
+        country: components["schemas"]["CountryCodeCompany"];
+      };
+};
+
+export type LinxoCreateAuthorizedAccountResponse = {
+  id?: components["schemas"]["AuthorizedAccountId"];
+  service_level?: components["schemas"]["ServiceLevel"];
+};

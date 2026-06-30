@@ -19,7 +19,8 @@ import { initialSetupCollectorAccountActionState } from "@/features/pools/forms/
 import { setupCollectorAccountForPool } from "@/features/pools/services/setup-collector-account-service";
 import {
   LinxoPaymentsApiError,
-  LinxoPaymentsConfigurationError
+  LinxoPaymentsConfigurationError,
+  LinxoPaymentsResponseError
 } from "@/infrastructure/linxo/linxo-payments-errors";
 import { redirect } from "next/navigation";
 
@@ -39,6 +40,12 @@ describe("setup collector account action", () => {
     formData.set("poolId", "pool_123");
     formData.set("accountHolderName", "Linxo Team");
     formData.set("iban", "FR12");
+    formData.set("entityType", "NATURAL_PERSON");
+    formData.set("firstName", "Jane");
+    formData.set("surname", "Doe");
+    formData.set("birthDate", "1990-01-15");
+    formData.set("birthCity", "Paris");
+    formData.set("birthCountry", "FR");
 
     const result = await setupCollectorAccountAction(
       initialSetupCollectorAccountActionState,
@@ -47,7 +54,16 @@ describe("setup collector account action", () => {
 
     expect(result.values).toEqual({
       accountHolderName: "Linxo Team",
-      iban: ""
+      iban: "",
+      entityType: "NATURAL_PERSON",
+      firstName: "",
+      surname: "",
+      birthDate: "",
+      birthCity: "",
+      birthCountry: "",
+      companyName: "",
+      nationalIdentification: "",
+      companyCountry: ""
     });
     expect(result.fieldErrors.iban).toBe("Enter a valid IBAN.");
   });
@@ -58,9 +74,16 @@ describe("setup collector account action", () => {
     formData.set("poolId", "pool_123");
     formData.set("accountHolderName", "Linxo Team");
     formData.set("iban", "FR76 3000 6000 0112 3456 7890 189");
+    formData.set("entityType", "NATURAL_PERSON");
+    formData.set("firstName", "Jane");
+    formData.set("surname", "Doe");
+    formData.set("birthDate", "1990-01-15");
+    formData.set("birthCity", "Paris");
+    formData.set("birthCountry", "FR");
 
     vi.mocked(setupCollectorAccountForPool).mockResolvedValue({
       poolId: "pool_123",
+      collectorAuthorizedAccountId: "authorized_account_123",
       collectorAliasId: "alias_123"
     });
     vi.mocked(redirect).mockImplementation(() => {
@@ -80,7 +103,15 @@ describe("setup collector account action", () => {
       creatorId: "user_123",
       userReference: "user_123",
       accountHolderName: "Linxo Team",
-      iban: "FR7630006000011234567890189"
+      iban: "FR7630006000011234567890189",
+      entity: {
+        type: "NATURAL_PERSON",
+        firstname: "Jane",
+        surname: "Doe",
+        birth_date: "1990-01-15",
+        birth_city: "Paris",
+        birth_country: "FR"
+      }
     });
     expect(redirect).toHaveBeenCalledWith("/dashboard/pools/pool_123");
   });
@@ -90,6 +121,10 @@ describe("setup collector account action", () => {
     formData.set("poolId", "pool_123");
     formData.set("accountHolderName", "Linxo Team");
     formData.set("iban", "FR8530003000307599775722N09");
+    formData.set("entityType", "COMPANY");
+    formData.set("companyName", "World Corp");
+    formData.set("nationalIdentification", "439826121");
+    formData.set("companyCountry", "FR");
 
     vi.mocked(setupCollectorAccountForPool).mockRejectedValue(
       new LinxoPaymentsConfigurationError("missing credentials")
@@ -111,6 +146,10 @@ describe("setup collector account action", () => {
     formData.set("poolId", "pool_123");
     formData.set("accountHolderName", "Linxo Team");
     formData.set("iban", "FR8530003000307599775722N09");
+    formData.set("entityType", "COMPANY");
+    formData.set("companyName", "World Corp");
+    formData.set("nationalIdentification", "439826121");
+    formData.set("companyCountry", "FR");
 
     vi.mocked(setupCollectorAccountForPool).mockRejectedValue(
       new LinxoPaymentsApiError({
@@ -131,5 +170,61 @@ describe("setup collector account action", () => {
       "Linxo rejected the collector account details. userReference: The field size is exceeded Request ID: req_123."
     );
     expect(result.values.iban).toBe("");
+  });
+
+  it("returns a safe message when Linxo does not return the required collector reference", async () => {
+    const formData = new FormData();
+    formData.set("poolId", "pool_123");
+    formData.set("accountHolderName", "Linxo Team");
+    formData.set("iban", "FR8530003000307599775722N09");
+    formData.set("entityType", "COMPANY");
+    formData.set("companyName", "World Corp");
+    formData.set("nationalIdentification", "439826121");
+    formData.set("companyCountry", "FR");
+
+    vi.mocked(setupCollectorAccountForPool).mockRejectedValue(
+      new LinxoPaymentsResponseError("missing id")
+    );
+
+    const result = await setupCollectorAccountAction(
+      initialSetupCollectorAccountActionState,
+      formData
+    );
+
+    expect(result.formError).toBe(
+      "Linxo Payments did not return the collector reference required to configure this pool."
+    );
+    expect(result.values.companyName).toBe("");
+    expect(result.values.nationalIdentification).toBe("");
+  });
+
+  it("returns a documentation hint when Linxo rejects test data samples", async () => {
+    const formData = new FormData();
+    formData.set("poolId", "pool_123");
+    formData.set("accountHolderName", "Linxo Team");
+    formData.set("iban", "FR8530003000307599775722N09");
+    formData.set("entityType", "COMPANY");
+    formData.set("companyName", "Acme");
+    formData.set("nationalIdentification", "123456789");
+    formData.set("companyCountry", "FR");
+
+    vi.mocked(setupCollectorAccountForPool).mockRejectedValue(
+      new LinxoPaymentsApiError({
+        message: "failed",
+        status: 400,
+        code: "FORMAT_ERROR",
+        description: "Incorrect sandbox data",
+        requestId: "req_456"
+      })
+    );
+
+    const result = await setupCollectorAccountAction(
+      initialSetupCollectorAccountActionState,
+      formData
+    );
+
+    expect(result.formError).toBe(
+      "Linxo rejected the collector account test data. Check the authorized account request samples in the documentation. Request ID: req_456."
+    );
   });
 });

@@ -20,7 +20,8 @@
 - Do not store collector IBAN locally.
 - Do not store payer bank account details.
 - Do not store beneficiary KYC data locally.
-- Store only the Linxo collector alias id needed for future payments.
+- Store only safe Linxo references such as `collectorAuthorizedAccountId` and
+  `collectorAliasId`.
 
 ## Database and Supabase
 

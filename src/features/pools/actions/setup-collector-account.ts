@@ -13,16 +13,35 @@ import {
   LinxoPaymentsApiError,
   LinxoPaymentsConfigurationError,
   LinxoPaymentsNetworkError,
+  LinxoPaymentsResponseError,
   LinxoPaymentsTokenError
 } from "@/infrastructure/linxo/linxo-payments-errors";
 
 function sanitizeValues(values: {
   accountHolderName: string;
   iban: string;
+  entityType: "NATURAL_PERSON" | "COMPANY";
+  firstName: string;
+  surname: string;
+  birthDate: string;
+  birthCity: string;
+  birthCountry: string;
+  companyName: string;
+  nationalIdentification: string;
+  companyCountry: string;
 }) {
   return {
     accountHolderName: values.accountHolderName,
-    iban: ""
+    iban: "",
+    entityType: values.entityType,
+    firstName: "",
+    surname: "",
+    birthDate: "",
+    birthCity: "",
+    birthCountry: "",
+    companyName: "",
+    nationalIdentification: "",
+    companyCountry: ""
   };
 }
 
@@ -98,7 +117,17 @@ function getSetupCollectorAccountErrorMessage(error: unknown): string {
     return "Linxo Payments could not be reached from the server.";
   }
 
+  if (error instanceof LinxoPaymentsResponseError) {
+    return "Linxo Payments did not return the collector reference required to configure this pool.";
+  }
+
   if (error instanceof LinxoPaymentsApiError) {
+    if (error.description === "Incorrect sandbox data") {
+      const requestId = error.requestId ? ` Request ID: ${error.requestId}.` : "";
+
+      return `Linxo rejected the collector account test data. Check the authorized account request samples in the documentation.${requestId}`;
+    }
+
     const detail = error.description ? ` ${error.description}` : "";
     const requestId = error.requestId ? ` Request ID: ${error.requestId}.` : "";
 
@@ -132,7 +161,23 @@ export async function setupCollectorAccountAction(
       creatorId: user.id,
       userReference,
       accountHolderName: validation.data.accountHolderName,
-      iban: validation.data.iban
+      iban: validation.data.iban,
+      entity:
+        validation.data.entityType === "NATURAL_PERSON"
+          ? {
+              type: "NATURAL_PERSON",
+              firstname: validation.data.firstName,
+              surname: validation.data.surname,
+              birth_date: validation.data.birthDate,
+              birth_city: validation.data.birthCity,
+              birth_country: validation.data.birthCountry
+            }
+          : {
+              type: "COMPANY",
+              company_name: validation.data.companyName,
+              national_identification: validation.data.nationalIdentification,
+              country: validation.data.companyCountry
+            }
     });
   } catch (error) {
     logSetupCollectorAccountFailure({
