@@ -249,7 +249,7 @@ describe("refreshPoolContributionStatusesAction", () => {
       failedCount: 1
     });
     expect(result.successMessage).toBe(
-      "2 contributions checked, 0 updated, 1 failed."
+      "2 contributions checked, 0 updated, 1 unchanged, 1 failed."
     );
   });
 });

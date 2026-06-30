@@ -21,18 +21,20 @@ export default async function HomePage() {
         <div className="space-y-6">
           <div className="space-y-3">
             <span className="inline-flex rounded-full bg-white/70 px-3 py-1 text-xs font-medium tracking-[0.18em] text-[var(--muted)] uppercase">
-              Coming soon
+              Internal MVP
             </span>
             <h1 className="max-w-md text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-              Create and join money pools with confidence.
+              Create trusted money pools for shared gifts.
             </h1>
             <p className="max-w-lg text-base leading-7 text-[var(--muted)] sm:text-lg">
-              This service will let Linxo employees create and manage internal
-              money pools, while participants join through private links.
+              Linxo employees can create and manage a pool, then share a
+              private link so contributors can send money directly to the
+              collector through their bank.
             </p>
             <p className="max-w-lg text-sm leading-6 text-[var(--muted)]">
-              Event-themed pools will support birthdays, weddings, farewells,
-              births, and more.
+              This product helps organize contributions. It does not hold funds
+              in escrow, and a contribution is only confirmed after Linxo status
+              updates.
             </p>
           </div>
 
@@ -54,7 +56,7 @@ export default async function HomePage() {
                   className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/70 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"
                   href="/sign-in"
                 >
-                  Sign in to create a pool
+                  Sign in to manage pools
                 </Link>
               </>
             )}

@@ -29,7 +29,7 @@ export function RefreshPoolContributionStatusesForm({
           </h2>
           <p className="max-w-3xl text-sm leading-6 text-slate-700">
             Webhooks update statuses automatically. Use this only if a payment
-            seems stuck.
+            still looks stuck or if no webhook update has arrived yet.
           </p>
           {safeState.formError ? (
             <p className="text-sm text-rose-700">{safeState.formError}</p>

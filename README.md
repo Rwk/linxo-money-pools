@@ -1,32 +1,77 @@
 # Linxo Money Pools
 
-Linxo Money Pools is the initial web application scaffold for an internal service that will let Linxo employees create online money pools and let anyone join them through a private, non-guessable link.
+Linxo Money Pools is an internal MVP that lets Linxo employees create trusted
+money pools and share private links so contributors can send money directly to
+the collector through Linxo Payments.
 
-## What this project is
+The product is designed for demos, product validation, and operational
+readiness around the core contribution flow. It is not an escrow service and it
+does not hold contributor funds in the application.
 
-- A clean and minimal Next.js foundation using the App Router.
-- A place to build future money pool workflows powered by Linxo Payments.
-- A small, testable codebase with strict TypeScript and unit tests.
-- A Prisma persistence layer targeting PostgreSQL.
+## Product flow
 
-## What this project is not
+1. A Linxo employee signs in with a `@linxo.com` Google account.
+2. The employee creates a money pool and configures the collector account.
+3. The app creates a private public URL based on a non-guessable slug.
+4. A contributor opens the public page and starts a contribution.
+5. The app creates a local contribution, creates a Linxo order, and shows a
+   payment handoff page with a direct link and QR code.
+6. The contributor authorizes the transfer with their bank.
+7. Webhooks and manual refresh keep local statuses aligned with Linxo.
 
-- It is not connected to Linxo Payments yet.
-- It does not include pool creation or Linxo Payments production flows yet.
-- It does not store any real credential or secret.
+## Stack
 
-## Planned stack
-
-- Next.js
+- Next.js App Router
 - TypeScript in strict mode
-- Tailwind CSS
-- Prisma
-- PostgreSQL
+- Prisma 7
+- PostgreSQL / Supabase
+- Auth.js with Google OAuth
 - Vitest
 - ESLint
-- Prettier
 
-## Run locally
+## Security model
+
+- Only authenticated `@linxo.com` users can create and manage pools.
+- Creators can access only their own management routes and actions.
+- Public pool pages are accessible only through non-guessable links.
+- Linxo client credentials stay server-side.
+- Webhooks are protected with `LINXO_WEBHOOK_SECRET`.
+- The app does not store IBAN locally, payer bank account details, or Linxo
+  credentials.
+- Supabase / PostgreSQL access is server-side, with RLS enabled on application
+  tables.
+
+More details are documented in [docs/security.md](docs/security.md).
+
+## Implemented MVP
+
+- Google sign-in restricted to `@linxo.com`
+- Prisma persistence on PostgreSQL / Supabase
+- Pool creation
+- Pool editing
+- Pool close / reopen lifecycle
+- Collector account setup through Linxo alias creation
+- Public contribution form
+- Linxo order creation
+- Short payment URL generation with `ask_for_alias=false`
+- Payment handoff page with QR code and direct link
+- Return-page status synchronization
+- Webhook-based asynchronous status synchronization
+- Manual status refresh from the creator dashboard
+- Public / private contribution status display
+
+## Intentionally out of scope
+
+- Refunds
+- Final transfer flow
+- Objective / gauge amount
+- Image upload
+- Polling / cron / WebSockets beyond the existing handoff page polling
+- Admin-wide pool management
+- Collector account editing after setup
+- Local storage of IBAN or payer bank account details
+
+## Local setup
 
 1. Install dependencies:
 
@@ -34,108 +79,78 @@ Linxo Money Pools is the initial web application scaffold for an internal servic
    npm install
    ```
 
-2. Copy the environment template if needed:
+2. Create an untracked `.env.local` file with the required variables.
+
+3. Generate the Prisma client:
 
    ```bash
-   cp .env.example .env.local
+   npm run db:generate
    ```
 
-3. Start the development server:
+4. Apply the database migrations:
+
+   ```bash
+   npm run db:migrate:dev
+   ```
+
+5. Start the app:
 
    ```bash
    npm run dev
    ```
 
-4. To test Google sign-in locally, add placeholder values first, then replace them with real Google OAuth credentials in your untracked `.env.local`:
+6. For mobile return flow and webhook testing, expose the app through HTTPS
+   with ngrok or deploy it to a public environment.
 
-   ```bash
-   AUTH_SECRET=replace-with-a-local-secret
-   AUTH_GOOGLE_ID=replace-with-your-google-client-id
-   AUTH_GOOGLE_SECRET=replace-with-your-google-client-secret
-   NEXTAUTH_URL=http://localhost:3000
-   ```
+## Environment variables
 
-5. Configure PostgreSQL before testing Google authentication end-to-end.
-   Setup steps and migration commands are documented in [docs/database.md](docs/database.md).
+Required server-side variables:
 
-## Run checks
+- `DATABASE_URL`
+- `AUTH_SECRET`
+- `AUTH_GOOGLE_ID`
+- `AUTH_GOOGLE_SECRET`
+- `NEXTAUTH_URL`
+- `LINXO_PAYMENTS_BASE_URL`
+- `LINXO_PAYMENTS_CLIENT_ID`
+- `LINXO_PAYMENTS_CLIENT_SECRET`
+- `LINXO_PAYMENTS_ENVIRONMENT`
+- `LINXO_WEBHOOK_SECRET`
 
-- Run the test suite:
+Optional public variable:
 
-  ```bash
-  npm run test
-  ```
+- `NEXT_PUBLIC_APP_NAME`
 
-- Run the linter:
+Never expose server-side secrets to the browser and never commit real values.
 
-  ```bash
-  npm run lint
-  ```
+See:
 
-- Validate the Prisma schema:
+- [docs/database.md](docs/database.md)
+- [docs/security.md](docs/security.md)
+- [docs/demo-guide.md](docs/demo-guide.md)
 
-  ```bash
-  npm run db:validate
-  ```
+## Quality checks
 
-- Generate the Prisma client:
-
-  ```bash
-  npm run db:generate
-  ```
-
-- Open Prisma Studio:
-
-  ```bash
-  npm run db:studio
-  ```
-
-- Format the codebase:
-
-  ```bash
-  npm run format
-  ```
-
-## Security note
-
-Production credentials must never be committed to the repository. Only placeholder values belong in tracked environment files such as `.env.example`.
-
-- Never commit `.env.local`.
-- Rotate credentials immediately if they are accidentally exposed.
-- This public repository does not include deployable production configuration.
-
-## Database note
-
-The project uses Prisma 7 with PostgreSQL, and Supabase is the intended provider. Prisma CLI reads the database URL from `prisma.config.ts`, which in turn reads `process.env.DATABASE_URL`.
-
-Auth.js depends on PostgreSQL because users, accounts, and sessions are stored through the Prisma Adapter. Setup details are documented in [docs/database.md](docs/database.md).
-
-## Authentication
-
-- Authentication uses Auth.js with the Prisma adapter and Google OAuth.
-- Only users with a valid `@linxo.com` Google account can sign in.
-- The public home page stays accessible without authentication.
-- The dashboard at `/dashboard` is protected server-side.
-
-## Money pools
-
-- Authenticated Linxo employees can create and manage their own money pools.
-- Public pool pages are accessible only through a non-guessable slug link.
-- Online payments are intentionally not implemented yet.
-
-Product scope notes are documented in [docs/pools.md](docs/pools.md).
+```bash
+npm run lint
+npm run test
+npm run build
+npm run db:validate
+npm run db:generate
+```
 
 ## Documentation
 
-- Money pool scope and product notes: [docs/pools.md](docs/pools.md)
-- Database setup and Prisma notes: [docs/database.md](docs/database.md)
-- Linxo Payments OpenAPI type generation: [docs/linxo-payments.md](docs/linxo-payments.md)
-- Linxo Payments webhook setup: [docs/linxo-webhooks.md](docs/linxo-webhooks.md)
-
-## Manual Google OAuth setup
-
-1. Create a Google OAuth client in Google Cloud for a web application.
-2. Add `http://localhost:3000/api/auth/callback/google` as an authorized redirect URI for local development.
-3. Add your deployed `/api/auth/callback/google` URL for each non-local environment.
-4. Put the client ID and client secret in `.env.local` as `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`.
-5. Set `AUTH_SECRET` to a strong random value and keep it private.
+- Documentation index: [docs/README.md](docs/README.md)
+- Authentication: [docs/authentication.md](docs/authentication.md)
+- Database and environment setup: [docs/database.md](docs/database.md)
+- Pool product scope: [docs/pools.md](docs/pools.md)
+- Pool management: [docs/pool-management.md](docs/pool-management.md)
+- Contributions: [docs/contributions.md](docs/contributions.md)
+- Contribution statuses: [docs/contribution-statuses.md](docs/contribution-statuses.md)
+- Payment handoff: [docs/payment-handoff.md](docs/payment-handoff.md)
+- Linxo Payments integration: [docs/linxo-payments.md](docs/linxo-payments.md)
+- Linxo webhooks: [docs/linxo-webhooks.md](docs/linxo-webhooks.md)
+- Manual status refresh: [docs/manual-status-refresh.md](docs/manual-status-refresh.md)
+- Demo guide: [docs/demo-guide.md](docs/demo-guide.md)
+- Security checklist: [docs/security.md](docs/security.md)

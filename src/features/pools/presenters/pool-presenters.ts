@@ -1,4 +1,5 @@
 import { poolThemes } from "@/config/pool-themes";
+import { getCashInStatusLabel } from "@/domain/payment/cash-in-status";
 import { computePoolTotals } from "@/domain/pool/pool.totals";
 import {
   getContributionDisplayStatusLabel,
@@ -90,10 +91,6 @@ function formatStatusLabel(status: string): string {
   return status === "CLOSED" ? "Closed" : "Open";
 }
 
-function formatCashInStatusLabel(status: string): string {
-  return status.charAt(0) + status.slice(1).toLowerCase().replace(/_/g, " ");
-}
-
 function formatPaymentMethodLabel(paymentMethod: string): string {
   return paymentMethod === "INSTANT" ? "Instant transfer" : "Standard transfer";
 }
@@ -138,7 +135,7 @@ function toPrivateContributionRowViewModel(pool: PoolWithContributions) {
       selectedPaymentMethodLabel: formatPaymentMethodLabel(
         contribution.selectedPaymentMethod
       ),
-      cashInStatusLabel: formatCashInStatusLabel(domainContribution.cashInStatus),
+      cashInStatusLabel: getCashInStatusLabel(domainContribution.cashInStatus),
       rawStatuses: formatRawStatuses({
         linxoOrderStatus: domainContribution.linxoOrderStatus,
         linxoPaymentStatus: domainContribution.linxoPaymentStatus,

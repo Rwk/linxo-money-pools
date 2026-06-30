@@ -36,8 +36,9 @@ export default async function DashboardPage() {
                 Your money pools
               </h2>
               <p className="text-sm leading-6 text-[var(--muted)]">
-                Create and manage pools that are visible only through a private
-                public link.
+                Create and manage pools shared through private links. Verified
+                contributions go directly to the collector account configured
+                for each pool.
               </p>
             </div>
             <Link
@@ -54,8 +55,8 @@ export default async function DashboardPage() {
                 You have not created a money pool yet.
               </p>
               <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                Start with a title, event type, closing date, and collector
-                display name. Online contributions will come in a later step.
+                Start with the pool details, then configure the collector
+                account so contributors can pay from the public page.
               </p>
             </div>
           ) : (

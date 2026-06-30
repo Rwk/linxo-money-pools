@@ -32,12 +32,12 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
             Shared by private link
           </span>
           <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-            Public money pool page
+            Contribute to this money pool
           </h1>
           <p className="max-w-3xl text-base leading-7 text-[var(--muted)]">
-            This page is visible to anyone with the link. Contributions are
-            initiated through Linxo Payments and authorized from the payer bank
-            account.
+            Anyone with this private link can contribute. Verified
+            contributions are sent directly to the collector through Linxo
+            Payments and the contributor bank flow.
           </p>
         </div>
 
@@ -47,7 +47,8 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
               This money pool is closed
             </h2>
             <p className="mt-3 text-sm leading-6 text-amber-900">
-              New contributions are no longer accepted for this pool.
+              New contributions are no longer accepted for this pool. Existing
+              visible contributions stay visible.
             </p>
           </section>
         ) : isOpenForContributions ? (

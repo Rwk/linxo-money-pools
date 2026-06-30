@@ -97,10 +97,10 @@ describe("PaymentHandoffStatus", () => {
       await Promise.resolve();
     });
 
-    expect(screen.queryByText("Contribution confirmed.")).toBeNull();
+    expect(screen.queryByText("Your contribution has been confirmed.")).toBeNull();
     expect(
       screen.getByText(
-        "Payment status is still pending. Your contribution is not confirmed until the local status changes."
+        "The contribution is still in progress. It is not confirmed until the local status updates."
       )
     ).toBeTruthy();
   });

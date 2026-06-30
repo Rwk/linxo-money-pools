@@ -27,3 +27,6 @@ delivery is delayed, missed, or hard to observe during local or ngrok testing.
 
 Use this action only when a contribution looks stuck. Webhooks should remain the
 normal asynchronous update path.
+
+If no eligible contribution changed, the UI returns a readable summary instead
+of claiming success.

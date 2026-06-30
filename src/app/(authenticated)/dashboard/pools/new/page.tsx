@@ -18,8 +18,8 @@ export default async function NewPoolPage() {
               Create a money pool
             </h1>
             <p className="text-base leading-7 text-[var(--muted)]">
-              This first product step lets Linxo employees prepare a shareable
-              pool page before online contributions are connected.
+              Set up the pool details first. Contributors will later use the
+              public link to pay the collector directly from their bank.
             </p>
           </div>
 

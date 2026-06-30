@@ -76,7 +76,7 @@ describe("PaymentHandoffPageContent", () => {
     ).toBeNull();
     expect(
       screen.getByText(
-        "The payment QR code is not available for this contribution."
+        "The payment link is currently unavailable for this contribution. It has not been confirmed."
       )
     ).toBeTruthy();
   });

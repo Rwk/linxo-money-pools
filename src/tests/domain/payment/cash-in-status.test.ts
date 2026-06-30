@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { getCashInStatus } from "@/domain/payment/cash-in-status";
+import {
+  getCashInStatus,
+  getCashInStatusLabel
+} from "@/domain/payment/cash-in-status";
 
 describe("getCashInStatus", () => {
   it("returns pending for a new order", () => {
@@ -78,5 +81,14 @@ describe("getCashInStatus", () => {
         linxoSettlementStatus: "MANUALLY_SETTLED"
       })
     ).toBe("COLLECTED");
+  });
+
+  it("returns product-friendly labels for each status", () => {
+    expect(getCashInStatusLabel("PENDING")).toBe("Pending");
+    expect(getCashInStatusLabel("EXECUTED")).toBe("Executed");
+    expect(getCashInStatusLabel("COLLECTED")).toBe("Collected");
+    expect(getCashInStatusLabel("REJECTED")).toBe("Rejected");
+    expect(getCashInStatusLabel("CANCELLED")).toBe("Cancelled");
+    expect(getCashInStatusLabel("EXPIRED")).toBe("Expired");
   });
 });

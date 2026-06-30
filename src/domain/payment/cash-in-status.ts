@@ -21,6 +21,23 @@ export type CashInStatusInput = {
   linxoSettlementStatus?: LinxoSettlementStatus;
 };
 
+export function getCashInStatusLabel(status: CashInStatus): string {
+  switch (status) {
+    case "EXECUTED":
+      return "Executed";
+    case "COLLECTED":
+      return "Collected";
+    case "REJECTED":
+      return "Rejected";
+    case "CANCELLED":
+      return "Cancelled";
+    case "EXPIRED":
+      return "Expired";
+    default:
+      return "Pending";
+  }
+}
+
 function isCollectedSettlement(
   settlementStatus?: LinxoSettlementStatus
 ): boolean {

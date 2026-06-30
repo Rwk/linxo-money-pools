@@ -83,9 +83,9 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
           Contribution and payment status
         </h2>
         <p className="mt-3 text-sm leading-6 text-slate-700">
-          Returning from Linxo Payments does not prove that a payment has been
-          executed. Public pages only show confirmed and in-progress
-          contributions.
+          Returning from Linxo Payments does not prove that a transfer
+          succeeded. Public pages show only confirmed and in-progress
+          contributions after local status updates.
         </p>
       </section>
 
@@ -95,9 +95,9 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
             ? "Visible contributions"
             : "Visible contributions"}
         </h2>
-        {pool.visibleContributionCount === 0 ? (
+          {pool.visibleContributionCount === 0 ? (
           <EmptyContributionState message="No confirmed or in-progress contributions are visible yet." />
-        ) : pool.mode === "public" ? (
+          ) : pool.mode === "public" ? (
           <ul className="mt-4 space-y-3">
             {pool.visibleContributions.map((contribution) => (
               <li
@@ -182,7 +182,7 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
             Incomplete or failed contributions
           </h2>
           {pool.incompleteContributionCount === 0 ? (
-            <EmptyContributionState message="No incomplete or failed contributions need attention right now." />
+            <EmptyContributionState message="No pending, failed, or incomplete contributions need attention right now." />
           ) : (
             <ul className="mt-4 space-y-3">
               {pool.incompleteContributions.map((contribution) => (

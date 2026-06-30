@@ -41,9 +41,9 @@ export function CollectorAccountSetupForm(props: {
             Collector account
           </h2>
           <p className="text-sm leading-6 text-slate-700">
-            Configure the bank account that will later receive contributions
-            through Linxo Payments. IBAN is sent server-side to Linxo only and
-            is never stored locally.
+            Configure the account that receives contributions directly through
+            Linxo Payments. The IBAN is sent server-side to Linxo only and is
+            never stored locally.
           </p>
         </div>
 
@@ -54,8 +54,8 @@ export function CollectorAccountSetupForm(props: {
             </p>
             <p className="mt-2">
               {readyForPayments
-                ? "This pool is ready for the future payment integration."
-                : "The collector account is configured, but the pool is not payment-ready while it is closed."}
+                ? "This pool can accept contributions while it stays open."
+                : "The collector account is configured, but contributions stay unavailable while the pool is closed."}
             </p>
           </div>
         ) : (
@@ -65,8 +65,8 @@ export function CollectorAccountSetupForm(props: {
                 Collector account not configured yet.
               </p>
               <p className="mt-2">
-                Contributions cannot be enabled in a future step until a Linxo
-                collector alias is created for this pool.
+                Contributors cannot pay this pool until a Linxo collector alias
+                is created for it.
               </p>
             </div>
 
@@ -117,7 +117,7 @@ export function CollectorAccountSetupForm(props: {
 
               <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-700">
                 Only the Linxo alias id is stored on the pool. IBAN, BIC,
-                account number and beneficiary KYC data are not stored in the
+                account number, and beneficiary KYC data are not stored in the
                 local database.
               </div>
 

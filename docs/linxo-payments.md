@@ -29,7 +29,8 @@ Runtime HTTP calls now have a server-only foundation:
 - Typed Linxo Payments account alias creation for collector account setup
 - Forced `ask_for_alias=false` when shortening order authorization URLs for this product
 
-The application UI still does not create orders or redirect contributors to Linxo yet.
+The application now creates orders, prepares a short payment URL, and routes
+contributors through an internal payment handoff page before they reach Linxo.
 
 ## Collector account setup
 

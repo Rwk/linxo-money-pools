@@ -42,6 +42,10 @@ export default async function PoolManagementPage({
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
               Manage your money pool
             </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+              Review the public-facing details, collector readiness, and
+              contribution statuses for this pool.
+            </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
@@ -60,7 +64,16 @@ export default async function PoolManagementPage({
         </div>
 
         <PoolDetailSections pool={toPrivatePoolDetailViewModel(pool)} />
-        <PoolManagementControls pool={pool} />
+        <PoolManagementControls
+          pool={{
+            id: pool.id,
+            title: pool.title,
+            description: pool.description,
+            eventType: pool.eventType,
+            closingDate: pool.closingDate,
+            status: pool.status
+          }}
+        />
         <RefreshPoolContributionStatusesForm poolId={pool.id} />
         <CollectorAccountSetupForm
           collectorAliasId={pool.collectorAliasId}

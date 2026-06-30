@@ -15,10 +15,11 @@ export function PaymentHandoffPageContent({
               Payment handoff
             </span>
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-              Continue your Linxo payment
+              Continue your contribution
             </h1>
             <p className="text-base leading-7 text-slate-700">
-              Scan this QR code with your phone or continue on this device.
+              Scan the QR code with your phone or continue on this device to
+              open the secure bank authorization flow.
             </p>
           </div>
 

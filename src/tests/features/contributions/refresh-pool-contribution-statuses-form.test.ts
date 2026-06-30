@@ -28,7 +28,7 @@ describe("RefreshPoolContributionStatusesForm", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
-        "Webhooks update statuses automatically. Use this only if a payment seems stuck."
+        "Webhooks update statuses automatically. Use this only if a payment still looks stuck or if no webhook update has arrived yet."
       )
     ).toBeTruthy();
   });

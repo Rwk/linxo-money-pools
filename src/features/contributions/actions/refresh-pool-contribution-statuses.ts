@@ -20,13 +20,17 @@ function getRefreshSuccessMessage(
   summary: RefreshPoolContributionStatusesSummary
 ): string {
   if (summary.checkedCount === 0) {
-    return "No pending contribution needed refresh.";
+    return "No in-progress contribution needed a refresh.";
   }
 
   const segments = [
     `${summary.checkedCount} contribution${summary.checkedCount === 1 ? "" : "s"} checked`,
     `${summary.updatedCount} updated`
   ];
+
+  if (summary.unchangedCount > 0) {
+    segments.push(`${summary.unchangedCount} unchanged`);
+  }
 
   if (summary.failedCount > 0) {
     segments.push(`${summary.failedCount} failed`);

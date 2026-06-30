@@ -42,7 +42,7 @@ export function PoolCard({ pool }: { pool: PoolCardViewModel }) {
             className="block text-sm text-teal-700 underline-offset-4 transition hover:underline"
             href={pool.publicPath}
           >
-            {pool.publicUrl}
+            Share link
           </Link>
         </div>
       </div>

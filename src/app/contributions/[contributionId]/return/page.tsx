@@ -30,7 +30,7 @@ export default async function ContributionReturnPage({
     <main className="px-4 py-10 sm:px-6">
       <section className="mx-auto max-w-3xl rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
         <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
-          Contribution return
+          Contribution status
         </h1>
         <div className={`mt-5 rounded-2xl border p-4 ${toneClassName}`}>
           <p className="text-base font-semibold">{status.heading}</p>
@@ -42,6 +42,10 @@ export default async function ContributionReturnPage({
         <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
           <p>Contribution reference: {contributionId}</p>
           <p className="mt-2">Pool: {status.poolTitle}</p>
+          <p className="mt-2">
+            Returning from Linxo does not confirm success on its own. Final
+            confirmation depends on the latest payment status.
+          </p>
         </div>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link

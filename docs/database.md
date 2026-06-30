@@ -48,9 +48,31 @@ AUTH_SECRET="replace-with-a-generated-secret"
 AUTH_GOOGLE_ID="replace-with-google-client-id"
 AUTH_GOOGLE_SECRET="replace-with-google-client-secret"
 NEXTAUTH_URL="http://localhost:3000"
+LINXO_PAYMENTS_BASE_URL="https://payments-sandbox.example"
+LINXO_PAYMENTS_CLIENT_ID="replace-with-linxo-client-id"
+LINXO_PAYMENTS_CLIENT_SECRET="replace-with-linxo-client-secret"
+LINXO_PAYMENTS_ENVIRONMENT="sandbox"
+LINXO_WEBHOOK_SECRET="replace-with-a-shared-secret"
 ```
 
 `NEXTAUTH_URL` remains useful for local development and deployed callback handling.
+
+Server-only variables:
+
+- `DATABASE_URL`
+- `AUTH_SECRET`
+- `AUTH_GOOGLE_ID`
+- `AUTH_GOOGLE_SECRET`
+- `NEXTAUTH_URL`
+- `LINXO_PAYMENTS_BASE_URL`
+- `LINXO_PAYMENTS_CLIENT_ID`
+- `LINXO_PAYMENTS_CLIENT_SECRET`
+- `LINXO_PAYMENTS_ENVIRONMENT`
+- `LINXO_WEBHOOK_SECRET`
+
+Public variables:
+
+- `NEXT_PUBLIC_APP_NAME`
 
 Production and preview environments must use platform-managed environment variables. Secrets and database URLs must never be committed to the repository.
 

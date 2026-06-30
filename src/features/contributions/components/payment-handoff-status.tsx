@@ -22,28 +22,31 @@ function getStatusCopy(status: PaymentDisplayStatus): {
     case "CONFIRMED":
       return {
         badge: "Confirmed",
-        message: "Contribution confirmed."
+        message: "Your contribution has been confirmed."
       };
     case "FAILED":
       return {
-        badge: "Payment unavailable",
-        message: "Contribution could not be completed."
+        badge: "Needs attention",
+        message:
+          "This contribution could not be confirmed. You can go back to the pool page and try again later if needed."
       };
     case "OPENED":
       return {
         badge: "Waiting for authorization",
-        message: "Payment opened. Waiting for bank authorization..."
+        message:
+          "The payment link was opened. We are waiting for bank authorization or a status update."
       };
     case "WAITING_FOR_SCAN":
       return {
         badge: "Waiting for authorization",
-        message: "Scan this QR code with your phone or continue on this device."
+        message:
+          "Open the secure payment link from your phone or continue on this device."
       };
     default:
       return {
         badge: "Waiting for update",
         message:
-          "Payment status is still pending. Your contribution is not confirmed until the local status changes."
+          "The contribution is still in progress. It is not confirmed until the local status updates."
       };
   }
 }
@@ -165,12 +168,12 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
           <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-6 text-sm leading-6 text-slate-700">
             {canRenderQrCode
               ? "The QR code is hidden while we wait for your bank authorization. You can show it again at any time."
-              : "The payment QR code is not available for this contribution."}
+              : "The payment link is currently unavailable for this contribution. It has not been confirmed."}
           </div>
         )}
         <p className="text-sm leading-6 text-slate-700">
-          You will be redirected to Linxo Payments to authorize the bank
-          transfer.
+          The collector receives the contribution directly once Linxo reports a
+          valid transfer.
         </p>
       </div>
     </div>

@@ -43,6 +43,11 @@ Public pages do not show:
 - failed or incomplete contribution totals
 - raw Linxo technical statuses
 
+Public labels stay intentionally simple:
+
+- `Confirmed`
+- `In progress`
+
 Confirmed amount is the sum of `EXECUTED` and `COLLECTED`.
 
 In-progress amount is based on authorized or submitted contributions, not every
@@ -63,6 +68,15 @@ That section can include:
 Private rows can expose the app-level `cashInStatus` together with raw Linxo
 statuses so the pool creator can understand what happened and contact the
 contributor if needed.
+
+Private status labels use readable app-level wording:
+
+- `Pending`
+- `Executed`
+- `Collected`
+- `Rejected`
+- `Cancelled`
+- `Expired`
 
 ## Return flow
 

@@ -38,8 +38,8 @@ export function PublicContributionForm({
         </h2>
         <p className="max-w-3xl text-sm leading-6 text-slate-700">
           You will be redirected to Linxo Payments and then to your bank to
-          authorize the transfer from your bank account. The money will be sent
-          to {collectorDisplayName}, the collector of this pool.
+          authorize the transfer. Verified contributions are sent directly to
+          {collectorDisplayName}, the collector of this pool.
         </p>
       </div>
 
@@ -179,8 +179,8 @@ export function PublicContributionForm({
         </div>
 
         <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900">
-          Payment status is not final when you return from Linxo. This step only
-          starts the bank authorization flow.
+          Returning from Linxo does not confirm success on its own. This step
+          only starts the bank authorization flow.
         </div>
 
         <Button disabled={isPending} type="submit">

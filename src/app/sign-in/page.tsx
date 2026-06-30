@@ -42,7 +42,8 @@ export default async function SignInPage({
             </h1>
             <p className="text-base leading-7 text-[var(--muted)]">
               Only Linxo employees can create and manage money pools. Use your
-              @linxo.com Google account to continue.
+              @linxo.com Google account to continue. Contributors do not need to
+              sign in to join a pool from its private link.
             </p>
           </div>
 
@@ -54,8 +55,8 @@ export default async function SignInPage({
 
           {!hasGoogleOAuthCredentials ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              Google OAuth credentials are missing. Add placeholder values in
-              your local environment before testing sign-in.
+              Google OAuth credentials are missing for this environment. Add
+              server-side values before testing employee sign-in.
             </div>
           ) : null}
 

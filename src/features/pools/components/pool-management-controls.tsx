@@ -117,7 +117,8 @@ export function PoolManagementControls({
           <h2 className="text-lg font-semibold text-slate-950">Edit pool details</h2>
           <p className="text-sm leading-6 text-slate-700">
             You can update the title, description, event type, and closing date
-            without affecting existing contributions or Linxo orders.
+            without affecting existing contributions, Linxo orders, or the
+            collector account configuration.
           </p>
         </div>
 

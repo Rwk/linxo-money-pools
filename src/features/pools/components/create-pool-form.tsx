@@ -129,8 +129,8 @@ export function CreatePoolForm() {
       </div>
 
       <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900">
-        This step does not collect IBANs, beneficiary KYC details, or online
-        contributions yet. Payment integration will be added later.
+        The collector bank account is configured in a separate step. This form
+        does not store IBAN, payer bank details, or beneficiary KYC data.
       </div>
 
       <button
