@@ -82,6 +82,35 @@ describe("createContributionOrderForPool", () => {
     ).rejects.toBeInstanceOf(ContributionPoolNotReadyError);
   });
 
+  it("rejects pools whose closing date is in the past", async () => {
+    await expect(
+      createContributionOrderForPool(
+        {
+          poolSlug: "team-gift",
+          contributorFirstName: "Jane",
+          contributorLastName: "Doe",
+          contributorEmail: "jane@example.com",
+          amount: "12.00",
+          selectedPaymentMethod: "INSTANT",
+          displayAsAnonymous: false,
+          hideAmount: false
+        },
+        {
+          findPoolBySlug: vi.fn().mockResolvedValue({
+            ...openReadyPool,
+            closingDate: new Date("2026-06-01T00:00:00.000Z")
+          }),
+          createContributionRecord: vi.fn(),
+          updateContributionAfterOrderCreation: vi.fn(),
+          markContributionInitiationFailed: vi.fn(),
+          createOrder: vi.fn(),
+          shortenOrderAuthUrl: vi.fn(),
+          buildReturnUrl: vi.fn()
+        }
+      )
+    ).rejects.toBeInstanceOf(ContributionPoolNotReadyError);
+  });
+
   it("creates an alias-based Linxo order with exactly one payment method and keeps the return route unchanged", async () => {
     const createContributionRecord = vi.fn().mockResolvedValue({
       id: "contribution_123",

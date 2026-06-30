@@ -63,6 +63,15 @@ export type CreatePoolRecordInput = {
   collectorDisplayName: string;
 };
 
+export type UpdatePoolRecordInput = {
+  poolId: string;
+  creatorId: string;
+  title: string;
+  description: string;
+  eventType: EventType;
+  closingDate: Date;
+};
+
 export async function listPoolsByCreatorId(
   creatorId: string
 ): Promise<PoolWithContributions[]> {
@@ -155,6 +164,66 @@ export async function updatePoolCollectorAliasId(input: {
 
   if (result.count !== 1) {
     throw new Error("Pool collector alias could not be updated.");
+  }
+}
+
+export async function updatePoolRecord(input: UpdatePoolRecordInput): Promise<void> {
+  const result = await prisma.pool.updateMany({
+    where: {
+      id: input.poolId,
+      creatorId: input.creatorId
+    },
+    data: {
+      title: input.title,
+      description: input.description,
+      eventType: input.eventType,
+      closingDate: input.closingDate
+    }
+  });
+
+  if (result.count !== 1) {
+    throw new Error("Pool could not be updated.");
+  }
+}
+
+export async function closePoolRecord(input: {
+  poolId: string;
+  creatorId: string;
+  closedAt: Date;
+}): Promise<void> {
+  const result = await prisma.pool.updateMany({
+    where: {
+      id: input.poolId,
+      creatorId: input.creatorId
+    },
+    data: {
+      status: PoolStatus.CLOSED,
+      closedAt: input.closedAt
+    }
+  });
+
+  if (result.count !== 1) {
+    throw new Error("Pool could not be closed.");
+  }
+}
+
+export async function reopenPoolRecord(input: {
+  poolId: string;
+  creatorId: string;
+}): Promise<void> {
+  const result = await prisma.pool.updateMany({
+    where: {
+      id: input.poolId,
+      creatorId: input.creatorId
+    },
+    data: {
+      status: PoolStatus.OPEN,
+      closedAt: null
+    }
+  });
+
+  if (result.count !== 1) {
+    throw new Error("Pool could not be reopened.");
   }
 }
 

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { canReopenPool, isPoolOpenForPayment } from "@/domain/pool/pool.rules";
+import {
+  canClosePool,
+  canEditPool,
+  canReopenPool,
+  isPoolOpenForContributions,
+  isPoolOpenForPayment
+} from "@/domain/pool/pool.rules";
 import { Contribution, PAYMENT_METHODS, Pool } from "@/domain/pool/pool.types";
 import {
   getPublicContributionAmount,
@@ -16,6 +22,8 @@ function createPool(overrides: Partial<Pool> = {}): Pool {
     eventType: "BIRTHDAY",
     status: "OPEN",
     closingDate: new Date("2026-07-01T12:00:00.000Z"),
+    creatorId: "user_123",
+    collectorAliasId: "alias_123",
     createdAt: new Date("2026-06-01T12:00:00.000Z"),
     updatedAt: new Date("2026-06-01T12:00:00.000Z"),
     ...overrides
@@ -71,8 +79,64 @@ describe("pool rules", () => {
   });
 
   it("allows reopening only when the pool is closed", () => {
-    expect(canReopenPool(createPool({ status: "CLOSED" }))).toBe(true);
+    expect(
+      canReopenPool(
+        createPool({ status: "CLOSED" }),
+        new Date("2026-06-15T12:00:00.000Z")
+      )
+    ).toBe(true);
     expect(canReopenPool(createPool({ status: "OPEN" }))).toBe(false);
+  });
+
+  it("does not allow reopening when the closing date is in the past", () => {
+    expect(
+      canReopenPool(
+        createPool({
+          status: "CLOSED",
+          closingDate: new Date("2026-06-10T12:00:00.000Z")
+        }),
+        new Date("2026-06-15T12:00:00.000Z")
+      )
+    ).toBe(false);
+  });
+
+  it("allows closing only when the pool is open", () => {
+    expect(canClosePool(createPool({ status: "OPEN" }))).toBe(true);
+    expect(canClosePool(createPool({ status: "CLOSED" }))).toBe(false);
+  });
+
+  it("allows editing only for the creator", () => {
+    expect(canEditPool("user_123", createPool())).toBe(true);
+    expect(canEditPool("user_456", createPool())).toBe(false);
+  });
+
+  it("returns false for contributions when the collector alias is missing", () => {
+    expect(
+      isPoolOpenForContributions(
+        createPool({ collectorAliasId: null }),
+        new Date("2026-06-15T12:00:00.000Z")
+      )
+    ).toBe(false);
+  });
+
+  it("returns false for contributions when the closing date is in the past", () => {
+    expect(
+      isPoolOpenForContributions(
+        createPool({
+          closingDate: new Date("2026-06-10T12:00:00.000Z")
+        }),
+        new Date("2026-06-15T12:00:00.000Z")
+      )
+    ).toBe(false);
+  });
+
+  it("returns true for contributions when the pool is open, dated in the future, and ready", () => {
+    expect(
+      isPoolOpenForContributions(
+        createPool(),
+        new Date("2026-06-15T12:00:00.000Z")
+      )
+    ).toBe(true);
   });
 });
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { isPoolReadyForPayments } from "@/domain/pool/pool.payments";
+import { isPoolOpenForContributions } from "@/domain/pool/pool.rules";
 import { PublicContributionForm } from "@/features/contributions/components/public-contribution-form";
 import { findPoolBySlug } from "@/features/pools/data-access/pool-repository";
 import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
@@ -22,10 +22,7 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
   }
 
   const viewModel = toPublicPoolDetailViewModel(pool);
-  const isReadyForPayments = isPoolReadyForPayments({
-    status: pool.status,
-    collectorAliasId: pool.collectorAliasId
-  });
+  const isOpenForContributions = isPoolOpenForContributions(pool);
 
   return (
     <main className="px-4 py-10 sm:px-6">
@@ -44,7 +41,7 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
           </p>
         </div>
 
-        {pool.status !== "OPEN" ? (
+        {!isOpenForContributions && pool.status === "CLOSED" ? (
           <section className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6">
             <h2 className="text-lg font-semibold text-amber-950">
               This money pool is closed
@@ -53,7 +50,7 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
               New contributions are no longer accepted for this pool.
             </p>
           </section>
-        ) : isReadyForPayments ? (
+        ) : isOpenForContributions ? (
           <PublicContributionForm
             collectorDisplayName={pool.collectorDisplayName}
             poolSlug={pool.slug}
@@ -61,11 +58,12 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
         ) : (
           <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
             <h2 className="text-lg font-semibold text-slate-950">
-              Online contributions are not available yet for this pool.
+              Online contributions are not available for this pool right now.
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-700">
-              The collector account still needs to be configured before this
-              pool can receive online contributions.
+              {pool.collectorAliasId
+                ? "The closing date has passed. The pool creator needs to update it before contributions can resume."
+                : "The collector account still needs to be configured before this pool can receive online contributions."}
             </p>
           </section>
         )}

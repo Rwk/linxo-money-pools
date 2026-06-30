@@ -17,7 +17,8 @@ import {
 } from "@/features/pools/domain/pool-links";
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
-  dateStyle: "medium"
+  dateStyle: "medium",
+  timeZone: "UTC"
 });
 
 export type PoolCardViewModel = {

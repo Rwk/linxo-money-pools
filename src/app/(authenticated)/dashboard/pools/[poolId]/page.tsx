@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { canEditPool } from "@/domain/pool/pool.rules";
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
 import { RefreshPoolContributionStatusesForm } from "@/features/contributions/components/refresh-pool-contribution-statuses-form";
 import { CollectorAccountSetupForm } from "@/features/pools/components/collector-account-setup-form";
+import { PoolManagementControls } from "@/features/pools/components/pool-management-controls";
 import { findPoolByIdForCreator } from "@/features/pools/data-access/pool-repository";
 import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
 import { toPrivatePoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
@@ -22,6 +24,10 @@ export default async function PoolManagementPage({
   const pool = await findPoolByIdForCreator(poolId, user.id);
 
   if (!pool) {
+    notFound();
+  }
+
+  if (!canEditPool(user.id, pool)) {
     notFound();
   }
 
@@ -54,6 +60,7 @@ export default async function PoolManagementPage({
         </div>
 
         <PoolDetailSections pool={toPrivatePoolDetailViewModel(pool)} />
+        <PoolManagementControls pool={pool} />
         <RefreshPoolContributionStatusesForm poolId={pool.id} />
         <CollectorAccountSetupForm
           collectorAliasId={pool.collectorAliasId}

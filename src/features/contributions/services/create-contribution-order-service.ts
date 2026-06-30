@@ -1,6 +1,6 @@
 import "server-only";
 
-import { isPoolReadyForPayments } from "@/domain/pool/pool.payments";
+import { isPoolOpenForContributions } from "@/domain/pool/pool.rules";
 import type { PaymentMethod } from "@/domain/pool/pool.types";
 import {
   buildAbsoluteAppUrl,
@@ -172,12 +172,7 @@ export async function createContributionOrderForPool(
     throw new ContributionPoolClosedError();
   }
 
-  if (
-    !isPoolReadyForPayments({
-      status: pool.status,
-      collectorAliasId: pool.collectorAliasId
-    })
-  ) {
+  if (!isPoolOpenForContributions(pool)) {
     throw new ContributionPoolNotReadyError();
   }
 

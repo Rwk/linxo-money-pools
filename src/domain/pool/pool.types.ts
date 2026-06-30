@@ -54,8 +54,12 @@ export type Pool = {
   eventType: EventType;
   status: PoolStatus;
   closingDate: Date;
+  creatorId?: string;
+  collectorDisplayName?: string;
+  collectorAliasId?: string | null;
   createdAt: Date;
   updatedAt: Date;
+  closedAt?: Date | null;
 };
 
 export type Contribution = {
