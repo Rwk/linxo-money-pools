@@ -3,36 +3,41 @@ import { z } from "zod";
 import { normalizeAmountInput } from "@/domain/payment/amount";
 import { PAYMENT_METHODS } from "@/domain/pool/pool.types";
 import type { CreateContributionFormValues } from "@/features/contributions/forms/create-contribution-form-state";
+import { t } from "@/i18n/t";
 
 const CONTRIBUTOR_NAME_MAX_LENGTH = 120;
 
 const CreateContributionSchema = z
   .object({
-    poolSlug: z.string().trim().min(1, "Pool reference is required."),
+    poolSlug: z.string().trim().min(1, t("validation.poolSlugRequired")),
     contributorFirstName: z
       .string()
       .trim()
-      .min(1, "First name is required.")
+      .min(1, t("validation.contributorFirstNameRequired"))
       .max(
         CONTRIBUTOR_NAME_MAX_LENGTH,
-        `First name must be ${CONTRIBUTOR_NAME_MAX_LENGTH} characters or fewer.`
+        t("validation.contributorFirstNameMax", {
+          count: CONTRIBUTOR_NAME_MAX_LENGTH
+        })
       ),
     contributorLastName: z
       .string()
       .trim()
-      .min(1, "Last name is required.")
+      .min(1, t("validation.contributorLastNameRequired"))
       .max(
         CONTRIBUTOR_NAME_MAX_LENGTH,
-        `Last name must be ${CONTRIBUTOR_NAME_MAX_LENGTH} characters or fewer.`
+        t("validation.contributorLastNameMax", {
+          count: CONTRIBUTOR_NAME_MAX_LENGTH
+        })
       ),
     contributorEmail: z
       .string()
       .trim()
-      .email("Enter a valid email address.")
+      .email(t("validation.emailInvalid"))
       .transform((value) => value.trim().toLowerCase()),
-    amount: z.string().min(1, "Amount is required."),
+    amount: z.string().min(1, t("validation.amountRequired")),
     selectedPaymentMethod: z.enum(PAYMENT_METHODS, {
-      message: "Select a supported payment method."
+      message: t("validation.paymentMethodRequired")
     }),
     displayAsAnonymous: z.boolean().default(false),
     hideAmount: z.boolean().default(false)
@@ -92,7 +97,7 @@ export function validateCreateContributionInput(
         amountError =
           error instanceof Error
             ? error.message
-            : "Amount must be a positive number with up to two decimals.";
+            : t("validation.amountInvalid");
       }
     }
 
@@ -130,7 +135,7 @@ export function validateCreateContributionInput(
         amount:
           error instanceof Error
             ? error.message
-            : "Amount must be a positive number with up to two decimals."
+            : t("validation.amountInvalid")
       }
     };
   }

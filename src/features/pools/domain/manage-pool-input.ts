@@ -5,6 +5,7 @@ import {
   isClosingDateOnOrAfterToday
 } from "@/domain/pool/pool.rules";
 import type { ManagePoolFormValues } from "@/features/pools/forms/manage-pool-form-state";
+import { t } from "@/i18n/t";
 
 const TITLE_MAX_LENGTH = 120;
 const DESCRIPTION_MAX_LENGTH = 2000;
@@ -18,24 +19,24 @@ const ManagePoolSchema = z
     title: z
       .string()
       .trim()
-      .min(1, "Title is required.")
-      .max(TITLE_MAX_LENGTH, `Title must be ${TITLE_MAX_LENGTH} characters or fewer.`),
+      .min(1, t("validation.titleRequired"))
+      .max(TITLE_MAX_LENGTH, t("validation.titleMax", { count: TITLE_MAX_LENGTH })),
     description: z
       .string()
       .trim()
-      .min(1, "Description is required.")
+      .min(1, t("validation.descriptionRequired"))
       .max(
         DESCRIPTION_MAX_LENGTH,
-        `Description must be ${DESCRIPTION_MAX_LENGTH} characters or fewer.`
+        t("validation.descriptionMax", { count: DESCRIPTION_MAX_LENGTH })
       ),
     eventType: z.enum(EVENT_TYPES, {
-      message: "Event type is required."
+      message: t("validation.eventTypeRequired")
     }),
     closingDate: z
       .string()
-      .min(1, "Closing date is required.")
+      .min(1, t("validation.closingDateRequired"))
       .refine((value) => /^\d{4}-\d{2}-\d{2}$/.test(value), {
-        message: "Closing date must use the YYYY-MM-DD format."
+        message: t("validation.closingDateFormat")
       })
   })
   .strip();
@@ -69,7 +70,7 @@ export function validateManagePoolInput(
     if (!isClosingDateOnOrAfterToday(parseClosingDate(value.closingDate), now)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Closing date must be today or later.",
+        message: t("validation.closingDateFuture"),
         path: ["closingDate"]
       });
     }

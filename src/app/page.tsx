@@ -5,6 +5,7 @@ import { SignInButton } from "@/components/auth/sign-in-button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { poolThemes } from "@/config/pool-themes";
 import { isLinxoEmail } from "@/auth/linxo-email-domain";
+import { t } from "@/i18n/t";
 
 export default async function HomePage() {
   const session = await auth();
@@ -21,20 +22,16 @@ export default async function HomePage() {
         <div className="space-y-6">
           <div className="space-y-3">
             <span className="inline-flex rounded-full bg-white/70 px-3 py-1 text-xs font-medium tracking-[0.18em] text-[var(--muted)] uppercase">
-              Internal MVP
+              {t("common.internalMvp")}
             </span>
             <h1 className="max-w-md text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-              Create trusted money pools for shared gifts.
+              {t("home.title")}
             </h1>
             <p className="max-w-lg text-base leading-7 text-[var(--muted)] sm:text-lg">
-              Linxo employees can create and manage a pool, then share a
-              private link so contributors can send money directly to the
-              collector through their bank.
+              {t("home.body")}
             </p>
             <p className="max-w-lg text-sm leading-6 text-[var(--muted)]">
-              This product helps organize contributions. It does not hold funds
-              in escrow, and a contribution is only confirmed after Linxo status
-              updates.
+              {t("home.disclaimer")}
             </p>
           </div>
 
@@ -45,7 +42,7 @@ export default async function HomePage() {
                   className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--accent-foreground)] shadow-[0_14px_30px_rgba(15,118,110,0.18)] transition"
                   href="/dashboard"
                 >
-                  Open dashboard
+                  {t("common.openDashboard")}
                 </Link>
                 <SignOutButton />
               </>
@@ -56,7 +53,7 @@ export default async function HomePage() {
                   className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/70 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"
                   href="/sign-in"
                 >
-                  Sign in to manage pools
+                  {t("home.signInToManagePools")}
                 </Link>
               </>
             )}

@@ -9,6 +9,7 @@ import type {
   PaymentStatusApiPayload
 } from "@/features/contributions/domain/payment-handoff";
 import type { PaymentHandoffViewModel } from "@/features/contributions/presenters/payment-handoff-presenter";
+import { t } from "@/i18n/t";
 
 type PaymentHandoffStatusProps = {
   handoff: PaymentHandoffViewModel;
@@ -21,32 +22,28 @@ function getStatusCopy(status: PaymentDisplayStatus): {
   switch (status) {
     case "CONFIRMED":
       return {
-        badge: "Confirmed",
-        message: "Your contribution has been confirmed."
+        badge: t("paymentHandoff.badges.confirmed"),
+        message: t("paymentHandoff.messages.confirmed")
       };
     case "FAILED":
       return {
-        badge: "Needs attention",
-        message:
-          "This contribution could not be confirmed. You can go back to the pool page and try again later if needed."
+        badge: t("paymentHandoff.badges.needsAttention"),
+        message: t("paymentHandoff.messages.failed")
       };
     case "OPENED":
       return {
-        badge: "Waiting for authorization",
-        message:
-          "The payment link was opened. We are waiting for bank authorization or a status update."
+        badge: t("paymentHandoff.badges.waitingForAuthorization"),
+        message: t("paymentHandoff.messages.opened")
       };
     case "WAITING_FOR_SCAN":
       return {
-        badge: "Waiting for authorization",
-        message:
-          "Open the secure payment link from your phone or continue on this device."
+        badge: t("paymentHandoff.badges.waitingForAuthorization"),
+        message: t("paymentHandoff.messages.waitingForScan")
       };
     default:
       return {
-        badge: "Waiting for update",
-        message:
-          "The contribution is still in progress. It is not confirmed until the local status updates."
+        badge: t("paymentHandoff.badges.waitingForUpdate"),
+        message: t("paymentHandoff.messages.pending")
       };
   }
 }
@@ -105,21 +102,21 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
     <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="space-y-4">
         <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-medium text-[var(--muted)]">Pool</p>
+          <p className="text-sm font-medium text-[var(--muted)]">{t("paymentHandoff.pool")}</p>
           <p className="mt-1 text-lg font-semibold text-slate-950">
             {handoff.poolTitle}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <div>
               <p className="text-sm font-medium text-[var(--muted)]">
-                Contributor
+                {t("paymentHandoff.contributor")}
               </p>
               <p className="mt-1 text-sm text-slate-900">
                 {handoff.contributorLabel}
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-[var(--muted)]">Amount</p>
+              <p className="text-sm font-medium text-[var(--muted)]">{t("paymentHandoff.amount")}</p>
               <p className="mt-1 text-sm text-slate-900">
                 {handoff.amountLabel}
               </p>
@@ -137,7 +134,7 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
             className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--accent-foreground)] shadow-[0_14px_30px_rgba(15,118,110,0.18)] transition"
             href={directPaymentUrl}
           >
-            Continue to secure payment
+            {t("paymentHandoff.continueToSecurePayment")}
           </a>
         ) : null}
 
@@ -147,7 +144,9 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
             onClick={() => setQrVisibleWhileOpened((value) => !value)}
             type="button"
           >
-            {qrVisible ? "Hide QR code" : "Show QR code again"}
+            {qrVisible
+              ? t("paymentHandoff.hideQrCode")
+              : t("paymentHandoff.showQrCodeAgain")}
           </button>
         ) : null}
 
@@ -156,7 +155,7 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
             className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/80 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"
             href={`/p/${handoff.poolSlug}`}
           >
-            Back to the pool page
+            {t("paymentHandoff.backToPoolPage")}
           </Link>
         </div>
       </div>
@@ -167,13 +166,12 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
         ) : (
           <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-6 text-sm leading-6 text-slate-700">
             {canRenderQrCode
-              ? "The QR code is hidden while we wait for your bank authorization. You can show it again at any time."
-              : "The payment link is currently unavailable for this contribution. It has not been confirmed."}
+              ? t("paymentHandoff.qrHidden")
+              : t("paymentHandoff.unavailable")}
           </div>
         )}
         <p className="text-sm leading-6 text-slate-700">
-          The collector receives the contribution directly once Linxo reports a
-          valid transfer.
+          {t("paymentHandoff.collectorDirectly")}
         </p>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import Decimal from "decimal.js";
 
+import { t } from "@/i18n/t";
+
 const DECIMAL_PATTERN = /^\d+(?:[.,]\d{1,2})?$/;
 
 function normalizeDecimalSeparator(value: string): string {
@@ -14,18 +16,18 @@ export function normalizeAmountInput(value: string): string {
   const trimmedValue = trimUserInput(value);
 
   if (trimmedValue.length === 0) {
-    throw new Error("Amount is required.");
+    throw new Error(t("validation.amountRequired"));
   }
 
   if (!DECIMAL_PATTERN.test(trimmedValue)) {
-    throw new Error("Amount must be a positive number with up to two decimals.");
+    throw new Error(t("validation.amountInvalid"));
   }
 
   const normalizedValue = normalizeDecimalSeparator(trimmedValue);
   const amount = new Decimal(normalizedValue);
 
   if (!amount.isFinite() || amount.lte(0)) {
-    throw new Error("Amount must be greater than zero.");
+    throw new Error(t("validation.amountGreaterThanZero"));
   }
 
   return amount.toFixed(2);

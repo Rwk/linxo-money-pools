@@ -16,6 +16,7 @@ import {
   LinxoPaymentsResponseError,
   LinxoPaymentsTokenError
 } from "@/infrastructure/linxo/linxo-payments-errors";
+import { t } from "@/i18n/t";
 
 function sanitizeValues(values: {
   accountHolderName: string;
@@ -102,39 +103,39 @@ function logSetupCollectorAccountFailure(input: {
 
 function getSetupCollectorAccountErrorMessage(error: unknown): string {
   if (error instanceof PoolCollectorAccountAccessError) {
-    return "You cannot configure the collector account for this pool.";
+    return t("actions.collectorForbidden");
   }
 
   if (error instanceof LinxoPaymentsConfigurationError) {
-    return "Linxo Payments credentials are not configured on the server.";
+    return t("actions.collectorConfigMissing");
   }
 
   if (error instanceof LinxoPaymentsTokenError) {
-    return "Linxo Payments authentication failed. Check the configured client credentials and environment.";
+    return t("actions.collectorAuthFailed");
   }
 
   if (error instanceof LinxoPaymentsNetworkError) {
-    return "Linxo Payments could not be reached from the server.";
+    return t("actions.collectorNetwork");
   }
 
   if (error instanceof LinxoPaymentsResponseError) {
-    return "Linxo Payments did not return the collector reference required to configure this pool.";
+    return t("actions.collectorReferenceMissing");
   }
 
   if (error instanceof LinxoPaymentsApiError) {
     if (error.description === "Incorrect sandbox data") {
-      const requestId = error.requestId ? ` Request ID: ${error.requestId}.` : "";
-
-      return `Linxo rejected the collector account test data. Check the authorized account request samples in the documentation.${requestId}`;
+      return t("actions.collectorSandboxRejected", {
+        requestId: error.requestId ? ` Request ID: ${error.requestId}.` : ""
+      });
     }
 
-    const detail = error.description ? ` ${error.description}` : "";
-    const requestId = error.requestId ? ` Request ID: ${error.requestId}.` : "";
-
-    return `Linxo rejected the collector account details.${detail}${requestId}`;
+    return t("actions.collectorDetailsRejected", {
+      detail: error.description ? ` ${error.description}` : "",
+      requestId: error.requestId ? ` Request ID: ${error.requestId}.` : ""
+    });
   }
 
-  return "The collector account could not be configured. Please try again.";
+  return t("actions.collectorGeneric");
 }
 
 export async function setupCollectorAccountAction(

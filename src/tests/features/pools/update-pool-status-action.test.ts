@@ -27,6 +27,7 @@ import {
   findPoolByIdForCreator,
   reopenPoolRecord
 } from "@/features/pools/data-access/pool-repository";
+import { t } from "@/i18n/t";
 
 const initialPoolStatusActionState: PoolStatusActionState = {
   error: null,
@@ -60,13 +61,13 @@ describe("pool status actions", () => {
     await expect(
       closePoolAction("pool_123", initialPoolStatusActionState)
     ).resolves.toEqual({
-      error: "You are not allowed to close this money pool.",
+      error: t("actions.poolCloseForbidden"),
       successMessage: null
     });
     await expect(
       reopenPoolAction("pool_123", initialPoolStatusActionState)
     ).resolves.toEqual({
-      error: "You are not allowed to reopen this money pool.",
+      error: t("actions.poolReopenForbidden"),
       successMessage: null
     });
   });
@@ -93,7 +94,7 @@ describe("pool status actions", () => {
     });
     expect(revalidatePath).toHaveBeenCalledWith("/dashboard/pools/pool_123");
     expect(revalidatePath).toHaveBeenCalledWith("/p/team-gift");
-    expect(result.successMessage).toBe("Money pool closed.");
+    expect(result.successMessage).toBe(t("actions.poolClosed"));
   });
 
   it("allows the owner to reopen a closed pool with a valid closing date", async () => {
@@ -118,7 +119,7 @@ describe("pool status actions", () => {
     });
     expect(revalidatePath).toHaveBeenCalledWith("/dashboard/pools/pool_123");
     expect(revalidatePath).toHaveBeenCalledWith("/p/team-gift");
-    expect(result.successMessage).toBe("Money pool reopened.");
+    expect(result.successMessage).toBe(t("actions.poolReopened"));
   });
 
   it("rejects reopening when the closing date is in the past", async () => {
@@ -137,6 +138,6 @@ describe("pool status actions", () => {
     const result = await reopenPoolAction("pool_123", initialPoolStatusActionState);
 
     expect(reopenPoolRecord).not.toHaveBeenCalled();
-    expect(result.error).toBe("Update the closing date before reopening this pool.");
+    expect(result.error).toBe(t("actions.poolReopenInvalid"));
   });
 });

@@ -8,6 +8,7 @@ import {
   getCreatePoolDefaultValues,
   getInitialCreatePoolFormState
 } from "@/features/pools/forms/create-pool-form-state";
+import { t } from "@/i18n/t";
 
 describe("create pool validation", () => {
   it("provides a stable initial form state", () => {
@@ -30,7 +31,7 @@ describe("create pool validation", () => {
         title: "  Team birthday gift  ",
         description: "  Shared contribution for a birthday present.  ",
         eventType: "BIRTHDAY",
-        closingDate: "2026-06-30",
+        closingDate: "2026-07-10",
         collectorDisplayName: "  Linxo Team  "
       },
       new Date("2026-06-26T10:00:00.000Z")
@@ -63,7 +64,7 @@ describe("create pool validation", () => {
 
     if (!result.success) {
       expect(result.fieldErrors.closingDate).toBe(
-        "Closing date must be today or later."
+        t("validation.closingDateFuture")
       );
     }
   });

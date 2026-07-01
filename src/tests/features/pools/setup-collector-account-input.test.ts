@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   validateSetupCollectorAccountInput
 } from "@/features/pools/domain/setup-collector-account-input";
+import { t } from "@/i18n/t";
 
 describe("validateSetupCollectorAccountInput", () => {
   it("normalizes IBAN by removing spaces and uppercasing letters", () => {
@@ -53,7 +54,7 @@ describe("validateSetupCollectorAccountInput", () => {
     expect(result.success).toBe(false);
     expect(result).toMatchObject({
       fieldErrors: {
-        iban: "Enter a valid IBAN."
+        iban: t("validation.ibanInvalid")
       }
     });
   });
@@ -94,7 +95,7 @@ describe("validateSetupCollectorAccountInput", () => {
     expect(result.success).toBe(false);
     expect(result).toMatchObject({
       fieldErrors: {
-        birthDate: "Birth date cannot be in the future."
+        birthDate: t("validation.birthDateFuture")
       }
     });
   });

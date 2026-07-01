@@ -8,6 +8,7 @@ import {
   getInitialCreateContributionFormState,
   normalizeCreateContributionFormState
 } from "@/features/contributions/forms/create-contribution-form-state";
+import { t } from "@/i18n/t";
 
 function FieldError({ message }: { message?: string }) {
   if (!message) {
@@ -34,12 +35,10 @@ export function PublicContributionForm({
     <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
       <div className="space-y-3">
         <h2 className="text-xl font-semibold text-slate-950">
-          Contribute to this money pool
+          {t("contributions.title")}
         </h2>
         <p className="max-w-3xl text-sm leading-6 text-slate-700">
-          You will be redirected to Linxo Payments and then to your bank to
-          authorize the transfer. Verified contributions are sent directly to
-          {collectorDisplayName}, the collector of this pool.
+          {t("contributions.body", { collectorDisplayName })}
         </p>
       </div>
 
@@ -58,7 +57,7 @@ export function PublicContributionForm({
               className="text-sm font-semibold text-slate-900"
               htmlFor="contributorFirstName"
             >
-              First name
+              {t("contributions.contributorFirstName")}
             </label>
             <input
               className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -76,7 +75,7 @@ export function PublicContributionForm({
               className="text-sm font-semibold text-slate-900"
               htmlFor="contributorLastName"
             >
-              Last name
+              {t("contributions.contributorLastName")}
             </label>
             <input
               className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -96,7 +95,7 @@ export function PublicContributionForm({
               className="text-sm font-semibold text-slate-900"
               htmlFor="contributorEmail"
             >
-              Email
+              {t("common.email")}
             </label>
             <input
               className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -111,7 +110,7 @@ export function PublicContributionForm({
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-900" htmlFor="amount">
-              Amount in EUR
+              {t("common.amountEur")}
             </label>
             <input
               className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -119,7 +118,7 @@ export function PublicContributionForm({
               id="amount"
               inputMode="decimal"
               name="amount"
-              placeholder="25.00"
+              placeholder={t("contributions.amountPlaceholder")}
               required
             />
             <FieldError message={safeState.fieldErrors.amount} />
@@ -128,7 +127,7 @@ export function PublicContributionForm({
 
         <fieldset className="space-y-3">
           <legend className="text-sm font-semibold text-slate-900">
-            Payment method
+            {t("contributions.paymentMethod")}
           </legend>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="rounded-2xl border border-teal-200 bg-teal-50 p-4 text-sm text-slate-900">
@@ -138,9 +137,9 @@ export function PublicContributionForm({
                 type="radio"
                 value="INSTANT"
               />
-              <span className="ml-3 font-semibold">Instant transfer</span>
+              <span className="ml-3 font-semibold">{t("contributions.instantTransfer")}</span>
               <span className="mt-2 block text-slate-700">
-                Primary option. Funds can be initiated instantly through supported banks.
+                {t("contributions.instantTransferBody")}
               </span>
             </label>
             <label className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-900">
@@ -150,9 +149,9 @@ export function PublicContributionForm({
                 type="radio"
                 value="STANDARD"
               />
-              <span className="ml-3 font-semibold">Standard transfer</span>
+              <span className="ml-3 font-semibold">{t("contributions.standardTransfer")}</span>
               <span className="mt-2 block text-slate-700">
-                Fallback option for regular bank transfer authorization.
+                {t("contributions.standardTransferBody")}
               </span>
             </label>
           </div>
@@ -166,7 +165,7 @@ export function PublicContributionForm({
               name="displayAsAnonymous"
               type="checkbox"
             />
-            <span>Display my contribution as anonymous on the public page</span>
+            <span>{t("contributions.anonymousLabel")}</span>
           </label>
           <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800">
             <input
@@ -174,17 +173,16 @@ export function PublicContributionForm({
               name="hideAmount"
               type="checkbox"
             />
-            <span>Hide my contribution amount on the public page</span>
+            <span>{t("contributions.hideAmountLabel")}</span>
           </label>
         </div>
 
         <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900">
-          Returning from Linxo does not confirm success on its own. This step
-          only starts the bank authorization flow.
+          {t("contributions.warning")}
         </div>
 
         <Button disabled={isPending} type="submit">
-          {isPending ? "Redirecting..." : "Continue to bank authorization"}
+          {isPending ? t("common.redirecting") : t("contributions.continueToBank")}
         </Button>
       </form>
     </section>

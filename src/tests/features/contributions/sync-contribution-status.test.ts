@@ -5,6 +5,7 @@ import {
   syncContributionStatusByOrderId,
   syncContributionStatusForReturn
 } from "@/features/contributions/services/sync-contribution-status";
+import { t } from "@/i18n/t";
 
 function createContributionRecord() {
   return {
@@ -53,7 +54,7 @@ describe("syncContributionStatusForReturn", () => {
     });
 
     expect(result?.statusTone).toBe("in_progress");
-    expect(result?.heading).toBe("Your transfer authorization is being checked.");
+    expect(result?.heading).toBe(t("contributionReturn.inProgressHeading"));
     expect(result?.contribution.cashInStatus).toBe("PENDING");
     expect(updateContributionStatusSnapshot).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -125,9 +126,7 @@ describe("syncContributionStatusForReturn", () => {
     });
 
     expect(result?.statusTone).toBe("incomplete");
-    expect(result?.syncWarning).toBe(
-      "We could not refresh the payment status yet. Please check again later."
-    );
+    expect(result?.syncWarning).toBe(t("contributionReturn.syncWarning"));
     expect(result?.contribution.cashInStatus).toBe("PENDING");
     expect(updateContributionStatusSnapshot).not.toHaveBeenCalled();
   });

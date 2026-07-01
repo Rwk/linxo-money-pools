@@ -19,6 +19,7 @@ import { createContributionOrderAction } from "@/features/contributions/actions/
 import { createContributionOrderForPool } from "@/features/contributions/services/create-contribution-order-service";
 import { getInitialCreateContributionFormState } from "@/features/contributions/forms/create-contribution-form-state";
 import { redirect } from "next/navigation";
+import { t } from "@/i18n/t";
 
 describe("createContributionOrderAction", () => {
   beforeEach(() => {
@@ -82,14 +83,14 @@ describe("createContributionOrderAction", () => {
 
     expect(createContributionOrderForPool).not.toHaveBeenCalled();
     expect(result.fieldErrors.contributorFirstName).toBe(
-      "First name is required."
+      t("validation.contributorFirstNameRequired")
     );
     expect(result.fieldErrors.contributorLastName).toBe(
-      "Last name is required."
+      t("validation.contributorLastNameRequired")
     );
     expect(result.fieldErrors.contributorEmail).toBe(
-      "Enter a valid email address."
+      t("validation.emailInvalid")
     );
-    expect(result.fieldErrors.amount).toBe("Amount must be greater than zero.");
+    expect(result.fieldErrors.amount).toBe(t("validation.amountGreaterThanZero"));
   });
 });

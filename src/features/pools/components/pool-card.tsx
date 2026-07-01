@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { PoolCardViewModel } from "@/features/pools/presenters/pool-presenters";
+import { t } from "@/i18n/t";
 
 export function PoolCard({ pool }: { pool: PoolCardViewModel }) {
   return (
@@ -26,23 +27,23 @@ export function PoolCard({ pool }: { pool: PoolCardViewModel }) {
               {pool.title}
             </h2>
             <p className="text-sm text-[var(--muted)]">
-              Closing date: {pool.closingDateLabel}
+              {t("pools.closingDate", { date: pool.closingDateLabel })}
             </p>
             <p className="text-sm text-[var(--muted)]">
-              Created on {pool.createdDateLabel}
+              {t("pools.createdOn", { date: pool.createdDateLabel })}
             </p>
           </div>
         </div>
 
         <div className="space-y-2 text-left sm:text-right">
           <p className="text-sm font-semibold text-slate-950">
-            {pool.confirmedAmountLabel} confirmed
+            {t("pools.confirmedSuffix", { amount: pool.confirmedAmountLabel })}
           </p>
           <Link
             className="block text-sm text-teal-700 underline-offset-4 transition hover:underline"
             href={pool.publicPath}
           >
-            Share link
+            {t("pools.shareLink")}
           </Link>
         </div>
       </div>
@@ -52,13 +53,13 @@ export function PoolCard({ pool }: { pool: PoolCardViewModel }) {
           className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--accent-foreground)] shadow-[0_14px_30px_rgba(15,118,110,0.18)] transition"
           href={`/dashboard/pools/${pool.id}`}
         >
-          Manage pool
+          {t("pools.managePool")}
         </Link>
         <Link
           className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/80 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"
           href={pool.publicPath}
         >
-          View public page
+          {t("pools.viewPublicPage")}
         </Link>
       </div>
     </article>

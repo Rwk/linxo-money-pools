@@ -12,6 +12,7 @@ import {
   getPublicContributionAmount,
   getPublicContributorLabel
 } from "@/domain/pool/pool.visibility";
+import { t } from "@/i18n/t";
 
 function createPool(overrides: Partial<Pool> = {}): Pool {
   return {
@@ -144,7 +145,7 @@ describe("pool visibility", () => {
   it("hides the contributor label when anonymity is requested", () => {
     const contribution = createContribution({ displayAsAnonymous: true });
 
-    expect(getPublicContributorLabel(contribution)).toBe("Anonymous");
+    expect(getPublicContributorLabel(contribution)).toBe(t("common.anonymous"));
   });
 
   it("returns the contributor full name when anonymity is disabled", () => {
@@ -156,7 +157,7 @@ describe("pool visibility", () => {
   it("hides the contribution amount when requested", () => {
     const contribution = createContribution({ hideAmount: true });
 
-    expect(getPublicContributionAmount(contribution)).toBe("Hidden amount");
+    expect(getPublicContributionAmount(contribution)).toBe(t("common.hiddenAmount"));
   });
 
   it("returns the public amount when it can be displayed", () => {

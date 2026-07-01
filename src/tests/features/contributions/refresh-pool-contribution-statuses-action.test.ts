@@ -37,6 +37,7 @@ vi.mock("next/cache", () => ({
 
 import { refreshPoolContributionStatusesAction } from "@/features/contributions/actions/refresh-pool-contribution-statuses";
 import { initialRefreshPoolContributionStatusesActionState } from "@/features/contributions/forms/refresh-pool-contribution-statuses-form-state";
+import { t } from "@/i18n/t";
 
 function createContribution(overrides: Record<string, unknown> = {}) {
   return {
@@ -124,7 +125,7 @@ describe("refreshPoolContributionStatusesAction", () => {
     );
 
     expect(result.formError).toBe(
-      "You cannot refresh payment statuses for this pool."
+      t("actions.refreshForbidden")
     );
     expect(syncContributionStatusByOrderId).not.toHaveBeenCalled();
   });
@@ -184,7 +185,16 @@ describe("refreshPoolContributionStatusesAction", () => {
       unchangedCount: 0,
       failedCount: 0
     });
-    expect(result.successMessage).toBe("1 contribution checked, 1 updated.");
+    expect(result.successMessage).toBe(
+      t("refresh.success", {
+        checkedCount: 1,
+        checkedPlural: "",
+        updatedCount: 1,
+        updatedPlural: "",
+        unchangedSegment: "",
+        failedSegment: ""
+      })
+    );
     expect(revalidatePath).toHaveBeenCalledWith("/dashboard/pools/pool_123");
     expect(revalidatePath).toHaveBeenCalledWith("/p/team-gift");
   });
@@ -249,7 +259,19 @@ describe("refreshPoolContributionStatusesAction", () => {
       failedCount: 1
     });
     expect(result.successMessage).toBe(
-      "2 contributions checked, 0 updated, 1 unchanged, 1 failed."
+      t("refresh.success", {
+        checkedCount: 2,
+        checkedPlural: "s",
+        updatedCount: 0,
+        updatedPlural: "",
+        unchangedSegment: t("refresh.unchangedSegment", {
+          count: 1,
+          plural: ""
+        }),
+        failedSegment: t("refresh.failedSegment", {
+          count: 1
+        })
+      })
     );
   });
 });

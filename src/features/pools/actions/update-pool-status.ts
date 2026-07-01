@@ -12,6 +12,7 @@ import {
   findPoolByIdForCreator,
   reopenPoolRecord
 } from "@/features/pools/data-access/pool-repository";
+import { t } from "@/i18n/t";
 
 export type PoolStatusActionState = {
   error: string | null;
@@ -32,7 +33,7 @@ export async function closePoolAction(
 
   if (!pool) {
     return {
-      error: "You are not allowed to close this money pool.",
+      error: t("actions.poolCloseForbidden"),
       successMessage: null
     };
   }
@@ -40,7 +41,7 @@ export async function closePoolAction(
   if (!canClosePool(pool)) {
     return {
       error: null,
-      successMessage: "This money pool is already closed."
+      successMessage: t("actions.poolAlreadyClosed")
     };
   }
 
@@ -52,7 +53,7 @@ export async function closePoolAction(
     });
   } catch {
     return {
-      error: "The money pool could not be closed. Please try again.",
+      error: t("actions.poolCloseError"),
       successMessage: null
     };
   }
@@ -61,7 +62,7 @@ export async function closePoolAction(
 
   return {
     error: null,
-    successMessage: "Money pool closed."
+    successMessage: t("actions.poolClosed")
   };
 }
 
@@ -74,7 +75,7 @@ export async function reopenPoolAction(
 
   if (!pool) {
     return {
-      error: "You are not allowed to reopen this money pool.",
+      error: t("actions.poolReopenForbidden"),
       successMessage: null
     };
   }
@@ -82,13 +83,13 @@ export async function reopenPoolAction(
   if (pool.status === "OPEN") {
     return {
       error: null,
-      successMessage: "This money pool is already open."
+      successMessage: t("actions.poolAlreadyOpen")
     };
   }
 
   if (!canReopenPool(pool)) {
     return {
-      error: "Update the closing date before reopening this pool.",
+      error: t("actions.poolReopenInvalid"),
       successMessage: null
     };
   }
@@ -100,7 +101,7 @@ export async function reopenPoolAction(
     });
   } catch {
     return {
-      error: "The money pool could not be reopened. Please try again.",
+      error: t("actions.poolReopenError"),
       successMessage: null
     };
   }
@@ -109,6 +110,6 @@ export async function reopenPoolAction(
 
   return {
     error: null,
-    successMessage: "Money pool reopened."
+    successMessage: t("actions.poolReopened")
   };
 }

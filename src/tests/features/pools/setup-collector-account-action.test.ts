@@ -23,6 +23,7 @@ import {
   LinxoPaymentsResponseError
 } from "@/infrastructure/linxo/linxo-payments-errors";
 import { redirect } from "next/navigation";
+import { t } from "@/i18n/t";
 
 describe("setup collector account action", () => {
   beforeEach(() => {
@@ -65,7 +66,7 @@ describe("setup collector account action", () => {
       nationalIdentification: "",
       companyCountry: ""
     });
-    expect(result.fieldErrors.iban).toBe("Enter a valid IBAN.");
+    expect(result.fieldErrors.iban).toBe(t("validation.ibanInvalid"));
   });
 
   it("redirects after a successful collector account setup", async () => {
@@ -136,7 +137,7 @@ describe("setup collector account action", () => {
     );
 
     expect(result.formError).toBe(
-      "Linxo Payments credentials are not configured on the server."
+      t("actions.collectorConfigMissing")
     );
     expect(result.values.iban).toBe("");
   });
@@ -167,7 +168,10 @@ describe("setup collector account action", () => {
     );
 
     expect(result.formError).toBe(
-      "Linxo rejected the collector account details. userReference: The field size is exceeded Request ID: req_123."
+      t("actions.collectorDetailsRejected", {
+        detail: " userReference: The field size is exceeded",
+        requestId: " Request ID: req_123."
+      })
     );
     expect(result.values.iban).toBe("");
   });
@@ -192,7 +196,7 @@ describe("setup collector account action", () => {
     );
 
     expect(result.formError).toBe(
-      "Linxo Payments did not return the collector reference required to configure this pool."
+      t("actions.collectorReferenceMissing")
     );
     expect(result.values.companyName).toBe("");
     expect(result.values.nationalIdentification).toBe("");
@@ -224,7 +228,9 @@ describe("setup collector account action", () => {
     );
 
     expect(result.formError).toBe(
-      "Linxo rejected the collector account test data. Check the authorized account request samples in the documentation. Request ID: req_456."
+      t("actions.collectorSandboxRejected", {
+        requestId: " Request ID: req_456."
+      })
     );
   });
 });

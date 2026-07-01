@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { SetupCollectorAccountFormValues } from "@/features/pools/forms/setup-collector-account-form-state";
+import { t } from "@/i18n/t";
 
 const ACCOUNT_HOLDER_NAME_MAX_LENGTH = 120;
 const PERSON_NAME_MAX_LENGTH = 120;
@@ -19,20 +20,22 @@ const BaseCollectorAccountSchema = z.object({
   accountHolderName: z
     .string()
     .trim()
-    .min(1, "Account holder name is required.")
+    .min(1, t("validation.accountHolderNameRequired"))
     .max(
       ACCOUNT_HOLDER_NAME_MAX_LENGTH,
-      `Account holder name must be ${ACCOUNT_HOLDER_NAME_MAX_LENGTH} characters or fewer.`
+      t("validation.accountHolderNameMax", {
+        count: ACCOUNT_HOLDER_NAME_MAX_LENGTH
+      })
     ),
   iban: z
     .string()
-    .min(1, "IBAN is required.")
+    .min(1, t("validation.ibanRequired"))
     .transform(normalizeIban)
     .refine((value) => IBAN_PATTERN.test(value), {
-      message: "Enter a valid IBAN."
+      message: t("validation.ibanInvalid")
     }),
   entityType: z.enum(["NATURAL_PERSON", "COMPANY"], {
-    message: "Entity type is required."
+    message: t("validation.entityTypeRequired")
   })
 });
 
@@ -41,39 +44,39 @@ const NaturalPersonCollectorAccountSchema = BaseCollectorAccountSchema.extend({
   firstName: z
     .string()
     .trim()
-    .min(1, "First name is required.")
+    .min(1, t("validation.firstNameRequired"))
     .max(
       PERSON_NAME_MAX_LENGTH,
-      `First name must be ${PERSON_NAME_MAX_LENGTH} characters or fewer.`
+      t("validation.firstNameMax", { count: PERSON_NAME_MAX_LENGTH })
     ),
   surname: z
     .string()
     .trim()
-    .min(1, "Surname is required.")
+    .min(1, t("validation.surnameRequired"))
     .max(
       PERSON_NAME_MAX_LENGTH,
-      `Surname must be ${PERSON_NAME_MAX_LENGTH} characters or fewer.`
+      t("validation.surnameMax", { count: PERSON_NAME_MAX_LENGTH })
     ),
   birthDate: z
     .string()
-    .min(1, "Birth date is required.")
+    .min(1, t("validation.birthDateRequired"))
     .refine((value) => /^\d{4}-\d{2}-\d{2}$/.test(value), {
-      message: "Birth date must use the YYYY-MM-DD format."
+      message: t("validation.birthDateFormat")
     }),
   birthCity: z
     .string()
     .trim()
-    .min(1, "Birth city is required.")
+    .min(1, t("validation.birthCityRequired"))
     .max(
       CITY_MAX_LENGTH,
-      `Birth city must be ${CITY_MAX_LENGTH} characters or fewer.`
+      t("validation.birthCityMax", { count: CITY_MAX_LENGTH })
     ),
   birthCountry: z
     .string()
     .trim()
     .toUpperCase()
     .refine((value) => COUNTRY_CODE_PATTERN.test(value), {
-      message: "Birth country must use a valid ISO-3166 alpha-2 code."
+      message: t("validation.birthCountryInvalid")
     }),
   companyName: z.string().optional().default(""),
   nationalIdentification: z.string().optional().default(""),
@@ -85,25 +88,27 @@ const CompanyCollectorAccountSchema = BaseCollectorAccountSchema.extend({
   companyName: z
     .string()
     .trim()
-    .min(1, "Company name is required.")
+    .min(1, t("validation.companyNameRequired"))
     .max(
       COMPANY_NAME_MAX_LENGTH,
-      `Company name must be ${COMPANY_NAME_MAX_LENGTH} characters or fewer.`
+      t("validation.companyNameMax", { count: COMPANY_NAME_MAX_LENGTH })
     ),
   nationalIdentification: z
     .string()
     .trim()
-    .min(1, "National identification is required.")
+    .min(1, t("validation.nationalIdentificationRequired"))
     .max(
       NATIONAL_IDENTIFICATION_MAX_LENGTH,
-      `National identification must be ${NATIONAL_IDENTIFICATION_MAX_LENGTH} characters or fewer.`
+      t("validation.nationalIdentificationMax", {
+        count: NATIONAL_IDENTIFICATION_MAX_LENGTH
+      })
     ),
   companyCountry: z
     .string()
     .trim()
     .toUpperCase()
     .refine((value) => COUNTRY_CODE_PATTERN.test(value), {
-      message: "Country must use a valid ISO-3166 alpha-2 code."
+      message: t("validation.companyCountryInvalid")
     }),
   firstName: z.string().optional().default(""),
   surname: z.string().optional().default(""),
@@ -124,7 +129,7 @@ const SetupCollectorAccountSchema = z
       if (Number.isNaN(birthDate.getTime())) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Birth date must be a valid date.",
+          message: t("validation.birthDateInvalid"),
           path: ["birthDate"]
         });
         return;
@@ -136,7 +141,7 @@ const SetupCollectorAccountSchema = z
       if (birthDate.getTime() > today.getTime()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Birth date cannot be in the future.",
+          message: t("validation.birthDateFuture"),
           path: ["birthDate"]
         });
       }

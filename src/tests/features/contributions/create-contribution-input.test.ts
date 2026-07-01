@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { validateCreateContributionInput } from "@/features/contributions/domain/create-contribution-input";
+import { t } from "@/i18n/t";
 
 describe("validateCreateContributionInput", () => {
   it("normalizes a valid contribution input", () => {
@@ -45,7 +46,7 @@ describe("validateCreateContributionInput", () => {
     expect(result.success).toBe(false);
     expect(result).toMatchObject({
       fieldErrors: {
-        selectedPaymentMethod: "Select a supported payment method."
+        selectedPaymentMethod: t("validation.paymentMethodRequired")
       }
     });
   });

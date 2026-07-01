@@ -9,6 +9,7 @@ import {
   normalizeSetupCollectorAccountFormState
 } from "@/features/pools/forms/setup-collector-account-form-state";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 function FieldError({ message }: { message?: string }) {
   if (!message) {
@@ -39,37 +40,32 @@ export function CollectorAccountSetupForm(props: {
       <div className="space-y-4">
         <div className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-950">
-            Collector account
+            {t("collectorAccount.title")}
           </h2>
           <p className="text-sm leading-6 text-slate-700">
-            Configure the account that receives contributions directly through
-            Linxo Payments. The IBAN is sent server-side to Linxo only and is
-            never stored locally. The KYC details below are sent securely to
-            Linxo to register the collector account and are not stored by this
-            app.
+            {t("collectorAccount.body")}
           </p>
         </div>
 
         {props.collectorAliasId ? (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-900">
             <p className="font-semibold text-emerald-950">
-              Collector account configured.
+              {t("collectorAccount.configuredTitle")}
             </p>
             <p className="mt-2">
               {readyForPayments
-                ? "This pool can accept contributions while it stays open."
-                : "The collector account is configured, but contributions stay unavailable while the pool is closed."}
+                ? t("collectorAccount.configuredOpen")
+                : t("collectorAccount.configuredClosed")}
             </p>
           </div>
         ) : (
           <>
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
               <p className="font-semibold text-amber-950">
-                Collector account not configured yet.
+                {t("collectorAccount.missingTitle")}
               </p>
               <p className="mt-2">
-                Contributors cannot pay this pool until Linxo returns the safe
-                collector references required for this pool.
+                {t("collectorAccount.missingBody")}
               </p>
             </div>
 
@@ -87,7 +83,7 @@ export function CollectorAccountSetupForm(props: {
                   className="text-sm font-semibold text-slate-900"
                   htmlFor="accountHolderName"
                 >
-                  Account holder name
+                  {t("collectorAccount.accountHolderName")}
                 </label>
                 <input
                   className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -95,7 +91,7 @@ export function CollectorAccountSetupForm(props: {
                   id="accountHolderName"
                   maxLength={120}
                   name="accountHolderName"
-                  placeholder="Linxo Team"
+                  placeholder={t("poolForms.collectorDisplayNamePlaceholder")}
                   required
                 />
                 <FieldError message={safeState.fieldErrors.accountHolderName} />
@@ -103,7 +99,7 @@ export function CollectorAccountSetupForm(props: {
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-900" htmlFor="iban">
-                  IBAN
+                  {t("collectorAccount.iban")}
                 </label>
                 <input
                   autoComplete="off"
@@ -123,7 +119,7 @@ export function CollectorAccountSetupForm(props: {
                   className="text-sm font-semibold text-slate-900"
                   htmlFor="entityType"
                 >
-                  Entity type
+                  {t("collectorAccount.entityType")}
                 </label>
                 <select
                   className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -137,8 +133,8 @@ export function CollectorAccountSetupForm(props: {
                   }
                   required
                 >
-                  <option value="NATURAL_PERSON">Natural person</option>
-                  <option value="COMPANY">Company</option>
+                  <option value="NATURAL_PERSON">{t("collectorAccount.naturalPerson")}</option>
+                  <option value="COMPANY">{t("collectorAccount.company")}</option>
                 </select>
                 <FieldError message={safeState.fieldErrors.entityType} />
               </div>
@@ -147,11 +143,10 @@ export function CollectorAccountSetupForm(props: {
                 <section className="space-y-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
                   <div className="space-y-1">
                     <h3 className="text-sm font-semibold text-slate-950">
-                      Natural person details
+                      {t("collectorAccount.naturalPersonTitle")}
                     </h3>
                     <p className="text-sm leading-6 text-slate-700">
-                      These details are required by Linxo to register the
-                      collector account.
+                      {t("collectorAccount.entityBody")}
                     </p>
                   </div>
 
@@ -161,7 +156,7 @@ export function CollectorAccountSetupForm(props: {
                         className="text-sm font-semibold text-slate-900"
                         htmlFor="firstName"
                       >
-                        First name
+                        {t("collectorAccount.firstName")}
                       </label>
                       <input
                         className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -180,7 +175,7 @@ export function CollectorAccountSetupForm(props: {
                         className="text-sm font-semibold text-slate-900"
                         htmlFor="surname"
                       >
-                        Surname
+                        {t("collectorAccount.surname")}
                       </label>
                       <input
                         className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -201,7 +196,7 @@ export function CollectorAccountSetupForm(props: {
                         className="text-sm font-semibold text-slate-900"
                         htmlFor="birthDate"
                       >
-                        Birth date
+                        {t("collectorAccount.birthDate")}
                       </label>
                       <input
                         className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -219,7 +214,7 @@ export function CollectorAccountSetupForm(props: {
                         className="text-sm font-semibold text-slate-900"
                         htmlFor="birthCity"
                       >
-                        Birth city
+                        {t("collectorAccount.birthCity")}
                       </label>
                       <input
                         className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -238,7 +233,7 @@ export function CollectorAccountSetupForm(props: {
                         className="text-sm font-semibold text-slate-900"
                         htmlFor="birthCountry"
                       >
-                        Birth country
+                        {t("collectorAccount.birthCountry")}
                       </label>
                       <input
                         className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm uppercase tracking-[0.08em] text-slate-950 outline-none transition focus:border-slate-400"
@@ -257,11 +252,10 @@ export function CollectorAccountSetupForm(props: {
                 <section className="space-y-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
                   <div className="space-y-1">
                     <h3 className="text-sm font-semibold text-slate-950">
-                      Company details
+                      {t("collectorAccount.companyTitle")}
                     </h3>
                     <p className="text-sm leading-6 text-slate-700">
-                      These details are required by Linxo to register the
-                      collector account.
+                      {t("collectorAccount.entityBody")}
                     </p>
                   </div>
 
@@ -270,7 +264,7 @@ export function CollectorAccountSetupForm(props: {
                       className="text-sm font-semibold text-slate-900"
                       htmlFor="companyName"
                     >
-                      Company name
+                      {t("collectorAccount.companyName")}
                     </label>
                     <input
                       className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -278,7 +272,7 @@ export function CollectorAccountSetupForm(props: {
                       id="companyName"
                       maxLength={160}
                       name="companyName"
-                      placeholder="World Corp"
+                        placeholder="Entreprise Exemple"
                       required
                     />
                     <FieldError message={safeState.fieldErrors.companyName} />
@@ -290,7 +284,7 @@ export function CollectorAccountSetupForm(props: {
                         className="text-sm font-semibold text-slate-900"
                         htmlFor="nationalIdentification"
                       >
-                        National identification
+                        {t("collectorAccount.nationalIdentification")}
                       </label>
                       <input
                         className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -311,7 +305,7 @@ export function CollectorAccountSetupForm(props: {
                         className="text-sm font-semibold text-slate-900"
                         htmlFor="companyCountry"
                       >
-                        Country
+                        {t("collectorAccount.country")}
                       </label>
                       <input
                         className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm uppercase tracking-[0.08em] text-slate-950 outline-none transition focus:border-slate-400"
@@ -329,13 +323,13 @@ export function CollectorAccountSetupForm(props: {
               )}
 
               <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-700">
-                Only safe Linxo references are stored on the pool. IBAN, BIC,
-                account number, birth data, and company or natural person KYC
-                details are not stored in the local database.
+                {t("collectorAccount.storageNotice")}
               </div>
 
               <Button disabled={isPending} type="submit">
-                {isPending ? "Configuring..." : "Configure collector account"}
+                {isPending
+                  ? t("common.configuring")
+                  : t("collectorAccount.configureButton")}
               </Button>
             </form>
           </>

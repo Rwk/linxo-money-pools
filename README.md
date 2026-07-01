@@ -8,6 +8,10 @@ The product is designed for demos, product validation, and operational
 readiness around the core contribution flow. It is not an escrow service and it
 does not hold contributor funds in the application.
 
+The product UI is intentionally in French. Translation keys are centralized in
+`src/i18n`, and raw Linxo technical statuses remain untranslated on private
+technical displays by design.
+
 ## Product flow
 
 1. A Linxo employee signs in with a `@linxo.com` Google account.

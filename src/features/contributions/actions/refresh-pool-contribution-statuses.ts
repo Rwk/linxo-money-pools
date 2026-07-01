@@ -15,28 +15,34 @@ import {
   mapContributionToDomainContribution
 } from "@/features/pools/data-access/pool-repository";
 import { getPublicPoolPath } from "@/features/pools/domain/pool-links";
+import { t } from "@/i18n/t";
 
 function getRefreshSuccessMessage(
   summary: RefreshPoolContributionStatusesSummary
 ): string {
   if (summary.checkedCount === 0) {
-    return "No in-progress contribution needed a refresh.";
+    return t("refresh.empty");
   }
 
-  const segments = [
-    `${summary.checkedCount} contribution${summary.checkedCount === 1 ? "" : "s"} checked`,
-    `${summary.updatedCount} updated`
-  ];
-
-  if (summary.unchangedCount > 0) {
-    segments.push(`${summary.unchangedCount} unchanged`);
-  }
-
-  if (summary.failedCount > 0) {
-    segments.push(`${summary.failedCount} failed`);
-  }
-
-  return `${segments.join(", ")}.`;
+  return t("refresh.success", {
+    checkedCount: summary.checkedCount,
+    checkedPlural: summary.checkedCount > 1 ? "s" : "",
+    updatedCount: summary.updatedCount,
+    updatedPlural: summary.updatedCount > 1 ? "s" : "",
+    unchangedSegment:
+      summary.unchangedCount > 0
+        ? t("refresh.unchangedSegment", {
+            count: summary.unchangedCount,
+            plural: summary.unchangedCount > 1 ? "s" : ""
+          })
+        : "",
+    failedSegment:
+      summary.failedCount > 0
+        ? t("refresh.failedSegment", {
+            count: summary.failedCount
+          })
+        : ""
+  });
 }
 
 function didContributionChange(
@@ -64,7 +70,7 @@ export async function refreshPoolContributionStatusesAction(
 
   if (!pool) {
     return {
-      formError: "You cannot refresh payment statuses for this pool.",
+      formError: t("actions.refreshForbidden"),
       successMessage: null,
       summary: null
     };

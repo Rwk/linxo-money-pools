@@ -16,8 +16,9 @@ import {
   getPublicPoolPath,
   getPublicPoolUrl
 } from "@/features/pools/domain/pool-links";
+import { t } from "@/i18n/t";
 
-const dateFormatter = new Intl.DateTimeFormat("en", {
+const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "medium",
   timeZone: "UTC"
 });
@@ -42,7 +43,7 @@ export type ContributionRowViewModel = {
   contributorLabel: string;
   amountLabel: string;
   createdDateLabel: string;
-  statusLabel: "Confirmed" | "In progress";
+  statusLabel: string;
 };
 
 export type PrivateContributionRowViewModel = {
@@ -88,11 +89,15 @@ function formatDate(date: Date): string {
 }
 
 function formatStatusLabel(status: string): string {
-  return status === "CLOSED" ? "Closed" : "Open";
+  return status === "CLOSED"
+    ? t("statuses.poolClosed")
+    : t("statuses.poolOpen");
 }
 
 function formatPaymentMethodLabel(paymentMethod: string): string {
-  return paymentMethod === "INSTANT" ? "Instant transfer" : "Standard transfer";
+  return paymentMethod === "INSTANT"
+    ? t("paymentMethods.INSTANT")
+    : t("paymentMethods.STANDARD");
 }
 
 function formatRawStatuses(input: {
@@ -101,10 +106,14 @@ function formatRawStatuses(input: {
   linxoSettlementStatus?: string;
 }): string[] {
   return [
-    input.linxoOrderStatus ? `Order: ${input.linxoOrderStatus}` : null,
-    input.linxoPaymentStatus ? `Payment: ${input.linxoPaymentStatus}` : null,
+    input.linxoOrderStatus
+      ? `${t("statuses.rawOrder")}: ${input.linxoOrderStatus}`
+      : null,
+    input.linxoPaymentStatus
+      ? `${t("statuses.rawPayment")}: ${input.linxoPaymentStatus}`
+      : null,
     input.linxoSettlementStatus
-      ? `Settlement: ${input.linxoSettlementStatus}`
+      ? `${t("statuses.rawSettlement")}: ${input.linxoSettlementStatus}`
       : null
   ].filter((value): value is string => value !== null);
 }

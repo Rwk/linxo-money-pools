@@ -3,6 +3,7 @@ import {
   LinxoPaymentStatus,
   LinxoSettlementStatus
 } from "@/domain/pool/pool.types";
+import { t } from "@/i18n/t";
 
 export const CASH_IN_STATUSES = [
   "PENDING",
@@ -24,17 +25,17 @@ export type CashInStatusInput = {
 export function getCashInStatusLabel(status: CashInStatus): string {
   switch (status) {
     case "EXECUTED":
-      return "Executed";
+      return t("statuses.cashIn.EXECUTED");
     case "COLLECTED":
-      return "Collected";
+      return t("statuses.cashIn.COLLECTED");
     case "REJECTED":
-      return "Rejected";
+      return t("statuses.cashIn.REJECTED");
     case "CANCELLED":
-      return "Cancelled";
+      return t("statuses.cashIn.CANCELLED");
     case "EXPIRED":
-      return "Expired";
+      return t("statuses.cashIn.EXPIRED");
     default:
-      return "Pending";
+      return t("statuses.cashIn.PENDING");
   }
 }
 

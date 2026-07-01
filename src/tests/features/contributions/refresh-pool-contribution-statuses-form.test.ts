@@ -12,6 +12,7 @@ vi.mock(
 );
 
 import { RefreshPoolContributionStatusesForm } from "@/features/contributions/components/refresh-pool-contribution-statuses-form";
+import { t } from "@/i18n/t";
 
 describe("RefreshPoolContributionStatusesForm", () => {
   it("renders the manual refresh button on the private management page", () => {
@@ -23,13 +24,11 @@ describe("RefreshPoolContributionStatusesForm", () => {
 
     expect(
       screen.getByRole("button", {
-        name: "Refresh payment statuses"
+        name: t("refresh.button")
       })
     ).toBeTruthy();
     expect(
-      screen.getByText(
-        "Webhooks update statuses automatically. Use this only if a payment still looks stuck or if no webhook update has arrived yet."
-      )
+      screen.getByText(t("refresh.body"))
     ).toBeTruthy();
   });
 });

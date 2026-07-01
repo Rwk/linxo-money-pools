@@ -11,6 +11,7 @@ import {
 } from "@/features/contributions/data-access/contribution-repository";
 import { LinxoPaymentsClient } from "@/infrastructure/linxo/linxo-payments-client";
 import type { LinxoRunningOrder } from "@/infrastructure/linxo/linxo-payments-openapi-types";
+import { t } from "@/i18n/t";
 
 type SyncContributionStatusDependencies = {
   findContributionById: (
@@ -89,9 +90,8 @@ function getReturnStatusCopy(contribution: Contribution): Pick<
   ) {
     return {
       statusTone: "confirmed",
-      heading: "Your contribution has been confirmed.",
-      message:
-        "Linxo Payments reports that your contribution has been executed."
+      heading: t("contributionReturn.confirmedHeading"),
+      message: t("contributionReturn.confirmedMessage")
     };
   }
 
@@ -101,18 +101,15 @@ function getReturnStatusCopy(contribution: Contribution): Pick<
   ) {
     return {
       statusTone: "in_progress",
-      heading: "Your transfer authorization is being checked.",
-      message:
-        "We received your return from Linxo Payments, but the transfer is still in progress."
+      heading: t("contributionReturn.inProgressHeading"),
+      message: t("contributionReturn.inProgressMessage")
     };
   }
 
   return {
     statusTone: "incomplete",
-    heading:
-      "Your contribution could not be completed or still requires attention.",
-    message:
-      "Returning from Linxo Payments does not confirm payment execution. Please check again later if needed."
+    heading: t("contributionReturn.incompleteHeading"),
+    message: t("contributionReturn.incompleteMessage")
   };
 }
 
@@ -231,8 +228,7 @@ export async function syncContributionStatusForReturn(
       poolTitle: contribution.pool.title,
       contribution: baseContribution,
       ...statusCopy,
-      syncWarning:
-        "We could not refresh the payment status yet. Please check again later."
+      syncWarning: t("contributionReturn.syncWarning")
     };
   }
 
@@ -260,8 +256,7 @@ export async function syncContributionStatusForReturn(
       poolTitle: contribution.pool.title,
       contribution: baseContribution,
       ...statusCopy,
-      syncWarning:
-        "We could not refresh the payment status yet. Please check again later."
+      syncWarning: t("contributionReturn.syncWarning")
     };
   }
 }

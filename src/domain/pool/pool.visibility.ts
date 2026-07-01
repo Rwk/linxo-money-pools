@@ -1,4 +1,5 @@
 import { Contribution } from "@/domain/pool/pool.types";
+import { t } from "@/i18n/t";
 
 function hasFailedCashInStatus(contribution: Contribution): boolean {
   return (
@@ -69,15 +70,17 @@ export function isContributionVisibleOnPublicPage(
 
 export function getContributionDisplayStatusLabel(
   contribution: Contribution
-): "Confirmed" | "In progress" {
-  return isContributionConfirmed(contribution) ? "Confirmed" : "In progress";
+): string {
+  return isContributionConfirmed(contribution)
+    ? t("statuses.publicContributionConfirmed")
+    : t("statuses.publicContributionInProgress");
 }
 
 export function getPublicContributorLabel(
   contribution: Contribution
 ): string {
   if (contribution.displayAsAnonymous) {
-    return "Anonymous";
+    return t("common.anonymous");
   }
 
   return `${contribution.contributorFirstName} ${contribution.contributorLastName}`;
@@ -87,7 +90,7 @@ export function getPublicContributionAmount(
   contribution: Contribution
 ): string {
   if (contribution.hideAmount) {
-    return "Hidden amount";
+    return t("common.hiddenAmount");
   }
 
   return `${contribution.amount} ${contribution.currency}`;

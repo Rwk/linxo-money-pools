@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { hasGoogleOAuthCredentials } from "@/auth";
 import { SignInButton } from "@/components/auth/sign-in-button";
+import { t } from "@/i18n/t";
 
 type SignInPageProps = {
   searchParams: Promise<{
@@ -13,13 +14,13 @@ type SignInPageProps = {
 function getErrorMessage(error: string | undefined): string | null {
   switch (error) {
     case "AccessDenied":
-      return "You must sign in with a valid @linxo.com Google account.";
+      return t("auth.accessDenied");
     case "Configuration":
-      return "Google sign-in is not configured yet for this environment.";
+      return t("auth.configuration");
     case "Verification":
-      return "Your sign-in request could not be verified. Please try again.";
+      return t("auth.verification");
     default:
-      return error ? "Sign-in failed. Please try again." : null;
+      return error ? t("auth.genericError") : null;
   }
 }
 
@@ -35,15 +36,13 @@ export default async function SignInPage({
         <div className="space-y-6">
           <div className="space-y-3">
             <span className="inline-flex rounded-full bg-white/70 px-3 py-1 text-xs font-medium tracking-[0.18em] text-[var(--muted)] uppercase">
-              Employee access
+              {t("common.employeeAccess")}
             </span>
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-              Sign in with your Linxo Google account
+              {t("auth.title")}
             </h1>
             <p className="text-base leading-7 text-[var(--muted)]">
-              Only Linxo employees can create and manage money pools. Use your
-              @linxo.com Google account to continue. Contributors do not need to
-              sign in to join a pool from its private link.
+              {t("auth.body")}
             </p>
           </div>
 
@@ -55,8 +54,7 @@ export default async function SignInPage({
 
           {!hasGoogleOAuthCredentials ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              Google OAuth credentials are missing for this environment. Add
-              server-side values before testing employee sign-in.
+              {t("auth.credentialsMissing")}
             </div>
           ) : null}
 
@@ -69,7 +67,7 @@ export default async function SignInPage({
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/70 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"
               href="/"
             >
-              Back to home
+              {t("common.backToHome")}
             </Link>
           </div>
         </div>

@@ -4,6 +4,7 @@ import {
   getCashInStatus,
   getCashInStatusLabel
 } from "@/domain/payment/cash-in-status";
+import { t } from "@/i18n/t";
 
 describe("getCashInStatus", () => {
   it("returns pending for a new order", () => {
@@ -84,11 +85,11 @@ describe("getCashInStatus", () => {
   });
 
   it("returns product-friendly labels for each status", () => {
-    expect(getCashInStatusLabel("PENDING")).toBe("Pending");
-    expect(getCashInStatusLabel("EXECUTED")).toBe("Executed");
-    expect(getCashInStatusLabel("COLLECTED")).toBe("Collected");
-    expect(getCashInStatusLabel("REJECTED")).toBe("Rejected");
-    expect(getCashInStatusLabel("CANCELLED")).toBe("Cancelled");
-    expect(getCashInStatusLabel("EXPIRED")).toBe("Expired");
+    expect(getCashInStatusLabel("PENDING")).toBe(t("statuses.cashIn.PENDING"));
+    expect(getCashInStatusLabel("EXECUTED")).toBe(t("statuses.cashIn.EXECUTED"));
+    expect(getCashInStatusLabel("COLLECTED")).toBe(t("statuses.cashIn.COLLECTED"));
+    expect(getCashInStatusLabel("REJECTED")).toBe(t("statuses.cashIn.REJECTED"));
+    expect(getCashInStatusLabel("CANCELLED")).toBe(t("statuses.cashIn.CANCELLED"));
+    expect(getCashInStatusLabel("EXPIRED")).toBe(t("statuses.cashIn.EXPIRED"));
   });
 });

@@ -12,6 +12,7 @@ import {
   validateManagePoolInput
 } from "@/features/pools/domain/manage-pool-input";
 import type { ManagePoolActionState } from "@/features/pools/forms/manage-pool-form-state";
+import { t } from "@/i18n/t";
 
 function revalidatePoolPaths(poolId: string, slug: string): void {
   revalidatePath(`/dashboard/pools/${poolId}`);
@@ -42,7 +43,7 @@ export async function updatePoolAction(
     return {
       values,
       fieldErrors: {},
-      formError: "You are not allowed to edit this money pool.",
+      formError: t("actions.poolUpdateForbidden"),
       successMessage: null
     };
   }
@@ -57,7 +58,7 @@ export async function updatePoolAction(
     return {
       values,
       fieldErrors: {},
-      formError: "The money pool could not be updated. Please try again.",
+      formError: t("actions.poolUpdateError"),
       successMessage: null
     };
   }
@@ -73,6 +74,6 @@ export async function updatePoolAction(
     },
     fieldErrors: {},
     formError: null,
-    successMessage: "Money pool details updated."
+    successMessage: t("actions.poolUpdated")
   };
 }

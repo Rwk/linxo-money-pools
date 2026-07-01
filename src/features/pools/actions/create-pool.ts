@@ -9,6 +9,7 @@ import {
 } from "@/features/pools/domain/create-pool-input";
 import type { CreatePoolActionState } from "@/features/pools/forms/create-pool-form-state";
 import { createPoolForCreator } from "@/features/pools/services/create-pool-service";
+import { t } from "@/i18n/t";
 
 export async function createPoolAction(
   _previousState: CreatePoolActionState,
@@ -38,7 +39,7 @@ export async function createPoolAction(
     return {
       values,
       fieldErrors: {},
-      formError: "The money pool could not be created. Please try again."
+      formError: t("actions.poolCreateError")
     };
   }
 

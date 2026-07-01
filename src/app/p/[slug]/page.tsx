@@ -6,6 +6,7 @@ import { PublicContributionForm } from "@/features/contributions/components/publ
 import { findPoolBySlug } from "@/features/pools/data-access/pool-repository";
 import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
 import { toPublicPoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
+import { t } from "@/i18n/t";
 
 type PublicPoolPageProps = {
   params: Promise<{
@@ -29,26 +30,23 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
       <section className="mx-auto w-full max-w-5xl space-y-6">
         <div className="space-y-3">
           <span className="inline-flex rounded-full bg-white/70 px-3 py-1 text-xs font-medium tracking-[0.18em] text-[var(--muted)] uppercase">
-            Shared by private link
+            {t("pools.sharedByPrivateLink")}
           </span>
           <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-            Contribute to this money pool
+            {t("pools.publicTitle")}
           </h1>
           <p className="max-w-3xl text-base leading-7 text-[var(--muted)]">
-            Anyone with this private link can contribute. Verified
-            contributions are sent directly to the collector through Linxo
-            Payments and the contributor bank flow.
+            {t("pools.publicBody")}
           </p>
         </div>
 
         {!isOpenForContributions && pool.status === "CLOSED" ? (
           <section className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6">
             <h2 className="text-lg font-semibold text-amber-950">
-              This money pool is closed
+              {t("pools.closedTitle")}
             </h2>
             <p className="mt-3 text-sm leading-6 text-amber-900">
-              New contributions are no longer accepted for this pool. Existing
-              visible contributions stay visible.
+              {t("pools.closedBody")}
             </p>
           </section>
         ) : isOpenForContributions ? (
@@ -59,12 +57,12 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
         ) : (
           <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
             <h2 className="text-lg font-semibold text-slate-950">
-              Online contributions are not available for this pool right now.
+              {t("pools.unavailableTitle")}
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-700">
               {pool.collectorAliasId
-                ? "The closing date has passed. The pool creator needs to update it before contributions can resume."
-                : "The collector account still needs to be configured before this pool can receive online contributions."}
+                ? t("pools.unavailableClosingDate")
+                : t("pools.unavailableCollector")}
             </p>
           </section>
         )}
@@ -75,7 +73,7 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
           className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/80 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"
           href="/"
         >
-          Back to home
+          {t("common.backToHome")}
         </Link>
       </section>
     </main>

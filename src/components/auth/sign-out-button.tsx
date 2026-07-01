@@ -1,5 +1,6 @@
 import { signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 type SignOutButtonProps = {
   redirectTo?: string;
@@ -18,7 +19,7 @@ export function SignOutButton({
       }}
     >
       <Button type="submit" variant="secondary">
-        Sign out
+        {t("common.signOut")}
       </Button>
     </form>
   );

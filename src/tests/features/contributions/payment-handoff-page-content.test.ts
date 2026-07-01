@@ -14,6 +14,7 @@ vi.mock("@/features/contributions/components/payment-qr-code", () => ({
 
 import { PaymentHandoffPageContent } from "@/features/contributions/components/payment-handoff-page-content";
 import type { PaymentHandoffViewModel } from "@/features/contributions/presenters/payment-handoff-presenter";
+import { t } from "@/i18n/t";
 
 function createViewModel(
   overrides: Partial<PaymentHandoffViewModel> = {}
@@ -47,7 +48,7 @@ describe("PaymentHandoffPageContent", () => {
     );
 
     const paymentLink = screen.getByRole("link", {
-      name: "Continue to secure payment"
+      name: t("paymentHandoff.continueToSecurePayment")
     });
 
     expect(paymentLink.getAttribute("href")).toBe(
@@ -72,12 +73,12 @@ describe("PaymentHandoffPageContent", () => {
     );
 
     expect(
-      screen.queryByRole("link", { name: "Continue to secure payment" })
+      screen.queryByRole("link", {
+        name: t("paymentHandoff.continueToSecurePayment")
+      })
     ).toBeNull();
     expect(
-      screen.getByText(
-        "The payment link is currently unavailable for this contribution. It has not been confirmed."
-      )
+      screen.getByText(t("paymentHandoff.unavailable"))
     ).toBeTruthy();
   });
 });

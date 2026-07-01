@@ -4,6 +4,7 @@ import {
   parseManagePoolFormValues,
   validateManagePoolInput
 } from "@/features/pools/domain/manage-pool-input";
+import { t } from "@/i18n/t";
 
 describe("manage pool input", () => {
   it("rejects an empty title after trimming", () => {
@@ -19,7 +20,7 @@ describe("manage pool input", () => {
 
     expect(result.success).toBe(false);
     expect(result.success ? null : result.fieldErrors.title).toBe(
-      "Title is required."
+      t("validation.titleRequired")
     );
   });
 
@@ -58,7 +59,7 @@ describe("manage pool input", () => {
 
     expect(result.success).toBe(false);
     expect(result.success ? null : result.fieldErrors.eventType).toBe(
-      "Event type is required."
+      t("validation.eventTypeRequired")
     );
   });
 
@@ -75,7 +76,7 @@ describe("manage pool input", () => {
 
     expect(result.success).toBe(false);
     expect(result.success ? null : result.fieldErrors.closingDate).toBe(
-      "Closing date must be today or later."
+      t("validation.closingDateFuture")
     );
   });
 

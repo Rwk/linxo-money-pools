@@ -7,6 +7,7 @@ import {
   initialCreatePoolActionState,
   normalizeCreatePoolFormState
 } from "@/features/pools/forms/create-pool-form-state";
+import { t } from "@/i18n/t";
 
 function FieldError({ message }: { message?: string }) {
   if (!message) {
@@ -33,7 +34,7 @@ export function CreatePoolForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-semibold text-slate-900" htmlFor="title">
-          Title
+          {t("poolForms.title")}
         </label>
         <input
           className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none ring-0 transition focus:border-slate-400"
@@ -41,7 +42,7 @@ export function CreatePoolForm() {
           id="title"
           maxLength={120}
           name="title"
-          placeholder="Team farewell gift for Alex"
+          placeholder={t("poolForms.titlePlaceholder")}
           required
         />
         <FieldError message={safeState.fieldErrors.title} />
@@ -52,7 +53,7 @@ export function CreatePoolForm() {
           className="text-sm font-semibold text-slate-900"
           htmlFor="description"
         >
-          Description
+          {t("poolForms.description")}
         </label>
         <textarea
           className="min-h-36 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none ring-0 transition focus:border-slate-400"
@@ -60,7 +61,7 @@ export function CreatePoolForm() {
           id="description"
           maxLength={2000}
           name="description"
-          placeholder="Describe who the pool is for and what the shared gift will support."
+          placeholder={t("poolForms.descriptionPlaceholder")}
           required
         />
         <FieldError message={safeState.fieldErrors.description} />
@@ -72,7 +73,7 @@ export function CreatePoolForm() {
             className="text-sm font-semibold text-slate-900"
             htmlFor="eventType"
           >
-            Event type
+            {t("poolForms.eventType")}
           </label>
           <select
             className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -81,11 +82,11 @@ export function CreatePoolForm() {
             name="eventType"
             required
           >
-            <option value="BIRTHDAY">Birthday</option>
-            <option value="BIRTH">Birth</option>
-            <option value="WEDDING">Wedding</option>
-            <option value="FAREWELL">Farewell</option>
-            <option value="OTHER">Other</option>
+            <option value="BIRTHDAY">{t("events.BIRTHDAY")}</option>
+            <option value="BIRTH">{t("events.BIRTH")}</option>
+            <option value="WEDDING">{t("events.WEDDING")}</option>
+            <option value="FAREWELL">{t("events.FAREWELL")}</option>
+            <option value="OTHER">{t("events.OTHER")}</option>
           </select>
           <FieldError message={safeState.fieldErrors.eventType} />
         </div>
@@ -95,7 +96,7 @@ export function CreatePoolForm() {
             className="text-sm font-semibold text-slate-900"
             htmlFor="closingDate"
           >
-            Closing date
+            {t("poolForms.closingDate")}
           </label>
           <input
             className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -114,7 +115,7 @@ export function CreatePoolForm() {
           className="text-sm font-semibold text-slate-900"
           htmlFor="collectorDisplayName"
         >
-          Collector display name
+          {t("poolForms.collectorDisplayName")}
         </label>
         <input
           className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -122,15 +123,14 @@ export function CreatePoolForm() {
           id="collectorDisplayName"
           maxLength={120}
           name="collectorDisplayName"
-          placeholder="Linxo Team"
+          placeholder={t("poolForms.collectorDisplayNamePlaceholder")}
           required
         />
         <FieldError message={safeState.fieldErrors.collectorDisplayName} />
       </div>
 
       <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900">
-        The collector bank account is configured in a separate step. This form
-        does not store IBAN, payer bank details, or beneficiary KYC data.
+        {t("poolForms.securityNotice")}
       </div>
 
       <button
@@ -138,7 +138,7 @@ export function CreatePoolForm() {
         disabled={isPending}
         type="submit"
       >
-        {isPending ? "Creating..." : "Create money pool"}
+        {isPending ? t("common.creating") : t("poolForms.createPool")}
       </button>
     </form>
   );

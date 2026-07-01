@@ -22,6 +22,7 @@ import {
   updatePoolRecord
 } from "@/features/pools/data-access/pool-repository";
 import { getInitialManagePoolActionState } from "@/features/pools/forms/manage-pool-form-state";
+import { t } from "@/i18n/t";
 
 describe("updatePoolAction", () => {
   beforeEach(() => {
@@ -58,7 +59,7 @@ describe("updatePoolAction", () => {
       formData
     );
 
-    expect(result.formError).toBe("You are not allowed to edit this money pool.");
+    expect(result.formError).toBe(t("actions.poolUpdateForbidden"));
     expect(updatePoolRecord).not.toHaveBeenCalled();
   });
 
@@ -96,6 +97,6 @@ describe("updatePoolAction", () => {
     });
     expect(revalidatePath).toHaveBeenCalledWith("/dashboard/pools/pool_123");
     expect(revalidatePath).toHaveBeenCalledWith("/p/team-gift");
-    expect(result.successMessage).toBe("Money pool details updated.");
+    expect(result.successMessage).toBe(t("actions.poolUpdated"));
   });
 });

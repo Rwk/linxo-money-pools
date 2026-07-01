@@ -1,5 +1,6 @@
 import { signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 type SignInButtonProps = {
   disabled?: boolean;
@@ -25,7 +26,7 @@ export function SignInButton({
       }}
     >
       <Button className="w-full sm:w-auto" disabled={disabled} type="submit">
-        Sign in with Google
+        {t("common.signInWithGoogle")}
       </Button>
     </form>
   );

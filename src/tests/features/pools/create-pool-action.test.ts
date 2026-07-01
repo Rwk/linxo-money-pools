@@ -19,6 +19,7 @@ import { requireLinxoSession } from "@/features/auth/require-linxo-session";
 import { redirect } from "next/navigation";
 import { initialCreatePoolActionState } from "@/features/pools/forms/create-pool-form-state";
 import { createPoolForCreator } from "@/features/pools/services/create-pool-service";
+import { t } from "@/i18n/t";
 
 describe("create pool action", () => {
   beforeEach(() => {
@@ -49,11 +50,11 @@ describe("create pool action", () => {
     });
     expect(result.values).toBeDefined();
     expect(result.formError).toBeNull();
-    expect(result.fieldErrors.title).toBe("Title is required.");
-    expect(result.fieldErrors.description).toBe("Description is required.");
-    expect(result.fieldErrors.closingDate).toBe("Closing date is required.");
+    expect(result.fieldErrors.title).toBe(t("validation.titleRequired"));
+    expect(result.fieldErrors.description).toBe(t("validation.descriptionRequired"));
+    expect(result.fieldErrors.closingDate).toBe(t("validation.closingDateRequired"));
     expect(result.fieldErrors.collectorDisplayName).toBe(
-      "Collector display name is required."
+      t("validation.collectorDisplayNameRequired")
     );
   });
 
@@ -63,7 +64,7 @@ describe("create pool action", () => {
     formData.set("title", "Team gift");
     formData.set("description", "Shared contribution for a team gift.");
     formData.set("eventType", "BIRTHDAY");
-    formData.set("closingDate", "2026-06-30");
+    formData.set("closingDate", "2026-07-10");
     formData.set("collectorDisplayName", "Linxo Team");
 
     vi.mocked(createPoolForCreator).mockResolvedValue({

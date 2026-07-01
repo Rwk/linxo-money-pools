@@ -16,6 +16,7 @@ import {
   normalizeManagePoolFormState,
   type ManagePoolFormValues
 } from "@/features/pools/forms/manage-pool-form-state";
+import { t } from "@/i18n/t";
 
 function FieldError({ message }: { message?: string }) {
   if (!message) {
@@ -61,11 +62,11 @@ function formatDateInputValue(date: Date): string {
 
 function getEventLabel(eventType: EventType): string {
   const labels: Record<EventType, string> = {
-    BIRTHDAY: "Birthday",
-    BIRTH: "Birth",
-    WEDDING: "Wedding",
-    FAREWELL: "Farewell",
-    OTHER: "Other"
+    BIRTHDAY: t("events.BIRTHDAY"),
+    BIRTH: t("events.BIRTH"),
+    WEDDING: t("events.WEDDING"),
+    FAREWELL: t("events.FAREWELL"),
+    OTHER: t("events.OTHER")
   };
 
   return labels[eventType];
@@ -108,17 +109,17 @@ export function PoolManagementControls({
     initialPoolStatusActionState
   );
   const safeEditState = normalizeManagePoolFormState(initialValues, editState);
-  const statusActionLabel = showCloseAction ? "Close pool" : "Reopen pool";
+  const statusActionLabel = showCloseAction
+    ? t("poolForms.closePool")
+    : t("poolForms.reopenPool");
 
   return (
     <div className="space-y-6">
       <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-slate-950">Edit pool details</h2>
+          <h2 className="text-lg font-semibold text-slate-950">{t("poolForms.editTitle")}</h2>
           <p className="text-sm leading-6 text-slate-700">
-            You can update the title, description, event type, and closing date
-            without affecting existing contributions, Linxo orders, or the
-            collector account configuration.
+            {t("poolForms.editBody")}
           </p>
         </div>
 
@@ -130,7 +131,7 @@ export function PoolManagementControls({
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-900" htmlFor="title">
-              Title
+              {t("poolForms.title")}
             </label>
             <input
               className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -145,7 +146,7 @@ export function PoolManagementControls({
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-900" htmlFor="description">
-              Description
+              {t("poolForms.description")}
             </label>
             <textarea
               className="min-h-36 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -161,7 +162,7 @@ export function PoolManagementControls({
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-900" htmlFor="eventType">
-                Event type
+                {t("poolForms.eventType")}
               </label>
               <select
                 className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -181,7 +182,7 @@ export function PoolManagementControls({
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-900" htmlFor="closingDate">
-                Closing date
+                {t("poolForms.closingDate")}
               </label>
               <input
                 className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -196,19 +197,16 @@ export function PoolManagementControls({
           </div>
 
           <Button disabled={isEditPending} type="submit">
-            {isEditPending ? "Saving..." : "Save changes"}
+            {isEditPending ? t("common.saving") : t("poolForms.saveChanges")}
           </Button>
         </form>
       </section>
 
       <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-slate-950">Pool lifecycle</h2>
+          <h2 className="text-lg font-semibold text-slate-950">{t("poolForms.lifecycleTitle")}</h2>
           <p className="text-sm leading-6 text-slate-700">
-            Closing this pool prevents new contributions but does not cancel
-            already initiated bank transfers or existing Linxo orders.
-            Reopening allows contributions again when the closing date is still
-            valid and the collector account is configured.
+            {t("poolForms.lifecycleBody")}
           </p>
         </div>
 
@@ -219,14 +217,14 @@ export function PoolManagementControls({
           />
           {!showCloseAction && !showReopenAction ? (
             <p className="text-sm leading-6 text-slate-700">
-              Update the closing date before reopening this pool.
+              {t("poolForms.updateClosingDateToReopen")}
             </p>
           ) : null}
           <Button disabled={isStatusPending} type="submit" variant="secondary">
             {isStatusPending
               ? showCloseAction
-                ? "Closing..."
-                : "Reopening..."
+                ? t("poolForms.closingPool")
+                : t("poolForms.reopeningPool")
               : statusActionLabel}
           </Button>
         </form>

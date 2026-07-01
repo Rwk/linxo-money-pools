@@ -21,18 +21,19 @@ import {
   LinxoPaymentsNetworkError,
   LinxoPaymentsTokenError
 } from "@/infrastructure/linxo/linxo-payments-errors";
+import { t } from "@/i18n/t";
 
 function getCreateContributionErrorMessage(error: unknown): string {
   if (error instanceof ContributionPoolNotFoundError) {
-    return "This money pool could not be found.";
+    return t("actions.contributionNotFound");
   }
 
   if (error instanceof ContributionPoolClosedError) {
-    return "This money pool is closed and cannot receive new contributions.";
+    return t("actions.contributionPoolClosed");
   }
 
   if (error instanceof ContributionPoolNotReadyError) {
-    return "Online contributions are not available yet for this pool.";
+    return t("actions.contributionPoolNotReady");
   }
 
   if (
@@ -42,10 +43,10 @@ function getCreateContributionErrorMessage(error: unknown): string {
     error instanceof LinxoPaymentsApiError ||
     error instanceof ContributionPaymentInitiationError
   ) {
-    return "The payment initiation could not be started right now. Please try again.";
+    return t("actions.contributionStartError");
   }
 
-  return "The contribution could not be started. Please try again.";
+  return t("actions.contributionGeneric");
 }
 
 function logCreateContributionFailure(input: {

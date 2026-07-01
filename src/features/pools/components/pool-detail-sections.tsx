@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { PoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
+import { t } from "@/i18n/t";
 
 function EmptyContributionState({ message }: { message: string }) {
   return <p className="mt-3 text-sm leading-6 text-slate-700">{message}</p>;
@@ -36,19 +37,19 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
 
           <div className="grid gap-4 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <p className="font-semibold text-slate-950">Collector</p>
+              <p className="font-semibold text-slate-950">{t("poolDetails.collector")}</p>
               <p>{pool.collectorDisplayName}</p>
             </div>
             <div>
-              <p className="font-semibold text-slate-950">Closing date</p>
+              <p className="font-semibold text-slate-950">{t("poolDetails.closingDate")}</p>
               <p>{pool.closingDateLabel}</p>
             </div>
             <div>
-              <p className="font-semibold text-slate-950">Confirmed amount</p>
+              <p className="font-semibold text-slate-950">{t("poolDetails.confirmedAmount")}</p>
               <p>{pool.confirmedAmountLabel}</p>
             </div>
             <div>
-              <p className="font-semibold text-slate-950">Share link</p>
+              <p className="font-semibold text-slate-950">{t("poolDetails.shareLink")}</p>
               <Link
                 className="text-teal-700 underline-offset-4 transition hover:underline"
                 href={pool.publicPath}
@@ -61,16 +62,16 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
       </section>
 
       <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
-        <h2 className="text-lg font-semibold text-slate-950">Pool totals</h2>
+        <h2 className="text-lg font-semibold text-slate-950">{t("poolDetails.totalsTitle")}</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm text-[var(--muted)]">Confirmed</p>
+            <p className="text-sm text-[var(--muted)]">{t("poolDetails.confirmed")}</p>
             <p className="mt-1 text-xl font-semibold text-slate-950">
               {pool.confirmedAmountLabel}
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm text-[var(--muted)]">In progress</p>
+            <p className="text-sm text-[var(--muted)]">{t("poolDetails.inProgress")}</p>
             <p className="mt-1 text-xl font-semibold text-slate-950">
               {pool.inProgressAmountLabel}
             </p>
@@ -80,23 +81,19 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
 
       <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
         <h2 className="text-lg font-semibold text-slate-950">
-          Contribution and payment status
+          {t("poolDetails.statusTitle")}
         </h2>
         <p className="mt-3 text-sm leading-6 text-slate-700">
-          Returning from Linxo Payments does not prove that a transfer
-          succeeded. Public pages show only confirmed and in-progress
-          contributions after local status updates.
+          {t("poolDetails.statusBody")}
         </p>
       </section>
 
       <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
         <h2 className="text-lg font-semibold text-slate-950">
-          {pool.mode === "public"
-            ? "Visible contributions"
-            : "Visible contributions"}
+          {t("poolDetails.visibleContributions")}
         </h2>
           {pool.visibleContributionCount === 0 ? (
-          <EmptyContributionState message="No confirmed or in-progress contributions are visible yet." />
+          <EmptyContributionState message={t("poolDetails.noVisibleContributions")} />
           ) : pool.mode === "public" ? (
           <ul className="mt-4 space-y-3">
             {pool.visibleContributions.map((contribution) => (
@@ -142,11 +139,15 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
                       {contribution.contributorEmail}
                     </Link>
                     <p className="text-sm text-[var(--muted)]">
-                      Created {contribution.createdDateLabel}
+                      {t("poolDetails.createdAt", {
+                        date: contribution.createdDateLabel
+                      })}
                     </p>
                     {contribution.returnedDateLabel ? (
                       <p className="text-sm text-[var(--muted)]">
-                        Returned {contribution.returnedDateLabel}
+                        {t("poolDetails.returnedAt", {
+                          date: contribution.returnedDateLabel
+                        })}
                       </p>
                     ) : null}
                   </div>
@@ -179,10 +180,10 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
       {pool.mode === "private" ? (
         <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
           <h2 className="text-lg font-semibold text-slate-950">
-            Incomplete or failed contributions
+            {t("poolDetails.incompleteTitle")}
           </h2>
           {pool.incompleteContributionCount === 0 ? (
-            <EmptyContributionState message="No pending, failed, or incomplete contributions need attention right now." />
+            <EmptyContributionState message={t("poolDetails.noIncomplete")} />
           ) : (
             <ul className="mt-4 space-y-3">
               {pool.incompleteContributions.map((contribution) => (
@@ -202,11 +203,15 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
                         {contribution.contributorEmail}
                       </Link>
                       <p className="text-sm text-[var(--muted)]">
-                        Created {contribution.createdDateLabel}
+                        {t("poolDetails.createdAt", {
+                          date: contribution.createdDateLabel
+                        })}
                       </p>
                       {contribution.returnedDateLabel ? (
                         <p className="text-sm text-[var(--muted)]">
-                          Returned {contribution.returnedDateLabel}
+                          {t("poolDetails.returnedAt", {
+                            date: contribution.returnedDateLabel
+                          })}
                         </p>
                       ) : null}
                     </div>

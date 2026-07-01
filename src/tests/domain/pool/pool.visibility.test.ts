@@ -10,6 +10,7 @@ import {
   isContributionVisibleOnPublicPage
 } from "@/domain/pool/pool.visibility";
 import type { Contribution } from "@/domain/pool/pool.types";
+import { t } from "@/i18n/t";
 
 function createContribution(
   overrides: Partial<Contribution> = {}
@@ -39,7 +40,7 @@ describe("pool visibility helpers", () => {
         ...createContribution(),
         displayAsAnonymous: true
       })
-    ).toBe("Anonymous");
+    ).toBe(t("common.anonymous"));
   });
 
   it("hides the amount when requested", () => {
@@ -48,7 +49,7 @@ describe("pool visibility helpers", () => {
         ...createContribution(),
         hideAmount: true
       })
-    ).toBe("Hidden amount");
+    ).toBe(t("common.hiddenAmount"));
   });
 
   it("marks executed and collected contributions as confirmed", () => {
@@ -82,7 +83,9 @@ describe("pool visibility helpers", () => {
 
     expect(isContributionInProgressForPublicDisplay(contribution)).toBe(true);
     expect(isContributionVisibleOnPublicPage(contribution)).toBe(true);
-    expect(getContributionDisplayStatusLabel(contribution)).toBe("In progress");
+    expect(getContributionDisplayStatusLabel(contribution)).toBe(
+      t("statuses.publicContributionInProgress")
+    );
   });
 
   it("keeps submitted payments in the public in-progress group", () => {

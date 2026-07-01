@@ -15,6 +15,7 @@ vi.mock("@/features/contributions/components/payment-qr-code", () => ({
 import { PaymentHandoffStatus } from "@/features/contributions/components/payment-handoff-status";
 import type { PaymentStatusApiPayload } from "@/features/contributions/domain/payment-handoff";
 import type { PaymentHandoffViewModel } from "@/features/contributions/presenters/payment-handoff-presenter";
+import { t } from "@/i18n/t";
 
 function createViewModel(
   overrides: Partial<PaymentHandoffViewModel> = {}
@@ -62,7 +63,11 @@ describe("PaymentHandoffStatus", () => {
 
     expect(screen.queryByTestId("payment-qr-code")).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "Show QR code again" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: t("paymentHandoff.showQrCodeAgain")
+      })
+    );
 
     expect(screen.getByTestId("payment-qr-code")).toBeTruthy();
   });
@@ -97,11 +102,9 @@ describe("PaymentHandoffStatus", () => {
       await Promise.resolve();
     });
 
-    expect(screen.queryByText("Your contribution has been confirmed.")).toBeNull();
+    expect(screen.queryByText(t("paymentHandoff.messages.confirmed"))).toBeNull();
     expect(
-      screen.getByText(
-        "The contribution is still in progress. It is not confirmed until the local status updates."
-      )
+      screen.getByText(t("paymentHandoff.messages.pending"))
     ).toBeTruthy();
   });
 });
