@@ -8,6 +8,7 @@ import type {
   PaymentDisplayStatus,
   PaymentStatusApiPayload
 } from "@/features/contributions/domain/payment-handoff";
+import { getPaymentHandoffUiState } from "@/features/contributions/domain/payment-handoff";
 import type { PaymentHandoffViewModel } from "@/features/contributions/presenters/payment-handoff-presenter";
 import { t } from "@/i18n/t";
 
@@ -54,7 +55,7 @@ function isTerminalStatus(status: PaymentDisplayStatus): boolean {
 
 export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
   const [status, setStatus] = useState(handoff.displayStatus);
-  const [qrVisibleWhileOpened, setQrVisibleWhileOpened] = useState(false);
+  const [paymentOptionsRevealed, setPaymentOptionsRevealed] = useState(false);
   const statusApiUrlRef = useRef(handoff.statusApiUrl);
 
   useEffect(() => {
@@ -88,15 +89,13 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
 
   const statusCopy = getStatusCopy(status);
   const directPaymentUrl = handoff.directPaymentUrl;
-  const hasPaymentRoute = directPaymentUrl !== null;
   const canRenderQrCode = handoff.qrCodeUrl !== null;
-  const qrVisible =
-    status === "OPENED" ? qrVisibleWhileOpened : status === "WAITING_FOR_SCAN";
-  const shouldShowQrCode =
-    qrVisible &&
-    canRenderQrCode &&
-    !isTerminalStatus(status) &&
-    status !== "PENDING";
+  const uiState = getPaymentHandoffUiState({
+    displayStatus: status,
+    hasDirectPaymentUrl: directPaymentUrl !== null,
+    hasQrCodeUrl: canRenderQrCode,
+    paymentOptionsRevealed
+  });
 
   return (
     <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -129,7 +128,7 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
           <p className="mt-2">{statusCopy.message}</p>
         </div>
 
-        {directPaymentUrl && !isTerminalStatus(status) ? (
+        {uiState.showDirectPaymentButton && directPaymentUrl ? (
           <a
             className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--accent-foreground)] shadow-[0_14px_30px_rgba(15,118,110,0.18)] transition"
             href={directPaymentUrl}
@@ -138,16 +137,20 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
           </a>
         ) : null}
 
-        {status === "OPENED" && canRenderQrCode ? (
+        {uiState.showShowPaymentOptionsAgain ? (
           <button
             className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/80 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"
-            onClick={() => setQrVisibleWhileOpened((value) => !value)}
+            onClick={() => setPaymentOptionsRevealed(true)}
             type="button"
           >
-            {qrVisible
-              ? t("paymentHandoff.hideQrCode")
-              : t("paymentHandoff.showQrCodeAgain")}
+            {t("paymentHandoff.actions.showPaymentOptionsAgain")}
           </button>
+        ) : null}
+
+        {uiState.showPaymentAlreadyOpenedWarning ? (
+          <p className="text-sm leading-6 text-slate-700">
+            {t("paymentHandoff.warning.paymentAlreadyOpened")}
+          </p>
         ) : null}
 
         <div className="flex flex-wrap gap-3">
@@ -161,13 +164,15 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
       </div>
 
       <div className="space-y-4">
-        {shouldShowQrCode && handoff.qrCodeUrl ? (
+        {uiState.showQrCode && handoff.qrCodeUrl ? (
           <PaymentQrCode payerUrl={handoff.qrCodeUrl} />
         ) : (
           <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-6 text-sm leading-6 text-slate-700">
-            {canRenderQrCode
-              ? t("paymentHandoff.qrHidden")
-              : t("paymentHandoff.unavailable")}
+            {status === "OPENED"
+              ? t("paymentHandoff.waiting.description")
+              : canRenderQrCode
+                ? t("paymentHandoff.qrHidden")
+                : t("paymentHandoff.unavailable")}
           </div>
         )}
         <p className="text-sm leading-6 text-slate-700">

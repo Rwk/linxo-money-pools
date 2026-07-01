@@ -13,6 +13,7 @@ vi.mock("@/features/contributions/components/payment-qr-code", () => ({
 }));
 
 import { PaymentHandoffStatus } from "@/features/contributions/components/payment-handoff-status";
+import { getPaymentHandoffUiState } from "@/features/contributions/domain/payment-handoff";
 import type { PaymentStatusApiPayload } from "@/features/contributions/domain/payment-handoff";
 import type { PaymentHandoffViewModel } from "@/features/contributions/presenters/payment-handoff-presenter";
 import { t } from "@/i18n/t";
@@ -50,7 +51,22 @@ describe("PaymentHandoffStatus", () => {
     vi.restoreAllMocks();
   });
 
-  it("shows the QR code again after the payment link has been opened", () => {
+  it("shows the QR code and direct payment button before the payment is opened", () => {
+    render(
+      React.createElement(PaymentHandoffStatus, {
+        handoff: createViewModel()
+      })
+    );
+
+    expect(screen.getByTestId("payment-qr-code")).toBeTruthy();
+    expect(
+      screen.getByRole("link", {
+        name: t("paymentHandoff.continueToSecurePayment")
+      })
+    ).toBeTruthy();
+  });
+
+  it("hides the QR code and direct payment button after the payment link has been opened", () => {
     render(
       React.createElement(PaymentHandoffStatus, {
         handoff: createViewModel({
@@ -62,14 +78,96 @@ describe("PaymentHandoffStatus", () => {
     );
 
     expect(screen.queryByTestId("payment-qr-code")).toBeNull();
+    expect(
+      screen.queryByRole("link", {
+        name: t("paymentHandoff.continueToSecurePayment")
+      })
+    ).toBeNull();
+    expect(screen.getByText(t("paymentHandoff.messages.opened"))).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: t("paymentHandoff.actions.showPaymentOptionsAgain")
+      })
+    ).toBeTruthy();
+  });
+
+  it("shows the payment options again after explicit user action", () => {
+    render(
+      React.createElement(PaymentHandoffStatus, {
+        handoff: createViewModel({
+          displayStatus: "OPENED",
+          paymentLinkOpenedAt: "2026-06-27T10:00:00.000Z",
+          paymentLinkOpenedSource: "QR_CODE"
+        })
+      })
+    );
 
     fireEvent.click(
       screen.getByRole("button", {
-        name: t("paymentHandoff.showQrCodeAgain")
+        name: t("paymentHandoff.actions.showPaymentOptionsAgain")
       })
     );
 
     expect(screen.getByTestId("payment-qr-code")).toBeTruthy();
+    expect(
+      screen.getByRole("link", {
+        name: t("paymentHandoff.continueToSecurePayment")
+      })
+    ).toBeTruthy();
+    expect(
+      screen.getByText(t("paymentHandoff.warning.paymentAlreadyOpened"))
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("button", {
+        name: t("paymentHandoff.actions.showPaymentOptionsAgain")
+      })
+    ).toBeNull();
+  });
+
+  it("keeps payment actions hidden for confirmed states", () => {
+    render(
+      React.createElement(PaymentHandoffStatus, {
+        handoff: createViewModel({
+          displayStatus: "CONFIRMED",
+          cashInStatus: "EXECUTED"
+        })
+      })
+    );
+
+    expect(screen.queryByTestId("payment-qr-code")).toBeNull();
+    expect(
+      screen.queryByRole("link", {
+        name: t("paymentHandoff.continueToSecurePayment")
+      })
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", {
+        name: t("paymentHandoff.actions.showPaymentOptionsAgain")
+      })
+    ).toBeNull();
+  });
+
+  it("keeps payment actions hidden for failed states", () => {
+    render(
+      React.createElement(PaymentHandoffStatus, {
+        handoff: createViewModel({
+          displayStatus: "FAILED",
+          cashInStatus: "REJECTED"
+        })
+      })
+    );
+
+    expect(screen.queryByTestId("payment-qr-code")).toBeNull();
+    expect(
+      screen.queryByRole("link", {
+        name: t("paymentHandoff.continueToSecurePayment")
+      })
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", {
+        name: t("paymentHandoff.actions.showPaymentOptionsAgain")
+      })
+    ).toBeNull();
   });
 
   it("does not claim success for pending statuses while polling", async () => {
@@ -106,5 +204,39 @@ describe("PaymentHandoffStatus", () => {
     expect(
       screen.getByText(t("paymentHandoff.messages.pending"))
     ).toBeTruthy();
+  });
+});
+
+describe("getPaymentHandoffUiState", () => {
+  it("hides all payment entry points by default in opened state", () => {
+    expect(
+      getPaymentHandoffUiState({
+        displayStatus: "OPENED",
+        hasDirectPaymentUrl: true,
+        hasQrCodeUrl: true,
+        paymentOptionsRevealed: false
+      })
+    ).toEqual({
+      showDirectPaymentButton: false,
+      showQrCode: false,
+      showShowPaymentOptionsAgain: true,
+      showPaymentAlreadyOpenedWarning: false
+    });
+  });
+
+  it("reveals payment entry points locally after explicit user action", () => {
+    expect(
+      getPaymentHandoffUiState({
+        displayStatus: "OPENED",
+        hasDirectPaymentUrl: true,
+        hasQrCodeUrl: true,
+        paymentOptionsRevealed: true
+      })
+    ).toEqual({
+      showDirectPaymentButton: true,
+      showQrCode: true,
+      showShowPaymentOptionsAgain: false,
+      showPaymentAlreadyOpenedWarning: true
+    });
   });
 });

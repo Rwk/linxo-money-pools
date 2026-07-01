@@ -202,6 +202,19 @@ export const fr = {
     hideQrCode: "Masquer le QR code",
     showQrCodeAgain: "Afficher de nouveau le QR code",
     backToPoolPage: "Retour à la page de la cagnotte",
+    waiting: {
+      title: "Paiement ouvert. En attente de validation bancaire...",
+      description:
+        "Le paiement a déjà été ouvert. Nous attendons maintenant la validation bancaire ou une mise à jour de statut."
+    },
+    actions: {
+      showPaymentOptionsAgain:
+        "Afficher à nouveau les options de paiement"
+    },
+    warning: {
+      paymentAlreadyOpened:
+        "Le paiement est peut-être déjà en cours. N'utilisez à nouveau ces options qu'en cas de besoin."
+    },
     qrHidden:
       "Le QR code est masqué pendant que nous attendons votre autorisation bancaire. Vous pouvez l'afficher à nouveau à tout moment.",
     unavailable:
@@ -219,7 +232,7 @@ export const fr = {
       failed:
         "Cette contribution n'a pas pu être confirmée. Vous pouvez revenir à la page de la cagnotte et réessayer plus tard si nécessaire.",
       opened:
-        "Le lien de paiement a été ouvert. Nous attendons l'autorisation bancaire ou une mise à jour de statut.",
+        "Paiement ouvert. En attente de validation bancaire...",
       waitingForScan:
         "Ouvrez le lien de paiement sécurisé depuis votre téléphone ou poursuivez sur cet appareil.",
       pending:

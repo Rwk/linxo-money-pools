@@ -29,6 +29,13 @@ export type PaymentStatusApiPayload = {
   poolTitle: string;
 };
 
+export type PaymentHandoffUiState = {
+  showDirectPaymentButton: boolean;
+  showQrCode: boolean;
+  showShowPaymentOptionsAgain: boolean;
+  showPaymentAlreadyOpenedWarning: boolean;
+};
+
 export function createPaymentAccessToken(): string {
   return randomBytes(24).toString("hex");
 }
@@ -115,6 +122,43 @@ export function getPaymentDisplayStatus(input: {
   }
 
   return "PENDING";
+}
+
+export function getPaymentHandoffUiState(input: {
+  displayStatus: PaymentDisplayStatus;
+  hasDirectPaymentUrl: boolean;
+  hasQrCodeUrl: boolean;
+  paymentOptionsRevealed: boolean;
+}): PaymentHandoffUiState {
+  const hasAnyPaymentOption =
+    input.hasDirectPaymentUrl || input.hasQrCodeUrl;
+
+  if (input.displayStatus === "WAITING_FOR_SCAN") {
+    return {
+      showDirectPaymentButton: input.hasDirectPaymentUrl,
+      showQrCode: input.hasQrCodeUrl,
+      showShowPaymentOptionsAgain: false,
+      showPaymentAlreadyOpenedWarning: false
+    };
+  }
+
+  if (input.displayStatus === "OPENED") {
+    return {
+      showDirectPaymentButton:
+        input.paymentOptionsRevealed && input.hasDirectPaymentUrl,
+      showQrCode: input.paymentOptionsRevealed && input.hasQrCodeUrl,
+      showShowPaymentOptionsAgain:
+        hasAnyPaymentOption && !input.paymentOptionsRevealed,
+      showPaymentAlreadyOpenedWarning: input.paymentOptionsRevealed
+    };
+  }
+
+  return {
+    showDirectPaymentButton: false,
+    showQrCode: false,
+    showShowPaymentOptionsAgain: false,
+    showPaymentAlreadyOpenedWarning: false
+  };
 }
 
 export function toPaymentLinkOpenedSource(
