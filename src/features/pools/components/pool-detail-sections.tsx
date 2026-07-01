@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CopyToClipboardButton } from "@/components/copy-to-clipboard-button";
+import { StatusBadge } from "@/components/status-badge";
 import { PoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
 import { t } from "@/i18n/t";
 
@@ -22,9 +23,9 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
               <span aria-hidden="true">{pool.themeEmoji}</span>
               {pool.themeLabel}
             </span>
-            <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">
+            <StatusBadge size="sm" variant={pool.statusVariant}>
               {pool.statusLabel}
-            </span>
+            </StatusBadge>
           </div>
 
           <div className="space-y-2">
@@ -116,9 +117,9 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-900">
+                  <StatusBadge size="sm" variant={contribution.statusVariant}>
                     {contribution.statusLabel}
-                  </span>
+                  </StatusBadge>
                   <p className="text-sm font-semibold text-slate-950">
                     {contribution.amountLabel}
                   </p>
@@ -162,18 +163,24 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
                       {contribution.amountLabel}
                     </p>
                     <p>{contribution.selectedPaymentMethodLabel}</p>
-                    <p>{contribution.cashInStatusLabel}</p>
+                    <StatusBadge
+                      size="sm"
+                      variant={contribution.cashInStatusVariant}
+                    >
+                      {contribution.cashInStatusLabel}
+                    </StatusBadge>
                   </div>
                 </div>
                 {contribution.rawStatuses.length > 0 ? (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {contribution.rawStatuses.map((status) => (
-                      <span
-                        key={status}
-                        className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200"
+                      <StatusBadge
+                        key={`${contribution.id}-${status.label}`}
+                        size="sm"
+                        variant={status.variant}
                       >
-                        {status}
-                      </span>
+                        {status.label}
+                      </StatusBadge>
                     ))}
                   </div>
                 ) : null}
@@ -226,18 +233,24 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
                         {contribution.amountLabel}
                       </p>
                       <p>{contribution.selectedPaymentMethodLabel}</p>
-                      <p>{contribution.cashInStatusLabel}</p>
+                      <StatusBadge
+                        size="sm"
+                        variant={contribution.cashInStatusVariant}
+                      >
+                        {contribution.cashInStatusLabel}
+                      </StatusBadge>
                     </div>
                   </div>
                   {contribution.rawStatuses.length > 0 ? (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {contribution.rawStatuses.map((status) => (
-                        <span
-                          key={status}
-                          className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200"
+                        <StatusBadge
+                          key={`${contribution.id}-${status.label}`}
+                          size="sm"
+                          variant={status.variant}
                         >
-                          {status}
-                        </span>
+                          {status.label}
+                        </StatusBadge>
                       ))}
                     </div>
                   ) : null}

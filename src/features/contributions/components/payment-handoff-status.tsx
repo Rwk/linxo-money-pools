@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { StatusBadge } from "@/components/status-badge";
 import { PaymentQrCode } from "@/features/contributions/components/payment-qr-code";
 import type {
   PaymentDisplayStatus,
@@ -11,6 +12,7 @@ import type {
 import { getPaymentHandoffUiState } from "@/features/contributions/domain/payment-handoff";
 import type { PaymentHandoffViewModel } from "@/features/contributions/presenters/payment-handoff-presenter";
 import { t } from "@/i18n/t";
+import { getPaymentDisplayStatusBadgeVariant } from "@/presentation/status-badge-helpers";
 
 type PaymentHandoffStatusProps = {
   handoff: PaymentHandoffViewModel;
@@ -90,6 +92,7 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
   const statusCopy = getStatusCopy(status);
   const directPaymentUrl = handoff.directPaymentUrl;
   const canRenderQrCode = handoff.qrCodeUrl !== null;
+  const statusVariant = getPaymentDisplayStatusBadgeVariant(status);
   const uiState = getPaymentHandoffUiState({
     displayStatus: status,
     hasDirectPaymentUrl: directPaymentUrl !== null,
@@ -123,9 +126,9 @@ export function PaymentHandoffStatus({ handoff }: PaymentHandoffStatusProps) {
           </div>
         </div>
 
-        <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-950">
-          <p className="font-semibold">{statusCopy.badge}</p>
-          <p className="mt-2">{statusCopy.message}</p>
+        <div className="rounded-[1.5rem] border border-[var(--surface-border)] bg-[var(--surface-subtle)] px-4 py-4 text-sm leading-6 text-slate-900">
+          <StatusBadge variant={statusVariant}>{statusCopy.badge}</StatusBadge>
+          <p className="mt-3 text-slate-700">{statusCopy.message}</p>
         </div>
 
         {uiState.showDirectPaymentButton && directPaymentUrl ? (

@@ -2,6 +2,7 @@ import { poolThemes } from "@/config/pool-themes";
 import { getCashInStatusLabel } from "@/domain/payment/cash-in-status";
 import { computePoolTotals } from "@/domain/pool/pool.totals";
 import {
+  isContributionConfirmed,
   getContributionDisplayStatusLabel,
   getPublicContributionAmount,
   getPublicContributorLabel,
@@ -17,6 +18,12 @@ import {
   getPublicPoolUrl
 } from "@/features/pools/domain/pool-links";
 import { t } from "@/i18n/t";
+import type { StatusBadgeVariant } from "@/components/status-badge";
+import {
+  getCashInStatusBadgeVariant,
+  getPoolStatusBadgeVariant,
+  toRawLinxoStatusBadge
+} from "@/presentation/status-badge-helpers";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "medium",
@@ -31,6 +38,7 @@ export type PoolCardViewModel = {
   themeCardClassName: string;
   themeAccentClassName: string;
   statusLabel: string;
+  statusVariant: StatusBadgeVariant;
   closingDateLabel: string;
   createdDateLabel: string;
   publicPath: string;
@@ -44,6 +52,12 @@ export type ContributionRowViewModel = {
   amountLabel: string;
   createdDateLabel: string;
   statusLabel: string;
+  statusVariant: StatusBadgeVariant;
+};
+
+export type RawStatusBadgeViewModel = {
+  label: string;
+  variant: StatusBadgeVariant;
 };
 
 export type PrivateContributionRowViewModel = {
@@ -54,7 +68,8 @@ export type PrivateContributionRowViewModel = {
   amountLabel: string;
   selectedPaymentMethodLabel: string;
   cashInStatusLabel: string;
-  rawStatuses: string[];
+  cashInStatusVariant: StatusBadgeVariant;
+  rawStatuses: RawStatusBadgeViewModel[];
   createdDateLabel: string;
   returnedDateLabel?: string;
 };
@@ -104,21 +119,17 @@ function formatRawStatuses(input: {
   linxoOrderStatus?: string;
   linxoPaymentStatus?: string;
   linxoSettlementStatus?: string;
-}): string[] {
+}): RawStatusBadgeViewModel[] {
   return [
-    input.linxoOrderStatus
-      ? `${t("statuses.rawOrder")}: ${input.linxoOrderStatus}`
-      : null,
-    input.linxoPaymentStatus
-      ? `${t("statuses.rawPayment")}: ${input.linxoPaymentStatus}`
-      : null,
-    input.linxoSettlementStatus
-      ? `${t("statuses.rawSettlement")}: ${input.linxoSettlementStatus}`
-      : null
-  ].filter((value): value is string => value !== null);
+    toRawLinxoStatusBadge(input.linxoOrderStatus),
+    toRawLinxoStatusBadge(input.linxoPaymentStatus),
+    toRawLinxoStatusBadge(input.linxoSettlementStatus)
+  ].filter((value): value is RawStatusBadgeViewModel => value !== null);
 }
 
-function toContributionRowViewModel(pool: PoolWithContributions) {
+function toContributionRowViewModel(
+  pool: PoolWithContributions
+): ContributionRowViewModel[] {
   return pool.contributions
     .map(mapContributionToDomainContribution)
     .filter(isContributionVisibleOnPublicPage)
@@ -127,7 +138,8 @@ function toContributionRowViewModel(pool: PoolWithContributions) {
       contributorLabel: getPublicContributorLabel(contribution),
       amountLabel: getPublicContributionAmount(contribution),
       createdDateLabel: formatDate(contribution.createdAt),
-      statusLabel: getContributionDisplayStatusLabel(contribution)
+      statusLabel: getContributionDisplayStatusLabel(contribution),
+      statusVariant: isContributionConfirmed(contribution) ? "success" : "info"
     }));
 }
 
@@ -145,6 +157,9 @@ function toPrivateContributionRowViewModel(pool: PoolWithContributions) {
         contribution.selectedPaymentMethod
       ),
       cashInStatusLabel: getCashInStatusLabel(domainContribution.cashInStatus),
+      cashInStatusVariant: getCashInStatusBadgeVariant(
+        domainContribution.cashInStatus
+      ),
       rawStatuses: formatRawStatuses({
         linxoOrderStatus: domainContribution.linxoOrderStatus,
         linxoPaymentStatus: domainContribution.linxoPaymentStatus,
@@ -172,6 +187,7 @@ function toPoolDetailBaseViewModel(pool: PoolWithContributions): PoolDetailBaseV
     themeCardClassName: theme.cardClassName,
     themeAccentClassName: theme.accentClassName,
     statusLabel: formatStatusLabel(pool.status),
+    statusVariant: getPoolStatusBadgeVariant(pool.status),
     closingDateLabel: formatDate(pool.closingDate),
     createdDateLabel: formatDate(pool.createdAt),
     publicPath: getPublicPoolPath(pool.slug),

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { StatusBadge } from "@/components/status-badge";
 import { PoolCardViewModel } from "@/features/pools/presenters/pool-presenters";
 import { t } from "@/i18n/t";
 
@@ -17,9 +18,9 @@ export function PoolCard({ pool }: { pool: PoolCardViewModel }) {
               <span aria-hidden="true">{pool.themeEmoji}</span>
               {pool.themeLabel}
             </span>
-            <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">
+            <StatusBadge size="sm" variant={pool.statusVariant}>
               {pool.statusLabel}
-            </span>
+            </StatusBadge>
           </div>
 
           <div className="space-y-1">
@@ -50,13 +51,13 @@ export function PoolCard({ pool }: { pool: PoolCardViewModel }) {
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <Link
-          className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--accent-foreground)] shadow-[0_14px_30px_rgba(15,118,110,0.18)] transition"
+          className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--accent-foreground)] shadow-[var(--shadow-button)] transition hover:bg-[var(--accent-hover)]"
           href={`/dashboard/pools/${pool.id}`}
         >
           {t("pools.managePool")}
         </Link>
         <Link
-          className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/80 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"
+          className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--secondary)] px-5 text-sm font-semibold text-[var(--secondary-foreground)] ring-1 ring-[var(--surface-border)] transition hover:bg-[var(--surface-strong)]"
           href={pool.publicPath}
         >
           {t("pools.viewPublicPage")}

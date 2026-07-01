@@ -17,6 +17,7 @@ function createPublicViewModel(): PoolDetailViewModel {
     themeCardClassName: "border-slate-200 bg-slate-50",
     themeAccentClassName: "text-slate-900",
     statusLabel: "Open",
+    statusVariant: "success",
     closingDateLabel: "Jul 10, 2026",
     createdDateLabel: "Jun 27, 2026",
     publicPath: "/p/team-gift",

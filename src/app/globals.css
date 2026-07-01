@@ -1,13 +1,39 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f4ec;
-  --foreground: #1f2937;
-  --muted: #5b6472;
-  --surface: rgba(255, 255, 255, 0.82);
-  --surface-border: rgba(31, 41, 55, 0.1);
-  --accent: #0f766e;
-  --accent-foreground: #f8fafc;
+  --background: #eef4f8;
+  --background-elevated: #f8fbfd;
+  --foreground: #18324b;
+  --muted: #5d7187;
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-strong: #ffffff;
+  --surface-subtle: #f4f8fb;
+  --surface-border: rgba(24, 50, 75, 0.12);
+  --surface-border-strong: rgba(24, 50, 75, 0.18);
+  --accent: #0b7285;
+  --accent-hover: #095d6d;
+  --accent-foreground: #f8fbfd;
+  --secondary: #e9f3f7;
+  --secondary-foreground: #18324b;
+  --success: #0f9f73;
+  --success-surface: #e8faf3;
+  --success-border: #bfead8;
+  --danger: #c24545;
+  --danger-surface: #fdf0f0;
+  --danger-border: #f5c9c9;
+  --warning: #b7791f;
+  --warning-surface: #fff7e8;
+  --warning-border: #f2d6a2;
+  --info: #2563eb;
+  --info-surface: #eef4ff;
+  --info-border: #c8d8ff;
+  --neutral: #5f6f82;
+  --neutral-surface: #f2f5f8;
+  --neutral-border: #d6dee6;
+  --focus-ring: rgba(37, 99, 235, 0.22);
+  --shadow-card: 0 20px 45px rgba(15, 23, 42, 0.08);
+  --shadow-soft: 0 12px 26px rgba(15, 23, 42, 0.06);
+  --shadow-button: 0 14px 30px rgba(11, 114, 133, 0.2);
 }
 
 * {
@@ -16,8 +42,9 @@
 
 html {
   background:
-    radial-gradient(circle at top, rgba(15, 118, 110, 0.14), transparent 35%),
-    linear-gradient(180deg, #faf7f0 0%, #f2ede0 100%);
+    radial-gradient(circle at top, rgba(37, 99, 235, 0.12), transparent 34%),
+    radial-gradient(circle at right top, rgba(15, 159, 115, 0.1), transparent 28%),
+    linear-gradient(180deg, #f8fbfd 0%, #eef4f8 100%);
 }
 
 body {
@@ -25,6 +52,7 @@ body {
   min-height: 100vh;
   color: var(--foreground);
   background: transparent;
+  line-height: 1.5;
   font-family:
     "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -32,4 +60,32 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+input,
+select,
+textarea {
+  border-color: var(--surface-border);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in srgb, var(--muted) 72%, white);
 }
