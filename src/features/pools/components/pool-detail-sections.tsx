@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { CopyToClipboardButton } from "@/components/copy-to-clipboard-button";
 import { PoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
 import { t } from "@/i18n/t";
 
@@ -50,12 +51,17 @@ export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
             </div>
             <div>
               <p className="font-semibold text-slate-950">{t("poolDetails.shareLink")}</p>
-              <Link
-                className="text-teal-700 underline-offset-4 transition hover:underline"
-                href={pool.publicPath}
-              >
-                {pool.publicUrl}
-              </Link>
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <Link
+                  className="text-teal-700 underline-offset-4 transition hover:underline"
+                  href={pool.publicPath}
+                >
+                  {pool.publicUrl}
+                </Link>
+                {pool.mode === "private" ? (
+                  <CopyToClipboardButton text={pool.publicUrl} />
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
