@@ -16,6 +16,8 @@ export const fr = {
     loading: "Chargement...",
     save: "Enregistrer",
     saving: "Enregistrement...",
+    cancel: "Annuler",
+    edit: "Modifier",
     create: "Créer",
     creating: "Création...",
     configure: "Configurer",
@@ -228,6 +230,54 @@ export const fr = {
     incompleteTitle: "Contributions incomplètes ou échouées",
     noIncomplete:
       "Aucune contribution en attente, échouée ou incomplète ne nécessite d'attention pour le moment."
+  },
+  poolManagement: {
+    helper:
+      "Pilotez la préparation de la cagnotte, les actions de gestion et le suivi des contributions depuis un seul cockpit.",
+    incompleteConfiguration: "Configuration incomplète",
+    actionsTitle: "Actions de gestion",
+    actionsBody:
+      "Regroupez ici les actions utiles pour modifier la cagnotte, ajuster son cycle de vie et ouvrir la page publique.",
+    publicPreviewTitle: "Aperçu public",
+    publicPreviewBody:
+      "Toute personne disposant du lien peut consulter la cagnotte et contribuer si elle est ouverte et prête à recevoir des paiements.",
+    shareTitle: "Lien public",
+    shareBody:
+      "Partagez cette URL avec les participants. Le lien reste non devinable et permet d'accéder directement au parcours public.",
+    openPublicPage: "Ouvrir la page publique",
+    copyPublicLink: "Copier le lien public",
+    detailsTitle: "Détails de la cagnotte",
+    detailsBody:
+      "Consultez ici les informations annoncées aux participants. Passez en mode édition uniquement lorsque vous devez les ajuster.",
+    collectorTitle: "Configuration du collecteur",
+    collectorMissingBody:
+      "Cette cagnotte n'est pas encore prête à recevoir des contributions tant que le compte collecteur n'est pas configuré.",
+    collectorConfiguredBody:
+      "Le compte collecteur est configuré. Les données IBAN et KYC ont été transmises à Linxo et ne sont pas stockées localement.",
+    editOpen: "Modifier les détails",
+    editClose: "Fermer l'édition",
+    editHint:
+      "Vous pouvez modifier le titre, la description, le type d'événement et la date de clôture sans toucher aux contributions existantes.",
+    saveChanges: "Enregistrer les modifications",
+    summaryTitle: "Résumé des contributions",
+    summaryBody:
+      "Les montants confirmés et en cours reflètent l'état actuellement synchronisé côté application.",
+    visibleCount: "Contributions visibles",
+    incompleteCount: "Contributions privées à vérifier",
+    visibleSectionTitle: "Contributions visibles publiquement",
+    visibleSectionBody:
+      "Cette liste correspond aux contributions confirmées ou encore pertinentes côté page publique.",
+    privateSectionTitle: "Contributions privées à vérifier",
+    privateSectionBody:
+      "Les contributions incomplètes, expirées, annulées ou rejetées restent visibles ici uniquement pour suivi interne.",
+    technicalStatuses: "Statuts techniques Linxo",
+    lifecycleHint:
+      "Clôturer empêche les nouvelles contributions mais n'annule pas les virements déjà initiés.",
+    reopenHint:
+      "La réouverture reste possible tant que la date de clôture est encore valide.",
+    refreshTitle: "Synchronisation manuelle",
+    refreshBody:
+      "Les webhooks restent le mécanisme principal. Utilisez le rafraîchissement seulement en secours si un statut semble bloqué."
   },
   collectorAccount: {
     title: "Compte collecteur",

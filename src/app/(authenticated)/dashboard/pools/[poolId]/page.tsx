@@ -3,11 +3,8 @@ import { notFound } from "next/navigation";
 
 import { canEditPool } from "@/domain/pool/pool.rules";
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
-import { RefreshPoolContributionStatusesForm } from "@/features/contributions/components/refresh-pool-contribution-statuses-form";
-import { CollectorAccountSetupForm } from "@/features/pools/components/collector-account-setup-form";
-import { PoolManagementControls } from "@/features/pools/components/pool-management-controls";
+import { PoolManagementCockpit } from "@/features/pools/components/pool-management-cockpit";
 import { findPoolByIdForCreator } from "@/features/pools/data-access/pool-repository";
-import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
 import { toPrivatePoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
 import { t } from "@/i18n/t";
 
@@ -32,9 +29,12 @@ export default async function PoolManagementPage({
     notFound();
   }
 
+  const viewModel = toPrivatePoolDetailViewModel(pool);
+  const closingDateInputValue = pool.closingDate.toISOString().slice(0, 10);
+
   return (
     <main className="px-4 py-10 sm:px-6">
-      <section className="mx-auto w-full max-w-5xl space-y-6">
+      <section className="mx-auto w-full max-w-6xl space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-[var(--muted)]">
@@ -63,22 +63,18 @@ export default async function PoolManagementPage({
           </div>
         </div>
 
-        <PoolDetailSections pool={toPrivatePoolDetailViewModel(pool)} />
-        <PoolManagementControls
-          pool={{
+        <PoolManagementCockpit
+          collectorAliasId={pool.collectorAliasId}
+          pool={viewModel}
+          poolForEditing={{
             id: pool.id,
             title: pool.title,
             description: pool.description,
             eventType: pool.eventType,
             closingDate: pool.closingDate,
+            closingDateInputValue,
             status: pool.status
           }}
-        />
-        <RefreshPoolContributionStatusesForm poolId={pool.id} />
-        <CollectorAccountSetupForm
-          collectorAliasId={pool.collectorAliasId}
-          poolId={pool.id}
-          poolStatus={pool.status}
         />
       </section>
     </main>
