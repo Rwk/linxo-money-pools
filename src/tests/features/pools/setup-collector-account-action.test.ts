@@ -109,7 +109,7 @@ describe("setup collector account action", () => {
         type: "NATURAL_PERSON",
         firstname: "Jane",
         surname: "Doe",
-        birth_date: "1990-01-15",
+        birth_date: "1990/01/15",
         birth_city: "Paris",
         birth_country: "FR"
       }

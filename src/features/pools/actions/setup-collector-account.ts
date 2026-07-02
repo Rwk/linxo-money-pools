@@ -46,6 +46,10 @@ function sanitizeValues(values: {
   };
 }
 
+function formatBirthDateForLinxo(value: string): string {
+  return value.replaceAll("-", "/");
+}
+
 function logSetupCollectorAccountFailure(input: {
   poolId: string;
   userId: string;
@@ -169,7 +173,7 @@ export async function setupCollectorAccountAction(
               type: "NATURAL_PERSON",
               firstname: validation.data.firstName,
               surname: validation.data.surname,
-              birth_date: validation.data.birthDate,
+              birth_date: formatBirthDateForLinxo(validation.data.birthDate),
               birth_city: validation.data.birthCity,
               birth_country: validation.data.birthCountry
             }
