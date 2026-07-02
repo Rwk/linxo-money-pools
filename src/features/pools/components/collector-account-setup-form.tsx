@@ -150,7 +150,7 @@ export function CollectorAccountSetupForm(props: {
                     </p>
                   </div>
 
-                  <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="space-y-5">
                     <div className="space-y-2">
                       <label
                         className="text-sm font-semibold text-slate-900"
@@ -190,7 +190,7 @@ export function CollectorAccountSetupForm(props: {
                     </div>
                   </div>
 
-                  <div className="grid gap-5 sm:grid-cols-3">
+                  <div className="space-y-5">
                     <div className="space-y-2">
                       <label
                         className="text-sm font-semibold text-slate-900"
