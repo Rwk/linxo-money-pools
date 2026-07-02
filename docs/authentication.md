@@ -20,6 +20,10 @@ The application uses Auth.js with Google OAuth and Prisma-backed sessions.
 These values are server-side secrets or server-side configuration and must not
 be exposed to the browser.
 
+`NEXTAUTH_URL` must match the current public base URL used by the app. For
+local-only browser testing it can stay on `http://localhost:3000`. For mobile
+flows, webhook testing, or deployment, it must point to an HTTPS public domain.
+
 ## Google OAuth setup
 
 1. Create a Google OAuth web application.
@@ -36,6 +40,7 @@ be exposed to the browser.
    ```
 
 4. Store the client ID and secret in `.env.local`.
+5. Keep the Google OAuth callback domain aligned with `NEXTAUTH_URL`.
 
 ## Notes
 

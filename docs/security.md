@@ -22,6 +22,8 @@
 - Do not store beneficiary KYC data locally.
 - Store only safe Linxo references such as `collectorAuthorizedAccountId` and
   `collectorAliasId`.
+- Raw Linxo technical statuses may appear only in private management or debug
+  views.
 
 ## Database and Supabase
 
@@ -34,6 +36,8 @@
 
 - Linxo client credentials must remain server-only.
 - Webhook calls must validate the shared `LINXO_WEBHOOK_SECRET`.
+- `NEXTAUTH_URL` must match the current public app base URL for callback and
+  return flows.
 - Returning from Linxo must never be treated as proof of payment success on its
   own.
 - Final contribution confirmation depends on synchronized Linxo status data.

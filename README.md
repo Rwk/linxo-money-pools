@@ -12,11 +12,11 @@ The product UI is intentionally in French. Translation keys are centralized in
 `src/i18n`, and raw Linxo technical statuses remain untranslated on private
 technical displays by design.
 
-## Product flow
+## MVP flow
 
 1. A Linxo employee signs in with a `@linxo.com` Google account.
 2. The employee creates a money pool and configures the collector account.
-3. The app creates a private public URL based on a non-guessable slug.
+3. The app creates a public URL based on a non-guessable slug.
 4. A contributor opens the public page and starts a contribution.
 5. The app creates a local contribution, creates a Linxo order, and shows a
    payment handoff page with a direct link and QR code.
@@ -40,10 +40,13 @@ technical displays by design.
 - Public pool pages are accessible only through non-guessable links.
 - Linxo client credentials stay server-side.
 - Webhooks are protected with `LINXO_WEBHOOK_SECRET`.
-- The app does not store IBAN locally, payer bank account details, or Linxo
-  credentials.
+- The app does not store collector IBAN locally.
+- The app does not store collector KYC fields locally after sending them to Linxo.
+- The app does not store payer bank account details.
 - Supabase / PostgreSQL access is server-side, with RLS enabled on application
   tables.
+- `NEXTAUTH_URL` is used as the public app base URL for Auth.js callbacks and
+  absolute return / share URLs.
 
 More details are documented in [docs/security.md](docs/security.md).
 
@@ -55,13 +58,16 @@ More details are documented in [docs/security.md](docs/security.md).
 - Pool editing
 - Pool close / reopen lifecycle
 - Collector account setup through Linxo authorized account registration and alias creation
+- Redesigned home page, dashboard, and pool management cockpit
 - Public contribution form
 - Linxo order creation
 - Short payment URL generation with `ask_for_alias=false`
 - Payment handoff page with QR code and direct link
+- Payment handoff state that hides payment actions after opening unless reopened explicitly
 - Return-page status synchronization
 - Webhook-based asynchronous status synchronization
 - Manual status refresh from the creator dashboard
+- Copy public pool link button
 - Public / private contribution status display
 
 ## Intentionally out of scope
@@ -84,6 +90,7 @@ More details are documented in [docs/security.md](docs/security.md).
    ```
 
 2. Create an untracked `.env.local` file with the required variables.
+   You can start from `.env.example`.
 
 3. Generate the Prisma client:
 
@@ -106,6 +113,11 @@ More details are documented in [docs/security.md](docs/security.md).
 6. For mobile return flow and webhook testing, expose the app through HTTPS
    with ngrok or deploy it to a public environment.
 
+7. When testing through HTTPS, update:
+   - `NEXTAUTH_URL`
+   - the Google OAuth callback URL
+   - the Linxo webhook callback URL
+
 ## Environment variables
 
 Required server-side variables:
@@ -126,12 +138,16 @@ Optional public variable:
 - `NEXT_PUBLIC_APP_NAME`
 
 Never expose server-side secrets to the browser and never commit real values.
+Do not prefix server-side secrets with `NEXT_PUBLIC_`.
+`NEXTAUTH_URL` must match the current public base URL. For local mobile or
+webhook testing, it can temporarily be set to an HTTPS ngrok URL.
 
 See:
 
 - [docs/database.md](docs/database.md)
 - [docs/security.md](docs/security.md)
 - [docs/demo-guide.md](docs/demo-guide.md)
+- [docs/deployment.md](docs/deployment.md)
 
 ## Quality checks
 
@@ -148,6 +164,7 @@ npm run db:generate
 - Documentation index: [docs/README.md](docs/README.md)
 - Authentication: [docs/authentication.md](docs/authentication.md)
 - Database and environment setup: [docs/database.md](docs/database.md)
+- Deployment checklist: [docs/deployment.md](docs/deployment.md)
 - Pool product scope: [docs/pools.md](docs/pools.md)
 - Pool management: [docs/pool-management.md](docs/pool-management.md)
 - Contributions: [docs/contributions.md](docs/contributions.md)

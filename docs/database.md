@@ -48,14 +48,17 @@ AUTH_SECRET="replace-with-a-generated-secret"
 AUTH_GOOGLE_ID="replace-with-google-client-id"
 AUTH_GOOGLE_SECRET="replace-with-google-client-secret"
 NEXTAUTH_URL="http://localhost:3000"
-LINXO_PAYMENTS_BASE_URL="https://payments-sandbox.example"
+LINXO_PAYMENTS_BASE_URL="https://payments-api.example"
 LINXO_PAYMENTS_CLIENT_ID="replace-with-linxo-client-id"
 LINXO_PAYMENTS_CLIENT_SECRET="replace-with-linxo-client-secret"
 LINXO_PAYMENTS_ENVIRONMENT="sandbox"
 LINXO_WEBHOOK_SECRET="replace-with-a-shared-secret"
 ```
 
-`NEXTAUTH_URL` remains useful for local development and deployed callback handling.
+`NEXTAUTH_URL` is the public app base URL used by Auth.js and by the app when
+it builds absolute return or share URLs. For local-only browser testing, it can
+stay on `http://localhost:3000`. For mobile return-flow or webhook testing, use
+an HTTPS ngrok URL or a deployed domain instead.
 
 Server-only variables:
 
@@ -73,6 +76,14 @@ Server-only variables:
 Public variables:
 
 - `NEXT_PUBLIC_APP_NAME`
+
+Notes:
+
+- Server-only secrets must not use a `NEXT_PUBLIC_` prefix.
+- `AUTH_SECRET`, Google OAuth credentials, Linxo credentials, and the webhook
+  secret must stay in server-managed environment variables only.
+- The Google OAuth callback URL must match the current `NEXTAUTH_URL` domain.
+- The Linxo webhook callback URL must be configured manually in Linxo Payments.
 
 Production and preview environments must use platform-managed environment variables. Secrets and database URLs must never be committed to the repository.
 

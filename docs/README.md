@@ -2,6 +2,7 @@
 
 - [Authentication](./authentication.md)
 - [Database setup](./database.md)
+- [Deployment checklist](./deployment.md)
 - [Pool scope](./pools.md)
 - [Pool management](./pool-management.md)
 - [Contributions](./contributions.md)
