@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "postinstall": "prisma generate",
     "build": "next build",
     "lint": "eslint .",
     "linxo:generate-types": "openapi-typescript https://developers.linxo.com/swaggers/payments/swagger-payments-api.yaml -o src/generated/linxo-payments-api.ts",

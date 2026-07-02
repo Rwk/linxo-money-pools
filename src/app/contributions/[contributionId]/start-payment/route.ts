@@ -10,6 +10,8 @@ import {
 } from "@/features/contributions/data-access/contribution-repository";
 import { getContributionPayerUrl } from "@/features/contributions/presenters/payment-handoff-presenter";
 
+export const runtime = "nodejs";
+
 type RouteContext = {
   params: Promise<{
     contributionId: string;

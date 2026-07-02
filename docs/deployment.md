@@ -41,6 +41,12 @@ deployment of Linxo Money Pools.
 6. Apply Prisma migrations separately from the serverless runtime unless that
    execution model is intentionally managed elsewhere.
 
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+7. Confirm the production build still generates Prisma Client successfully.
+
 ## External configuration after deployment
 
 ### Google OAuth
@@ -71,11 +77,14 @@ https://your-public-domain.example/api/linxo/webhooks/payments?token=<LINXO_WEBH
 
 1. Sign in with a `@linxo.com` account.
 2. Create a pool.
-3. Configure the collector account.
-4. Open the public page.
-5. Create a contribution.
-6. Scan the QR code on mobile.
-7. Complete the Linxo sandbox flow.
-8. Verify the webhook updates the contribution status.
-9. Close the pool.
-10. Reopen the pool.
+3. Configure the collector account with the complete entity and KYC payload.
+4. Verify collector IBAN and KYC details are not stored locally after setup.
+5. Open the public page.
+6. Create a contribution.
+7. Scan the QR code on mobile.
+8. Confirm the payment handoff hides payment actions after the payment link has been opened.
+9. Complete the Linxo sandbox flow.
+10. Verify the webhook updates the contribution status.
+11. Use manual refresh only as a fallback if the webhook update is delayed.
+12. Close the pool.
+13. Reopen the pool.

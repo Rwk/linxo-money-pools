@@ -1,6 +1,8 @@
 import { syncContributionStatusByOrderId } from "@/features/contributions/services/sync-contribution-status";
 import { isValidLinxoWebhookToken } from "@/infrastructure/linxo/linxo-webhook-secret";
 
+export const runtime = "nodejs";
+
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");

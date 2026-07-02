@@ -14,6 +14,8 @@ import {
   getPublicContributorLabel
 } from "@/domain/pool/pool.visibility";
 
+export const runtime = "nodejs";
+
 type RouteContext = {
   params: Promise<{
     contributionId: string;
