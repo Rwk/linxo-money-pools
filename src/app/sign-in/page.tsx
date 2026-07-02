@@ -61,6 +61,7 @@ export default async function SignInPage({
           <div className="flex flex-col gap-3 sm:flex-row">
             <SignInButton
               disabled={!hasGoogleOAuthCredentials}
+              label={t("common.signInWithGoogle")}
               redirectTo={callbackUrl || "/dashboard"}
             />
             <Link

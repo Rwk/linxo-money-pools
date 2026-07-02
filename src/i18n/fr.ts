@@ -2,14 +2,17 @@ export const fr = {
   common: {
     appName: "Linxo Cagnottes",
     appDescription: "Cagnottes propulsées par Linxo Payments.",
+    appNameAlt: "Cagnottes Linxo Payments",
     internalMvp: "MVP interne",
     employeeAccess: "Accès collaborateurs",
     backToHome: "Retour à l'accueil",
     backToDashboard: "Retour au tableau de bord",
     openDashboard: "Ouvrir le tableau de bord",
+    accessDashboard: "Accéder à mon tableau de bord",
     signIn: "Se connecter",
     signOut: "Se déconnecter",
     signInWithGoogle: "Se connecter avec Google",
+    signInToManagePools: "Se connecter pour gérer mes cagnottes",
     loading: "Chargement...",
     save: "Enregistrer",
     saving: "Enregistrement...",
@@ -29,12 +32,83 @@ export const fr = {
     qrCodeLabel: "QR code de paiement"
   },
   home: {
-    title: "Créez des cagnottes pour les occasions spéciales.",
+    title: "Créez, partagez et suivez des cagnottes Linxo.",
     body:
-      "Les collaborateurs Linxo peuvent créer et gérer une cagnotte, puis partager un lien privé pour permettre aux participants d'envoyer de l'argent directement au collecteur via leur banque.",
+      "Les collaborateurs Linxo peuvent créer une cagnotte, partager un lien public non devinable et suivre les statuts de contribution envoyés via Linxo Payments.",
     disclaimer:
       "Ce produit aide à organiser les contributions. Il ne conserve pas les fonds et une contribution n'est confirmée qu'après les mises à jour de statut Linxo.",
-    signInToManagePools: "Se connecter pour gérer les cagnottes"
+    signedInHint: "Vous êtes déjà connecté avec un compte collaborateur Linxo.",
+    heroHighlights: {
+      createPool: "Créez une cagnotte",
+      sharePublicLink: "Partagez un lien public",
+      collectSecureTransfers: "Recevez des contributions par virement sécurisé",
+      trackStatuses: "Suivez les statuts de paiement"
+    },
+    stepsTitle: "Comment cela fonctionne",
+    stepsBody:
+      "Un parcours simple pour lancer une cagnotte, la partager et suivre les contributions sans changer les flux de paiement existants.",
+    steps: {
+      create: {
+        title: "Créez une cagnotte",
+        body:
+          "Choisissez un titre, une description, une date de clôture et un type d'événement."
+      },
+      setupCollector: {
+        title: "Configurez le compte collecteur",
+        body:
+          "Les informations sont transmises à Linxo Payments pour enregistrer le compte de réception."
+      },
+      share: {
+        title: "Partagez le lien public",
+        body:
+          "Les participants peuvent accéder à la cagnotte sans créer de compte."
+      },
+      contribute: {
+        title: "Les participants contribuent",
+        body:
+          "Ils choisissent un montant et valident un virement via le parcours Linxo."
+      },
+      track: {
+        title: "Suivez les statuts",
+        body:
+          "Les webhooks et le rafraîchissement manuel permettent de suivre les contributions."
+      },
+      responsibility: {
+        title: "Le collecteur reste responsable",
+        body:
+          "Les fonds sont reçus directement par le collecteur désigné pour la cagnotte."
+      }
+    },
+    trustTitle: "Sécurité et cadre de fonctionnement",
+    trustBody:
+      "L'application sépare l'accès de gestion, le partage public et le traitement des paiements pour garder un parcours clair et maîtrisé.",
+    trustPoints: {
+      employeeAccess:
+        "L'authentification Google pour la gestion est réservée aux collaborateurs `@linxo.com`.",
+      privateLinks:
+        "Les liens publics des cagnottes sont non devinables et peuvent être partagés sans compte participant.",
+      payments:
+        "Le parcours de paiement est géré par Linxo Payments et l'autorisation bancaire se fait hors de cette application.",
+      webhooks:
+        "Les webhooks aident à mettre à jour les statuts même si l'utilisateur ne revient pas immédiatement sur le site.",
+      kycStorage:
+        "L'application ne stocke pas localement l'IBAN ni les champs KYC du collecteur après leur transmission à Linxo.",
+      payerStorage:
+        "L'application ne stocke pas les coordonnées bancaires du payeur."
+    },
+    responsibilityTitle: "Responsabilités du collecteur",
+    responsibilityBody:
+      "Le rôle de l'application est d'orchestrer la cagnotte et le suivi des statuts, sans se substituer au collecteur.",
+    responsibilityPoints: {
+      directCollection:
+        "Les contributions sont collectées directement par le collecteur désigné.",
+      noEscrow:
+        "L'application n'agit pas comme compte de séquestre.",
+      noGuarantee:
+        "L'application ne garantit pas la redistribution au bénéficiaire final.",
+      collectorResponsible:
+        "Le collecteur reste responsable de l'usage des fonds conformément à ce qui a été annoncé."
+    }
   },
   auth: {
     title: "Connectez-vous avec votre compte Google Linxo",
@@ -53,10 +127,19 @@ export const fr = {
   dashboard: {
     badge: "Tableau de bord",
     welcome: "Bienvenue, {{displayName}}",
+    title: "Mes cagnottes",
     yourPools: "Vos cagnottes",
     description:
-      "Créez et gérez des cagnottes partagées via des liens privés. Les contributions sont envoyées directement au compte collecteur configuré pour chaque cagnotte.",
+      "Retrouvez ici les cagnottes que vous avez créées, leur état de publication et les principaux indicateurs de contribution déjà disponibles.",
     createPool: "Créer une cagnotte",
+    createFirstPool: "Créer ma première cagnotte",
+    helper:
+      "Chaque carte résume le statut public de la cagnotte, sa date de clôture et les montants confirmés déjà remontés.",
+    metrics: {
+      totalPools: "Cagnottes créées",
+      openPools: "Cagnottes ouvertes",
+      confirmedAmount: "Montant confirmé"
+    },
     emptyTitle: "Vous n'avez pas encore créé de cagnotte.",
     emptyBody:
       "Commencez par renseigner les détails de la cagnotte, puis configurez le compte collecteur afin que les participants puissent payer depuis la page publique."
@@ -75,9 +158,17 @@ export const fr = {
     createdOn: "Créée le {{date}}",
     confirmedSuffix: "{{amount}} confirmés",
     shareLink: "Lien de partage",
+    copyPublicLink: "Copier le lien public",
     managePool: "Gérer la cagnotte",
     viewPublicPage: "Voir la page publique",
     sharedByPrivateLink: "Partagée par lien privé",
+    readinessReady: "Paiement prêt",
+    readinessMissing: "Paiement non prêt",
+    contributionSummary:
+      "{{confirmedCount}} confirmée{{confirmedPlural}} · {{inProgressCount}} en cours",
+    publicContributionCount:
+      "{{count}} contribution{{plural}} visible{{plural}}",
+    noVisibleContribution: "Aucune contribution visible",
     publicTitle: "Contribuer à cette cagnotte",
     publicBody:
       "Toute personne disposant de ce lien privé peut contribuer. Les contributions vérifiées sont envoyées directement au collecteur via Linxo Payments.",

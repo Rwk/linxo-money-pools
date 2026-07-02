@@ -1,15 +1,18 @@
 import { signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
-import { t } from "@/i18n/t";
 
 type SignInButtonProps = {
   disabled?: boolean;
+  label: string;
   redirectTo?: string;
+  className?: string;
 };
 
 export function SignInButton({
   disabled = false,
-  redirectTo = "/dashboard"
+  label,
+  redirectTo = "/dashboard",
+  className
 }: SignInButtonProps) {
   return (
     <form
@@ -25,8 +28,12 @@ export function SignInButton({
         });
       }}
     >
-      <Button className="w-full sm:w-auto" disabled={disabled} type="submit">
-        {t("common.signInWithGoogle")}
+      <Button
+        className={`w-full whitespace-nowrap sm:w-auto ${className ?? ""}`}
+        disabled={disabled}
+        type="submit"
+      >
+        {label}
       </Button>
     </form>
   );

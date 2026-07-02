@@ -2,6 +2,7 @@ import { poolThemes } from "@/config/pool-themes";
 import { getCashInStatusLabel } from "@/domain/payment/cash-in-status";
 import { computePoolTotals } from "@/domain/pool/pool.totals";
 import {
+  isContributionInProgressForPublicDisplay,
   isContributionConfirmed,
   getContributionDisplayStatusLabel,
   getPublicContributionAmount,
@@ -44,6 +45,10 @@ export type PoolCardViewModel = {
   publicPath: string;
   publicUrl: string;
   confirmedAmountLabel: string;
+  readinessLabel: string;
+  readinessVariant: StatusBadgeVariant;
+  visibleContributionCountLabel: string;
+  visibleContributionSummaryLabel: string;
 };
 
 export type ContributionRowViewModel = {
@@ -178,6 +183,15 @@ function toPoolDetailBaseViewModel(pool: PoolWithContributions): PoolDetailBaseV
   const totals = computePoolTotals(
     pool.contributions.map(mapContributionToDomainContribution)
   );
+  const visibleContributions = pool.contributions
+    .map(mapContributionToDomainContribution)
+    .filter(isContributionVisibleOnPublicPage);
+  const confirmedVisibleCount = visibleContributions.filter(isContributionConfirmed).length;
+  const inProgressVisibleCount = visibleContributions.filter(
+    isContributionInProgressForPublicDisplay
+  ).length;
+  const collectorReady =
+    pool.collectorAuthorizedAccountId !== null && pool.collectorAliasId !== null;
 
   return {
     id: pool.id,
@@ -195,7 +209,23 @@ function toPoolDetailBaseViewModel(pool: PoolWithContributions): PoolDetailBaseV
     description: pool.description,
     collectorDisplayName: pool.collectorDisplayName,
     confirmedAmountLabel: `${totals.confirmedAmount} EUR`,
-    inProgressAmountLabel: `${totals.inProgressAmount} EUR`
+    inProgressAmountLabel: `${totals.inProgressAmount} EUR`,
+    readinessLabel: collectorReady
+      ? t("pools.readinessReady")
+      : t("pools.readinessMissing"),
+    readinessVariant: collectorReady ? "success" : "warning",
+    visibleContributionCountLabel:
+      visibleContributions.length === 0
+        ? t("pools.noVisibleContribution")
+        : t("pools.publicContributionCount", {
+            count: visibleContributions.length,
+            plural: visibleContributions.length > 1 ? "s" : ""
+          }),
+    visibleContributionSummaryLabel: t("pools.contributionSummary", {
+      confirmedCount: confirmedVisibleCount,
+      confirmedPlural: confirmedVisibleCount > 1 ? "s" : "",
+      inProgressCount: inProgressVisibleCount
+    })
   };
 }
 
