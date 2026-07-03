@@ -277,6 +277,7 @@ function PoolDetailsCard({
               name="title"
               required
             />
+            <p className="text-sm text-slate-600">{t("poolForms.titleHint")}</p>
             <FieldError message={safeState.fieldErrors.title} />
           </div>
 

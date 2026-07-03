@@ -23,6 +23,13 @@ import {
 } from "@/infrastructure/linxo/linxo-payments-errors";
 import { t } from "@/i18n/t";
 
+function isPoolTitleRejectedByLinxo(error: LinxoPaymentsApiError): boolean {
+  return (
+    error.code === "FORMAT_ERROR" &&
+    error.description?.includes("instructions[0].label") === true
+  );
+}
+
 function getCreateContributionErrorMessage(error: unknown): string {
   if (error instanceof ContributionPoolNotFoundError) {
     return t("actions.contributionNotFound");
@@ -40,9 +47,16 @@ function getCreateContributionErrorMessage(error: unknown): string {
     error instanceof LinxoPaymentsConfigurationError ||
     error instanceof LinxoPaymentsTokenError ||
     error instanceof LinxoPaymentsNetworkError ||
-    error instanceof LinxoPaymentsApiError ||
     error instanceof ContributionPaymentInitiationError
   ) {
+    return t("actions.contributionStartError");
+  }
+
+  if (error instanceof LinxoPaymentsApiError) {
+    if (isPoolTitleRejectedByLinxo(error)) {
+      return t("actions.contributionPoolTitleInvalid");
+    }
+
     return t("actions.contributionStartError");
   }
 

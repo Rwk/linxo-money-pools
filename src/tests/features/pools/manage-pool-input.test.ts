@@ -80,6 +80,20 @@ describe("manage pool input", () => {
     );
   });
 
+  it("accepts titles with accents and punctuation for display", () => {
+    const result = validateManagePoolInput(
+      {
+        title: "Départ de Raph",
+        description: "Shared contribution",
+        eventType: "BIRTHDAY",
+        closingDate: "2026-07-05"
+      },
+      new Date("2026-06-30T10:00:00.000Z")
+    );
+
+    expect(result.success).toBe(true);
+  });
+
   it("reads form data values", () => {
     const formData = new FormData();
     formData.set("title", "Team gift");

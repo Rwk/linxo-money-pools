@@ -141,6 +141,7 @@ export function PoolManagementControls({
               name="title"
               required
             />
+            <p className="text-sm text-slate-600">{t("poolForms.titleHint")}</p>
             <FieldError message={safeEditState.fieldErrors.title} />
           </div>
 

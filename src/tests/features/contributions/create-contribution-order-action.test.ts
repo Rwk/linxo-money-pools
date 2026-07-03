@@ -18,6 +18,7 @@ vi.mock(
 import { createContributionOrderAction } from "@/features/contributions/actions/create-contribution-order";
 import { createContributionOrderForPool } from "@/features/contributions/services/create-contribution-order-service";
 import { getInitialCreateContributionFormState } from "@/features/contributions/forms/create-contribution-form-state";
+import { LinxoPaymentsApiError } from "@/infrastructure/linxo/linxo-payments-errors";
 import { redirect } from "next/navigation";
 import { t } from "@/i18n/t";
 
@@ -92,5 +93,33 @@ describe("createContributionOrderAction", () => {
       t("validation.emailInvalid")
     );
     expect(result.fieldErrors.amount).toBe(t("validation.amountGreaterThanZero"));
+  });
+
+  it("returns a clear message when Linxo rejects the generated payment label", async () => {
+    const formData = new FormData();
+    formData.set("poolSlug", "team-gift");
+    formData.set("contributorFirstName", "Jane");
+    formData.set("contributorLastName", "Doe");
+    formData.set("contributorEmail", "jane@example.com");
+    formData.set("amount", "12.00");
+    formData.set("selectedPaymentMethod", "INSTANT");
+
+    vi.mocked(createContributionOrderForPool).mockRejectedValue(
+      new LinxoPaymentsApiError({
+        message: "Linxo Payments API request failed.",
+        status: 400,
+        code: "FORMAT_ERROR",
+        description:
+          'instructions[0].label: must match "^[a-zA-Z0-9 ?:().,+\\-/]{1,50}$"',
+        requestId: "request_123"
+      })
+    );
+
+    const result = await createContributionOrderAction(
+      getInitialCreateContributionFormState("team-gift"),
+      formData
+    );
+
+    expect(result.formError).toBe(t("actions.contributionPoolTitleInvalid"));
   });
 });

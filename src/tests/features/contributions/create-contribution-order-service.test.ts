@@ -251,4 +251,49 @@ describe("createContributionOrderForPool", () => {
       paymentAccessToken: "payment_token_123"
     });
   });
+
+  it("sanitizes the pool title before sending the Linxo order label", async () => {
+    const createOrder = vi.fn().mockResolvedValue({
+      id: "order_123",
+      order_status: "NEW",
+      auth_url: "https://auth.linxo.test/order_123",
+      redirect_url: "https://app.test/return"
+    });
+
+    await createContributionOrderForPool(
+      {
+        poolSlug: "team-gift",
+        contributorFirstName: "Jane",
+        contributorLastName: "Doe",
+        contributorEmail: "jane@example.com",
+        amount: "12.00",
+        selectedPaymentMethod: "STANDARD",
+        displayAsAnonymous: false,
+        hideAmount: false
+      },
+      {
+        findPoolBySlug: vi.fn().mockResolvedValue({
+          ...openReadyPool,
+          title: "Cagnotte pour le non-départ et la non-paternité de Raph"
+        }),
+        createContributionRecord: vi.fn().mockResolvedValue({
+          id: "contribution_123",
+          paymentAccessToken: "payment_token_123"
+        }),
+        updateContributionAfterOrderCreation: vi
+          .fn()
+          .mockResolvedValue(undefined),
+        markContributionInitiationFailed: vi.fn().mockResolvedValue(undefined),
+        createOrder,
+        shortenOrderAuthUrl: vi.fn().mockResolvedValue({
+          shortAuthUrl: "https://short.linxo.test/order_123"
+        }),
+        buildReturnUrl: vi.fn().mockReturnValue("https://app.test/return")
+      }
+    );
+
+    expect(createOrder.mock.calls[0]?.[0]?.instructions[0]?.label).toMatch(
+      /^[a-zA-Z0-9 ?:().,+\-/]{1,50}$/
+    );
+  });
 });

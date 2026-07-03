@@ -45,6 +45,7 @@ export function CreatePoolForm() {
           placeholder={t("poolForms.titlePlaceholder")}
           required
         />
+        <p className="text-sm text-slate-600">{t("poolForms.titleHint")}</p>
         <FieldError message={safeState.fieldErrors.title} />
       </div>
 

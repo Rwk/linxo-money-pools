@@ -1,5 +1,6 @@
 import "server-only";
 
+import { buildContributionLabel } from "@/domain/payment/linxo-order-label";
 import { isPoolOpenForContributions } from "@/domain/pool/pool.rules";
 import type { PaymentMethod } from "@/domain/pool/pool.types";
 import {
@@ -21,8 +22,6 @@ import type {
   LinxoCreateOrderRequest,
   LinxoOrder
 } from "@/infrastructure/linxo/linxo-payments-openapi-types";
-
-const MAX_ORDER_LABEL_LENGTH = 140;
 
 export class ContributionPoolNotFoundError extends Error {
   constructor() {
@@ -98,16 +97,6 @@ function buildContributionReturnUrl(input: {
       "NEXTAUTH_URL must be configured to build contribution return URLs."
     );
   }
-}
-
-function buildContributionLabel(poolTitle: string): string {
-  const label = `Contribution to ${poolTitle}`.trim();
-
-  if (label.length <= MAX_ORDER_LABEL_LENGTH) {
-    return label;
-  }
-
-  return label.slice(0, MAX_ORDER_LABEL_LENGTH);
 }
 
 function buildLinxoOrderRequest(input: {

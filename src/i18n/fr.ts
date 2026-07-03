@@ -191,6 +191,8 @@ export const fr = {
     closingDate: "Date de clôture",
     collectorDisplayName: "Nom affiché du collecteur",
     titlePlaceholder: "Cadeau de départ de l'équipe pour Alex",
+    titleHint:
+      "Ce titre sera affiché tel quel sur la cagnotte. Pour le paiement Linxo, il sera automatiquement normalisé si nécessaire.",
     descriptionPlaceholder:
       "Décrivez pour qui est la cagnotte, à quoi elle servira, etc...",
     collectorDisplayNamePlaceholder: "Équipe Linxo",
@@ -446,6 +448,8 @@ export const fr = {
       "Cette cagnotte est clôturée et ne peut plus recevoir de nouvelles contributions.",
     contributionPoolNotReady:
       "Les contributions en ligne ne sont pas encore disponibles pour cette cagnotte.",
+    contributionPoolTitleInvalid:
+      "Le titre de cette cagnotte n'est pas compatible avec le libellé de paiement Linxo. Le créateur doit le raccourcir ou retirer les caractères non pris en charge avant de réessayer.",
     contributionStartError:
       "L'initiation du paiement ne peut pas démarrer pour le moment. Veuillez réessayer.",
     contributionGeneric:

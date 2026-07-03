@@ -84,6 +84,21 @@ describe("create pool validation", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts titles with accents and punctuation for display", () => {
+    const result = validateCreatePoolInput(
+      {
+        title: "Cagnotte pour le non-départ et la non-paternité de Raph",
+        description: "Description",
+        eventType: "BIRTHDAY",
+        closingDate: "2026-06-26",
+        collectorDisplayName: "Linxo Team"
+      },
+      new Date("2026-06-26T10:00:00.000Z")
+    );
+
+    expect(result.success).toBe(true);
+  });
+
   it("does not expose IBAN or KYC fields through the validation shape", () => {
     const payload = {
       ...getCreatePoolDefaultValues(),
