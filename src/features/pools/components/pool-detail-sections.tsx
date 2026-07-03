@@ -9,64 +9,82 @@ function EmptyContributionState({ message }: { message: string }) {
   return <p className="mt-3 text-sm leading-6 text-slate-700">{message}</p>;
 }
 
-export function PoolDetailSections({ pool }: { pool: PoolDetailViewModel }) {
+function PoolDescription({ description }: { description: string }) {
   return (
-    <div className="space-y-6">
-      <section
-        className={`rounded-[1.75rem] border p-6 ${pool.themeCardClassName}`}
-      >
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${pool.themeCardClassName} ${pool.themeAccentClassName}`}
-            >
-              <span aria-hidden="true">{pool.themeEmoji}</span>
-              {pool.themeLabel}
-            </span>
-            <StatusBadge size="sm" variant={pool.statusVariant}>
-              {pool.statusLabel}
-            </StatusBadge>
-          </div>
+    <p className="max-w-3xl whitespace-pre-wrap text-base leading-7 text-slate-700">
+      {description}
+    </p>
+  );
+}
 
-          <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-              {pool.title}
-            </h1>
-            <p className="max-w-3xl text-base leading-7 text-slate-700">
-              {pool.description}
-            </p>
-          </div>
+export function PoolOverviewCard({ pool }: { pool: PoolDetailViewModel }) {
+  return (
+    <section
+      className={`rounded-[1.75rem] border p-6 ${pool.themeCardClassName}`}
+    >
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${pool.themeCardClassName} ${pool.themeAccentClassName}`}
+          >
+            <span aria-hidden="true">{pool.themeEmoji}</span>
+            {pool.themeLabel}
+          </span>
+          <StatusBadge size="sm" variant={pool.statusVariant}>
+            {pool.statusLabel}
+          </StatusBadge>
+        </div>
 
-          <div className="grid gap-4 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p className="font-semibold text-slate-950">{t("poolDetails.collector")}</p>
-              <p>{pool.collectorDisplayName}</p>
-            </div>
-            <div>
-              <p className="font-semibold text-slate-950">{t("poolDetails.closingDate")}</p>
-              <p>{pool.closingDateLabel}</p>
-            </div>
-            <div>
-              <p className="font-semibold text-slate-950">{t("poolDetails.confirmedAmount")}</p>
-              <p>{pool.confirmedAmountLabel}</p>
-            </div>
-            <div>
-              <p className="font-semibold text-slate-950">{t("poolDetails.shareLink")}</p>
-              <div className="mt-1 flex flex-wrap items-center gap-3">
-                <Link
-                  className="text-teal-700 underline-offset-4 transition hover:underline"
-                  href={pool.publicPath}
-                >
-                  {pool.publicUrl}
-                </Link>
-                {pool.mode === "private" ? (
-                  <CopyToClipboardButton text={pool.publicUrl} />
-                ) : null}
-              </div>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+            {pool.title}
+          </h1>
+          <PoolDescription description={pool.description} />
+        </div>
+
+        <div className="grid gap-4 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <p className="font-semibold text-slate-950">{t("poolDetails.collector")}</p>
+            <p>{pool.collectorDisplayName}</p>
+          </div>
+          <div>
+            <p className="font-semibold text-slate-950">{t("poolDetails.closingDate")}</p>
+            <p>{pool.closingDateLabel}</p>
+          </div>
+          <div>
+            <p className="font-semibold text-slate-950">{t("poolDetails.confirmedAmount")}</p>
+            <p>{pool.confirmedAmountLabel}</p>
+          </div>
+          <div>
+            <p className="font-semibold text-slate-950">{t("poolDetails.shareLink")}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+              <Link
+                className="text-teal-700 underline-offset-4 transition hover:underline"
+                href={pool.publicPath}
+              >
+                {pool.publicUrl}
+              </Link>
+              {pool.mode === "private" ? (
+                <CopyToClipboardButton text={pool.publicUrl} />
+              ) : null}
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
+
+export function PoolDetailSections({
+  pool,
+  showOverview = true
+}: {
+  pool: PoolDetailViewModel;
+  showOverview?: boolean;
+}) {
+  return (
+    <div className="space-y-6">
+      {showOverview ? <PoolOverviewCard pool={pool} /> : null}
 
       <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
         <h2 className="text-lg font-semibold text-slate-950">{t("poolDetails.totalsTitle")}</h2>

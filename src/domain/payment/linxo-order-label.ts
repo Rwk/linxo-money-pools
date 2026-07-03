@@ -1,3 +1,5 @@
+import { normalizeTextForLinxo } from "@/infrastructure/linxo/linxo-text-normalizer";
+
 export const LINXO_LABEL_MAX_LENGTH = 50;
 export const CONTRIBUTION_LABEL_PREFIX = "Contribution to ";
 export const MAX_POOL_TITLE_LENGTH_FOR_CONTRIBUTION_LABEL =
@@ -11,13 +13,9 @@ function normalizeWhitespace(value: string): string {
 }
 
 function sanitizeTextForLinxoLabel(value: string): string {
-  const withoutAccents = value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-
   return normalizeWhitespace(
-    withoutAccents
-      .replace(/['`’´]/g, " ")
+    normalizeTextForLinxo(value)
+      .replace(/['"]/g, " ")
       .replace(/[^a-zA-Z0-9 ?:().,+\-\/]+/g, " ")
   );
 }

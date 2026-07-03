@@ -117,6 +117,52 @@ describe("setup collector account action", () => {
     expect(redirect).toHaveBeenCalledWith("/dashboard/pools/pool_123");
   });
 
+  it("accepts accented collector values in the form and leaves normalization to the Linxo call layer", async () => {
+    const redirectError = new Error("NEXT_REDIRECT");
+    const formData = new FormData();
+    formData.set("poolId", "pool_123");
+    formData.set("accountHolderName", "Équipe Raph");
+    formData.set("iban", "FR76 3000 6000 0112 3456 7890 189");
+    formData.set("entityType", "NATURAL_PERSON");
+    formData.set("firstName", "Élodie");
+    formData.set("surname", "Dùpré");
+    formData.set("birthDate", "1990-01-15");
+    formData.set("birthCity", "Créteil");
+    formData.set("birthCountry", "FR");
+
+    vi.mocked(setupCollectorAccountForPool).mockResolvedValue({
+      poolId: "pool_123",
+      collectorAuthorizedAccountId: "authorized_account_123",
+      collectorAliasId: "alias_123"
+    });
+    vi.mocked(redirect).mockImplementation(() => {
+      throw redirectError;
+    });
+
+    await expect(
+      setupCollectorAccountAction(
+        initialSetupCollectorAccountActionState,
+        formData
+      )
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(setupCollectorAccountForPool).toHaveBeenCalledWith({
+      poolId: "pool_123",
+      creatorId: "user_123",
+      userReference: "user_123",
+      accountHolderName: "Équipe Raph",
+      iban: "FR7630006000011234567890189",
+      entity: {
+        type: "NATURAL_PERSON",
+        firstname: "Élodie",
+        surname: "Dùpré",
+        birth_date: "1990/01/15",
+        birth_city: "Créteil",
+        birth_country: "FR"
+      }
+    });
+  });
+
   it("returns a clear message when Linxo credentials are not configured", async () => {
     const formData = new FormData();
     formData.set("poolId", "pool_123");

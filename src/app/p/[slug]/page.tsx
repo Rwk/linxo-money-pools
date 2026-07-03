@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import { isPoolOpenForContributions } from "@/domain/pool/pool.rules";
 import { PublicContributionForm } from "@/features/contributions/components/public-contribution-form";
 import { findPoolBySlug } from "@/features/pools/data-access/pool-repository";
-import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
+import {
+  PoolDetailSections,
+  PoolOverviewCard
+} from "@/features/pools/components/pool-detail-sections";
 import { toPublicPoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
 import { t } from "@/i18n/t";
 
@@ -40,6 +43,8 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
           </p>
         </div>
 
+        <PoolOverviewCard pool={viewModel} />
+
         {!isOpenForContributions && pool.status === "CLOSED" ? (
           <section className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6">
             <h2 className="text-lg font-semibold text-amber-950">
@@ -67,7 +72,7 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
           </section>
         )}
 
-        <PoolDetailSections pool={viewModel} />
+        <PoolDetailSections pool={viewModel} showOverview={false} />
 
         <Link
           className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/80 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"

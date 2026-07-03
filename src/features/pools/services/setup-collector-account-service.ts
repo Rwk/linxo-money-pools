@@ -7,6 +7,7 @@ import {
 } from "@/features/pools/data-access/pool-repository";
 import { LinxoPaymentsClient } from "@/infrastructure/linxo/linxo-payments-client";
 import { LinxoPaymentsResponseError } from "@/infrastructure/linxo/linxo-payments-errors";
+import { normalizeTextForLinxo } from "@/infrastructure/linxo/linxo-text-normalizer";
 
 export class PoolCollectorAccountAccessError extends Error {
   constructor() {
@@ -72,6 +73,50 @@ const defaultDependencies: SetupCollectorAccountDependencies = {
     new LinxoPaymentsClient().createAccountAlias(input)
 };
 
+function normalizeCollectorPayloadForLinxo(input: {
+  accountHolderName: string;
+  entity:
+    | {
+        type: "NATURAL_PERSON";
+        firstname: string;
+        surname: string;
+        birth_date: string;
+        birth_city: string;
+        birth_country: string;
+      }
+    | {
+        type: "COMPANY";
+        company_name: string;
+        national_identification: string;
+        country: string;
+      };
+}) {
+  const accountHolderName = normalizeTextForLinxo(input.accountHolderName);
+
+  if (input.entity.type === "NATURAL_PERSON") {
+    return {
+      accountHolderName,
+      entity: {
+        ...input.entity,
+        firstname: normalizeTextForLinxo(input.entity.firstname),
+        surname: normalizeTextForLinxo(input.entity.surname),
+        birth_city: normalizeTextForLinxo(input.entity.birth_city)
+      }
+    };
+  }
+
+  return {
+    accountHolderName,
+    entity: {
+      ...input.entity,
+      company_name: normalizeTextForLinxo(input.entity.company_name),
+      national_identification: normalizeTextForLinxo(
+        input.entity.national_identification
+      )
+    }
+  };
+}
+
 export async function setupCollectorAccountForPool(
   input: {
     poolId: string;
@@ -110,13 +155,18 @@ export async function setupCollectorAccountForPool(
     throw new PoolCollectorAccountAccessError();
   }
 
+  const normalized = normalizeCollectorPayloadForLinxo({
+    accountHolderName: input.accountHolderName,
+    entity: input.entity
+  });
+
   const authorizedAccount = await dependencies.createAuthorizedAccount({
     identification: {
       schema: "SEPA",
       iban: input.iban,
-      name: input.accountHolderName
+      name: normalized.accountHolderName
     },
-    entity: input.entity
+    entity: normalized.entity
   });
 
   if (!authorizedAccount.id) {
@@ -127,7 +177,7 @@ export async function setupCollectorAccountForPool(
 
   const alias = await dependencies.createAccountAlias({
     userReference: input.userReference,
-    label: input.accountHolderName,
+    label: normalized.accountHolderName,
     account: {
       schema: "SEPA",
       iban: input.iban

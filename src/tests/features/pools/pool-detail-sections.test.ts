@@ -4,7 +4,10 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { PoolDetailSections } from "@/features/pools/components/pool-detail-sections";
+import {
+  PoolDetailSections,
+  PoolOverviewCard
+} from "@/features/pools/components/pool-detail-sections";
 import type { PoolDetailViewModel } from "@/features/pools/presenters/pool-presenters";
 import { t } from "@/i18n/t";
 
@@ -50,5 +53,39 @@ describe("PoolDetailSections", () => {
         name: t("common.copyLink")
       })
     ).toBeNull();
+  });
+
+  it("can render the public detail sections without duplicating the overview card", () => {
+    render(
+      React.createElement(PoolDetailSections, {
+        pool: createPublicViewModel(),
+        showOverview: false
+      })
+    );
+
+    expect(
+      screen.queryByRole("heading", {
+        name: "Team gift"
+      })
+    ).toBeNull();
+  });
+});
+
+describe("PoolOverviewCard", () => {
+  it("preserves line breaks in the pool description", () => {
+    render(
+      React.createElement(PoolOverviewCard, {
+        pool: {
+          ...createPublicViewModel(),
+          description: "Ligne 1\nLigne 2"
+        }
+      })
+    );
+
+    const description = screen.getByText((_, element) => {
+      return element?.textContent === "Ligne 1\nLigne 2";
+    });
+
+    expect(description.className).toContain("whitespace-pre-wrap");
   });
 });

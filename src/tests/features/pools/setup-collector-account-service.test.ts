@@ -114,4 +114,65 @@ describe("setupCollectorAccountForPool", () => {
     expect(createAccountAlias).not.toHaveBeenCalled();
     expect(updatePoolCollectorReferences).not.toHaveBeenCalled();
   });
+
+  it("normalizes accented collector fields before calling Linxo", async () => {
+    const createAuthorizedAccount = vi.fn().mockResolvedValue({
+      id: "authorized_account_123",
+      serviceLevel: "SEPA"
+    });
+    const createAccountAlias = vi.fn().mockResolvedValue({
+      id: "alias_123"
+    });
+
+    await setupCollectorAccountForPool(
+      {
+        poolId: "pool_123",
+        creatorId: "user_123",
+        userReference: "pool_creator:user_123",
+        accountHolderName: "Équipe Raph",
+        iban: "FR7630006000011234567890189",
+        entity: {
+          type: "NATURAL_PERSON",
+          firstname: "Élodie",
+          surname: "Dùpré",
+          birth_date: "1990-01-15",
+          birth_city: "Créteil",
+          birth_country: "FR"
+        }
+      },
+      {
+        findPoolByIdForCreator: vi.fn().mockResolvedValue({
+          id: "pool_123",
+          title: "Team gift"
+        }),
+        updatePoolCollectorReferences: vi.fn().mockResolvedValue(undefined),
+        createAuthorizedAccount,
+        createAccountAlias
+      }
+    );
+
+    expect(createAuthorizedAccount).toHaveBeenCalledWith({
+      identification: {
+        schema: "SEPA",
+        iban: "FR7630006000011234567890189",
+        name: "Equipe Raph"
+      },
+      entity: {
+        type: "NATURAL_PERSON",
+        firstname: "Elodie",
+        surname: "Dupre",
+        birth_date: "1990-01-15",
+        birth_city: "Creteil",
+        birth_country: "FR"
+      }
+    });
+    expect(createAccountAlias).toHaveBeenCalledWith({
+      userReference: "pool_creator:user_123",
+      label: "Equipe Raph",
+      account: {
+        schema: "SEPA",
+        iban: "FR7630006000011234567890189"
+      }
+    });
+  });
 });
