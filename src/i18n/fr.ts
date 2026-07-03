@@ -193,6 +193,10 @@ export const fr = {
     titlePlaceholder: "Cadeau de départ de l'équipe pour Alex",
     titleHint:
       "Ce titre sera affiché tel quel sur la cagnotte. Pour le paiement Linxo, il sera automatiquement normalisé si nécessaire.",
+    titlePaymentLabelTitle: "Libellé bancaire visible par les participants",
+    titlePaymentLabelBody:
+      "Le libellé affiché dans l'application bancaire et sur le relevé sera construit sous la forme \"{{prefix}} <titre>\". Il est standardisé automatiquement pour respecter les contraintes Linxo: longueur maximale de {{maxLength}} caractères, accents retirés, emoji et caractères non pris en charge supprimés si nécessaire.",
+    titlePaymentLabelPreview: "Aperçu en direct",
     descriptionPlaceholder:
       "Décrivez pour qui est la cagnotte, à quoi elle servira, etc...",
     collectorDisplayNamePlaceholder: "Équipe Linxo",
@@ -237,6 +241,11 @@ export const fr = {
     helper:
       "Pilotez la préparation de la cagnotte, les actions de gestion et le suivi des contributions depuis un seul cockpit.",
     incompleteConfiguration: "Configuration incomplète",
+    collectorCalloutTitle:
+      "Cette cagnotte ne peut pas encore recevoir de contributions en ligne.",
+    collectorCalloutBody:
+      "Le compte collecteur doit encore être configuré. Faites cette étape maintenant pour activer les paiements sans avoir à faire défiler toute la page pour retrouver le formulaire.",
+    collectorCalloutAction: "Configurer le compte collecteur",
     actionsTitle: "Actions de gestion",
     actionsBody:
       "Regroupez ici les actions utiles pour modifier la cagnotte, ajuster son cycle de vie et ouvrir la page publique.",

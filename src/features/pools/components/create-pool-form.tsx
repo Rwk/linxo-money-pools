@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
+import { ContributionLabelPreview } from "@/features/pools/components/contribution-label-preview";
 import { createPoolAction } from "@/features/pools/actions/create-pool";
 import {
   initialCreatePoolActionState,
@@ -23,6 +24,7 @@ export function CreatePoolForm() {
     initialCreatePoolActionState
   );
   const safeState = normalizeCreatePoolFormState(state);
+  const [title, setTitle] = useState(safeState.values.title);
 
   return (
     <form action={formAction} className="space-y-5">
@@ -38,14 +40,16 @@ export function CreatePoolForm() {
         </label>
         <input
           className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none ring-0 transition focus:border-slate-400"
-          defaultValue={safeState.values.title}
           id="title"
           maxLength={120}
           name="title"
+          onChange={(event) => setTitle(event.target.value)}
           placeholder={t("poolForms.titlePlaceholder")}
           required
+          value={title}
         />
         <p className="text-sm text-slate-600">{t("poolForms.titleHint")}</p>
+        <ContributionLabelPreview title={title} />
         <FieldError message={safeState.fieldErrors.title} />
       </div>
 

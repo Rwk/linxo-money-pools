@@ -36,7 +36,10 @@ export function CollectorAccountSetupForm(props: {
   });
 
   return (
-    <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
+    <section
+      className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6"
+      id="collector-account"
+    >
       <div className="space-y-4">
         <div className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-950">

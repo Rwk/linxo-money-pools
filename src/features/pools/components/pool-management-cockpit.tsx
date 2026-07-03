@@ -134,6 +134,22 @@ function PoolManagementHeader({ pool }: { pool: PrivatePoolDetailViewModel }) {
             <p className="max-w-3xl text-sm leading-6 text-[var(--muted)] sm:text-base">
               {t("poolManagement.helper")}
             </p>
+            {pool.readinessVariant === "warning" ? (
+              <div className="max-w-3xl rounded-[1.5rem] border border-amber-300 bg-amber-50 px-5 py-4 text-amber-950 shadow-[var(--shadow-soft)]">
+                <p className="text-sm font-semibold">
+                  {t("poolManagement.collectorCalloutTitle")}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-amber-900">
+                  {t("poolManagement.collectorCalloutBody")}
+                </p>
+                <a
+                  className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-amber-500 px-4 text-sm font-semibold text-amber-950 transition hover:bg-amber-400"
+                  href="#collector-account"
+                >
+                  {t("poolManagement.collectorCalloutAction")}
+                </a>
+              </div>
+            ) : null}
           </div>
         </div>
 
