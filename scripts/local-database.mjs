@@ -3,16 +3,15 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Deliberately ignore DATABASE_URL and dotenv files for local database commands.
+import {
+  assertLocalDatabaseUrl,
+  loadDevelopmentEnvironment
+} from "./development-environment.mjs";
+
 if (process.env.VERCEL || process.env.NODE_ENV === "production") {
   throw new Error(
     "Local database commands cannot run in production or Vercel."
   );
-}
-
-const port = process.env.LOCAL_POSTGRES_PORT ?? "5433";
-if (!/^\d+$/.test(port) || Number(port) < 1024 || Number(port) > 65535) {
-  throw new Error("LOCAL_POSTGRES_PORT must be an integer from 1024 to 65535.");
 }
 
 const commands = {
@@ -32,8 +31,14 @@ if (
   );
 }
 
-const databaseUrl = `postgresql://linxo_dev:linxo_dev_only@127.0.0.1:${port}/linxo_money_pools_dev`;
-console.log(`Local database: 127.0.0.1:${port}/linxo_money_pools_dev`);
+const directory = fileURLToPath(new URL("../", import.meta.url));
+process.env.NODE_ENV = "development";
+loadDevelopmentEnvironment(directory);
+const databaseUrl = process.env.DATABASE_URL;
+const url = assertLocalDatabaseUrl(databaseUrl);
+console.log(
+  `Local database: ${url.hostname}:${url.port || "5432"}${url.pathname}`
+);
 
 const require = createRequire(import.meta.url);
 const command =
@@ -49,7 +54,7 @@ const command =
       ];
 
 const result = spawnSync(process.execPath, command, {
-  cwd: fileURLToPath(new URL("../", import.meta.url)),
+  cwd: directory,
   stdio: "inherit",
   env: {
     ...process.env,

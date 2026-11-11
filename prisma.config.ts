@@ -1,9 +1,13 @@
-import { config } from "dotenv";
-
 import { defineConfig } from "prisma/config";
 
-config({ path: ".env.local" });
-config({ path: ".env" });
+import {
+  assertLocalDatabaseUrl,
+  loadDevelopmentEnvironment
+} from "./scripts/development-environment.mjs";
+
+if (loadDevelopmentEnvironment()) {
+  assertLocalDatabaseUrl(process.env.DATABASE_URL);
+}
 
 export default defineConfig({
   schema: "prisma/schema.prisma",

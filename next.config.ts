@@ -1,5 +1,14 @@
 import type { NextConfig } from "next";
 
+import {
+  assertLocalDatabaseUrl,
+  loadDevelopmentEnvironment
+} from "./scripts/development-environment.mjs";
+
+if (process.env.NODE_ENV === "development" && loadDevelopmentEnvironment()) {
+  assertLocalDatabaseUrl(process.env.DATABASE_URL);
+}
+
 function getAllowedDevOrigins(): string[] | undefined {
   if (process.env.NODE_ENV !== "development") {
     return undefined;

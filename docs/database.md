@@ -12,7 +12,11 @@ Prisma migrations must be applied before testing Google sign-in end-to-end.
 
 Prisma 7 reads the database URL from `prisma.config.ts`, not from the `datasource` block in `schema.prisma`.
 
-`prisma.config.ts` explicitly loads `.env.local` first and `.env` second, so `DATABASE_URL` must be set there before running migrations.
+For normal local commands, `prisma.config.ts` uses the shared `@next/env`
+development loader and requires a loopback database URL from `.env.local` or an
+explicit process override. Competing local environment files are rejected.
+Vercel, production, CI and test processes retain their managed environment;
+see [loading and precedence](./local-development.md#loading-and-precedence).
 
 At runtime, Prisma uses `@prisma/adapter-pg` in the server-only Prisma singleton. Supabase connections use SSL, and the current runtime setup accepts the Supabase or Supavisor certificate chain for local and serverless compatibility. A future hardening step can provide a CA certificate and switch back to strict certificate validation.
 
@@ -21,8 +25,8 @@ At runtime, Prisma uses `@prisma/adapter-pg` in the server-only Prisma singleton
 1. Create a Supabase project.
 2. Open `Project Settings` > `Database`.
 3. Copy the PostgreSQL connection string.
-4. Put it in your untracked `.env.local` file as `DATABASE_URL`.
-5. For Vercel, add the same value to the project environment variables.
+4. Store it as `DATABASE_URL` in the target Vercel environment's variables.
+5. Keep it out of local `.env.local`; that file uses Docker PostgreSQL only.
 6. Keep the Supabase connection string in SSL mode.
 7. Run Prisma client generation (this does not connect to the database):
 
@@ -98,8 +102,8 @@ npm run db:migrate:dev
 npm run db:studio
 ```
 
-Migration and Studio scripts target the local Docker database regardless of
-dotenv database values. See [local commands](./local-development.md#migrations-and-connection-checks).
+Migration and Studio scripts validate the resolved `DATABASE_URL` and refuse
+non-local targets. See [local commands](./local-development.md#migrations-and-connection-checks).
 
 ## Security note
 

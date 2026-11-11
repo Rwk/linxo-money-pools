@@ -85,8 +85,9 @@ More details are documented in [docs/security.md](docs/security.md).
 
 For isolated WSL development with Docker PostgreSQL, follow the
 [local development guide](docs/local-development.md) before starting the app.
-Existing local secrets are preserved; change the database URL manually as
-documented. The migration scripts below explicitly target the local Docker database.
+Existing local files are preserved; manually replace production database and
+Linxo credentials as documented. Next.js and Prisma share `.env.local` settings;
+local database commands refuse non-local targets.
 
 1. Install dependencies:
 
