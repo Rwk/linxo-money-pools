@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   ContributionPoolClosedError,
@@ -24,6 +24,14 @@ const openReadyPool = {
 } as const;
 
 describe("createContributionOrderForPool", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-03T10:00:00.000Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
   it("rejects closed pools", async () => {
     await expect(
       createContributionOrderForPool(
@@ -252,48 +260,72 @@ describe("createContributionOrderForPool", () => {
     });
   });
 
-  it("sanitizes the pool title before sending the Linxo order label", async () => {
-    const createOrder = vi.fn().mockResolvedValue({
-      id: "order_123",
-      order_status: "NEW",
-      auth_url: "https://auth.linxo.test/order_123",
-      redirect_url: "https://app.test/return"
-    });
+  it.each([
+    ["🎂 Départ de Chloé / Noël !", "Contribution to Depart de Chloe Noel"],
+    ["🎉🎁", "Contribution to Money pool"]
+  ])(
+    "sanitizes %j at the server boundary without changing the pool",
+    async (title, label) => {
+      const pool = Object.freeze({ ...openReadyPool, title });
+      const originalPool = { ...pool };
+      const createOrder = vi.fn().mockResolvedValue({
+        id: "order_123",
+        order_status: "NEW",
+        auth_url: "https://auth.linxo.test/order_123",
+        redirect_url: "https://app.test/return"
+      });
 
-    await createContributionOrderForPool(
-      {
-        poolSlug: "team-gift",
-        contributorFirstName: "Jane",
-        contributorLastName: "Doe",
-        contributorEmail: "jane@example.com",
-        amount: "12.00",
-        selectedPaymentMethod: "STANDARD",
-        displayAsAnonymous: false,
-        hideAmount: false
-      },
-      {
-        findPoolBySlug: vi.fn().mockResolvedValue({
-          ...openReadyPool,
-          title: "Cagnotte pour le non-départ et la non-paternité de Raph"
-        }),
-        createContributionRecord: vi.fn().mockResolvedValue({
-          id: "contribution_123",
-          paymentAccessToken: "payment_token_123"
-        }),
-        updateContributionAfterOrderCreation: vi
-          .fn()
-          .mockResolvedValue(undefined),
-        markContributionInitiationFailed: vi.fn().mockResolvedValue(undefined),
-        createOrder,
-        shortenOrderAuthUrl: vi.fn().mockResolvedValue({
-          shortAuthUrl: "https://short.linxo.test/order_123"
-        }),
-        buildReturnUrl: vi.fn().mockReturnValue("https://app.test/return")
-      }
-    );
+      await createContributionOrderForPool(
+        {
+          poolSlug: "team-gift",
+          contributorFirstName: "Jane",
+          contributorLastName: "Doe",
+          contributorEmail: "jane@example.com",
+          amount: "12.00",
+          selectedPaymentMethod: "STANDARD",
+          displayAsAnonymous: false,
+          hideAmount: false
+        },
+        {
+          findPoolBySlug: vi.fn().mockResolvedValue(pool),
+          createContributionRecord: vi.fn().mockResolvedValue({
+            id: "contribution_123",
+            paymentAccessToken: "payment_token_123"
+          }),
+          updateContributionAfterOrderCreation: vi
+            .fn()
+            .mockResolvedValue(undefined),
+          markContributionInitiationFailed: vi
+            .fn()
+            .mockResolvedValue(undefined),
+          createOrder,
+          shortenOrderAuthUrl: vi.fn().mockResolvedValue({
+            shortAuthUrl: "https://short.linxo.test/order_123"
+          }),
+          buildReturnUrl: vi.fn().mockReturnValue("https://app.test/return")
+        }
+      );
 
-    expect(createOrder.mock.calls[0]?.[0]?.instructions[0]?.label).toMatch(
-      /^[a-zA-Z0-9 ?:().,+\-/]{1,50}$/
-    );
-  });
+      expect(createOrder).toHaveBeenCalledExactlyOnceWith({
+        user_reference: "contribution_123",
+        email: "jane@example.com",
+        redirect_url: "https://app.test/return",
+        payment_methods: ["INITIATED_WIRE_TRANSFER"],
+        instructions: [
+          {
+            amount: "12.00",
+            currency: "EUR",
+            beneficiary: {
+              schema: "ALIAS",
+              alias_id: "alias_123",
+              complementary_name: "Linxo Team"
+            },
+            label
+          }
+        ]
+      });
+      expect(pool).toEqual(originalPool);
+      expect(pool.title).toBe(title);
+    }
+  );
 });
