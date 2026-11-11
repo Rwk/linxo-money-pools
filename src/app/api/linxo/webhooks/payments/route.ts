@@ -1,3 +1,4 @@
+import { logLinxoDiagnostic } from "@/infrastructure/linxo/linxo-api-logger";
 import { syncContributionStatusByOrderId } from "@/features/contributions/services/sync-contribution-status";
 import { isValidLinxoWebhookToken } from "@/infrastructure/linxo/linxo-webhook-secret";
 
@@ -25,18 +26,12 @@ export async function GET(request: Request): Promise<Response> {
     const result = await syncContributionStatusByOrderId(resourceId);
 
     if (result.status === "not_found") {
-      console.warn("Linxo webhook order was not found locally.", {
-        resourceType,
-        resourceId
-      });
+      logLinxoDiagnostic("processWebhook", "local_order_not_found");
     }
 
     return new Response(null, { status: 204 });
-  } catch {
-    console.error("Linxo webhook processing failed.", {
-      resourceType,
-      resourceId
-    });
+  } catch (error) {
+    logLinxoDiagnostic("processWebhook", error);
 
     return new Response(null, { status: 500 });
   }

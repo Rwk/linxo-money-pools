@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn()
@@ -35,6 +35,46 @@ describe("setup collector account action", () => {
       name: "Linxo User"
     });
   });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it.each(["off", "error", "info"])(
+    "keeps configuration failures safe at level %s",
+    async (level) => {
+      vi.stubEnv("LINXO_API_LOG_LEVEL", level);
+      const formData = new FormData();
+      formData.set("poolId", "pool_123");
+      formData.set("accountHolderName", "Linxo Team");
+      formData.set("iban", "FR8530003000307599775722N09");
+      formData.set("entityType", "COMPANY");
+      formData.set("companyName", "World Corp");
+      formData.set("nationalIdentification", "439826121");
+      formData.set("companyCountry", "FR");
+      vi.mocked(setupCollectorAccountForPool).mockRejectedValue(
+        new LinxoPaymentsConfigurationError("PRIVATE_CREDENTIALS")
+      );
+      const result = await setupCollectorAccountAction(
+        initialSetupCollectorAccountActionState,
+        formData
+      );
+      expect(result.formError).toBe(t("actions.collectorConfigMissing"));
+      expect(result.values.iban).toBe("");
+      expect(console.error).toHaveBeenCalledTimes(level === "off" ? 0 : 1);
+      const output = JSON.stringify(vi.mocked(console.error).mock.calls);
+      for (const forbidden of [
+        "PRIVATE_CREDENTIALS",
+        "FR8530003000307599775722N09",
+        "pool_123",
+        "user_123",
+        "World Corp"
+      ]) {
+        expect(output).not.toContain(forbidden);
+      }
+    }
+  );
 
   it("does not return the submitted IBAN when validation fails", async () => {
     const formData = new FormData();
@@ -182,9 +222,7 @@ describe("setup collector account action", () => {
       formData
     );
 
-    expect(result.formError).toBe(
-      t("actions.collectorConfigMissing")
-    );
+    expect(result.formError).toBe(t("actions.collectorConfigMissing"));
     expect(result.values.iban).toBe("");
   });
 
@@ -241,9 +279,7 @@ describe("setup collector account action", () => {
       formData
     );
 
-    expect(result.formError).toBe(
-      t("actions.collectorReferenceMissing")
-    );
+    expect(result.formError).toBe(t("actions.collectorReferenceMissing"));
     expect(result.values.companyName).toBe("");
     expect(result.values.nationalIdentification).toBe("");
   });

@@ -15,12 +15,15 @@ const originalSecret = process.env.LINXO_WEBHOOK_SECRET;
 describe("GET /api/linxo/webhooks/payments", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("LINXO_API_LOG_LEVEL", "error");
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     process.env.LINXO_WEBHOOK_SECRET = "test-webhook-secret";
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
     if (originalSecret === undefined) {
       delete process.env.LINXO_WEBHOOK_SECRET;
     } else {
@@ -83,11 +86,13 @@ describe("GET /api/linxo/webhooks/payments", () => {
 
     expect(response.status).toBe(204);
     expect(syncContributionStatusByOrderId).toHaveBeenCalledWith("order_123");
-    expect(console.warn).toHaveBeenCalledWith(
-      "Linxo webhook order was not found locally.",
-      expect.objectContaining({
-        resourceId: "order_123",
-        resourceType: "orders"
+    expect(console.error).toHaveBeenCalledWith(
+      JSON.stringify({
+        provider: "linxo",
+        level: "error",
+        event: "linxo.diagnostic",
+        operation: "processWebhook",
+        errorCategory: "local_order_not_found"
       })
     );
   });
@@ -121,13 +126,36 @@ describe("GET /api/linxo/webhooks/payments", () => {
 
     expect(response.status).toBe(500);
     expect(console.error).toHaveBeenCalledWith(
-      "Linxo webhook processing failed.",
-      expect.objectContaining({
-        resourceId: "order_123",
-        resourceType: "orders"
+      JSON.stringify({
+        provider: "linxo",
+        level: "error",
+        event: "linxo.diagnostic",
+        operation: "processWebhook",
+        errorCategory: "unexpected_error"
       })
     );
   });
+
+  it.each(["not_found", "failure"])(
+    "suppresses webhook %s diagnostics at off",
+    async (outcome) => {
+      vi.stubEnv("LINXO_API_LOG_LEVEL", "off");
+      if (outcome === "failure")
+        syncContributionStatusByOrderId.mockRejectedValue(new Error("private"));
+      else
+        syncContributionStatusByOrderId.mockResolvedValue({
+          status: "not_found"
+        });
+      const response = await GET(
+        new Request(
+          "https://app.test/api/linxo/webhooks/payments?token=test-webhook-secret&resource_type=orders&resource_id=order_123"
+        )
+      );
+      expect(response.status).toBe(outcome === "failure" ? 500 : 204);
+      expect(console.error).not.toHaveBeenCalled();
+      expect(console.warn).not.toHaveBeenCalled();
+    }
+  );
 
   it("keeps duplicate calls idempotent", async () => {
     syncContributionStatusByOrderId.mockResolvedValue({

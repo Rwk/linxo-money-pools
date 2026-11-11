@@ -1,5 +1,6 @@
 "use server";
 
+import { logLinxoDiagnostic } from "@/infrastructure/linxo/linxo-api-logger";
 import { redirect } from "next/navigation";
 
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
@@ -8,7 +9,10 @@ import {
   validateSetupCollectorAccountInput
 } from "@/features/pools/domain/setup-collector-account-input";
 import type { SetupCollectorAccountActionState } from "@/features/pools/forms/setup-collector-account-form-state";
-import { PoolCollectorAccountAccessError, setupCollectorAccountForPool } from "@/features/pools/services/setup-collector-account-service";
+import {
+  PoolCollectorAccountAccessError,
+  setupCollectorAccountForPool
+} from "@/features/pools/services/setup-collector-account-service";
 import {
   LinxoPaymentsApiError,
   LinxoPaymentsConfigurationError,
@@ -48,61 +52,6 @@ function sanitizeValues(values: {
 
 function formatBirthDateForLinxo(value: string): string {
   return value.replaceAll("-", "/");
-}
-
-function logSetupCollectorAccountFailure(input: {
-  poolId: string;
-  userId: string;
-  userReference: string;
-  error: unknown;
-}) {
-  if (input.error instanceof LinxoPaymentsApiError) {
-    console.error("Linxo collector account setup failed.", {
-      poolId: input.poolId,
-      userId: input.userId,
-      userReference: input.userReference,
-      status: input.error.status,
-      code: input.error.code,
-      description: input.error.description,
-      requestId: input.error.requestId
-    });
-
-    return;
-  }
-
-  if (input.error instanceof LinxoPaymentsTokenError) {
-    console.error("Linxo collector account authentication failed.", {
-      poolId: input.poolId,
-      userId: input.userId,
-      userReference: input.userReference,
-      status: input.error.status,
-      code: input.error.code,
-      description: input.error.description,
-      requestId: input.error.requestId
-    });
-
-    return;
-  }
-
-  if (input.error instanceof LinxoPaymentsConfigurationError) {
-    console.error("Linxo collector account configuration failed.", {
-      poolId: input.poolId,
-      userId: input.userId,
-      userReference: input.userReference,
-      message: input.error.message
-    });
-
-    return;
-  }
-
-  if (input.error instanceof LinxoPaymentsNetworkError) {
-    console.error("Linxo collector account network failure.", {
-      poolId: input.poolId,
-      userId: input.userId,
-      userReference: input.userReference,
-      message: input.error.message
-    });
-  }
 }
 
 function getSetupCollectorAccountErrorMessage(error: unknown): string {
@@ -185,12 +134,12 @@ export async function setupCollectorAccountAction(
             }
     });
   } catch (error) {
-    logSetupCollectorAccountFailure({
-      poolId,
-      userId: user.id,
-      userReference,
-      error
-    });
+    if (
+      error instanceof LinxoPaymentsConfigurationError ||
+      error instanceof LinxoPaymentsResponseError
+    ) {
+      logLinxoDiagnostic("setupCollectorAccount", error);
+    }
 
     return {
       values: sanitizeValues(values),

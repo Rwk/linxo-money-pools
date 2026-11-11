@@ -109,3 +109,66 @@ documented request samples.
 Because of that, the app treats missing Linxo identifiers as a setup failure
 and does not mark a pool as payment-ready without the required stored
 references.
+
+## API observability
+
+`LINXO_API_LOG_LEVEL` controls all application-owned Linxo diagnostics:
+
+| Value   | Events                                                                 |
+| ------- | ---------------------------------------------------------------------- |
+| `off`   | None                                                                   |
+| `error` | Failed HTTP attempts and safe application diagnostics                  |
+| `info`  | Successful and failed HTTP attempts, plus safe application diagnostics |
+
+When unset, the default is `error` for local development (`NODE_ENV=development`)
+and `off` for Vercel Preview and Production. Other runtimes default to `off`.
+Explicit values override defaults; invalid values (including empty values) mean
+`off`. The setting does not select Linxo credentials or sandbox/production mode.
+
+For temporary local diagnostics, set `LINXO_API_LOG_LEVEL=info` in `.env.local`
+and restart the server. On Vercel, set `error` or `info` for the relevant deployment
+environment. Changing Vercel environment variables requires a deployment or
+redeployment to use the updated configuration. Restore `off` after diagnosis.
+
+Each HTTP attempt emits one JSON `linxo.api.request` event, including token
+acquisition, order creation, running-order retrieval, order shortening, alias
+creation, and authorized account creation. Authorized account content-type retries
+produce separate events. A failed token acquisition emits only its token event;
+no order request was sent. Cached token reads emit no event. Shortening failures
+are visible even when the existing fallback succeeds.
+
+Events contain an internal operation name, static endpoint template, method,
+HTTP status when available, monotonic elapsed `durationMs`, and the outbound
+`X-FWD-Request-ID` as `requestId`. OAuth requests also send this correlation header.
+A different returned correlation header is included as `responseRequestId` only
+when it has UUID syntax. Search local terminal output or Vercel application logs
+for either ID; use it to locate the corresponding request in Linxo logs or when
+contacting support. Token and API attempts have separate IDs; there is no
+cross-request trace; no new public-facing diagnostic ID is introduced.
+
+Failures include a controlled category and, when available, an allowlisted error
+code (`UNKNOWN` for unrecognized codes). Timeouts/aborts are classified when the
+transport reports them; logging adds no timeout, retry, network call, or database
+operation. Durations include response parsing and exclude prior token acquisition.
+No event can be emitted until a pending request settles. Console failures are
+ignored so they cannot affect payment results or exception propagation.
+
+Logs intentionally exclude bodies, arbitrary headers, raw exceptions and error
+descriptions, credentials, tokens, banking/KYC details, personal information,
+redirect URLs, query strings, and resource IDs. Endpoint templates never include
+actual order IDs. Returned correlation headers that are not UUIDs are omitted.
+The configured Linxo environment is omitted because its declaration does not
+verify which credentials are in use.
+
+Independent action logs were replaced by transport events to prevent duplicates.
+Configuration failures, invalid collector responses, missing payment redirect
+URLs, and local webhook lookup/processing failures retain only a safe operation
+and category in `linxo.diagnostic` events. Pool, user, and resource context is
+intentionally removed; correlate HTTP failures using request IDs instead. There
+are no remaining application-owned Linxo logs outside this configuration.
+Webhook processing and HTTP responses are unchanged.
+
+This setting controls application diagnostics only. It does not suppress Next.js
+framework logs, Vercel request/platform logs, or unrelated application logs. It
+provides no external log storage or retention guarantee and does not diagnose or
+repair missing Linxo resources.

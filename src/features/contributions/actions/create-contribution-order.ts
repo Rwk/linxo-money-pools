@@ -1,5 +1,6 @@
 "use server";
 
+import { logLinxoDiagnostic } from "@/infrastructure/linxo/linxo-api-logger";
 import { redirect } from "next/navigation";
 
 import { buildContributionPayPath } from "@/features/contributions/domain/payment-handoff";
@@ -63,36 +64,6 @@ function getCreateContributionErrorMessage(error: unknown): string {
   return t("actions.contributionGeneric");
 }
 
-function logCreateContributionFailure(input: {
-  poolSlug: string;
-  error: unknown;
-}) {
-  if (
-    input.error instanceof LinxoPaymentsApiError ||
-    input.error instanceof LinxoPaymentsTokenError
-  ) {
-    console.error("Public contribution Linxo failure.", {
-      poolSlug: input.poolSlug,
-      status: input.error.status,
-      code: input.error.code,
-      description: input.error.description,
-      requestId: input.error.requestId
-    });
-    return;
-  }
-
-  if (
-    input.error instanceof LinxoPaymentsNetworkError ||
-    input.error instanceof LinxoPaymentsConfigurationError ||
-    input.error instanceof ContributionPaymentInitiationError
-  ) {
-    console.error("Public contribution initiation failure.", {
-      poolSlug: input.poolSlug,
-      message: input.error.message
-    });
-  }
-}
-
 export async function createContributionOrderAction(
   _previousState: CreateContributionActionState,
   formData: FormData
@@ -116,10 +87,12 @@ export async function createContributionOrderAction(
     contributionId = result.contributionId;
     paymentAccessToken = result.paymentAccessToken;
   } catch (error) {
-    logCreateContributionFailure({
-      poolSlug: validation.data.poolSlug,
-      error
-    });
+    if (
+      error instanceof LinxoPaymentsConfigurationError ||
+      error instanceof ContributionPaymentInitiationError
+    ) {
+      logLinxoDiagnostic("createContributionOrder", error);
+    }
 
     return {
       values,

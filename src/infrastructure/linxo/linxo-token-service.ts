@@ -1,6 +1,12 @@
 import "server-only";
 
-import { getLinxoPaymentsConfig, type LinxoPaymentsConfig } from "@/infrastructure/linxo/linxo-payments-config";
+import { randomUUID } from "node:crypto";
+import { observeLinxoRequest } from "@/infrastructure/linxo/linxo-api-logger";
+
+import {
+  getLinxoPaymentsConfig,
+  type LinxoPaymentsConfig
+} from "@/infrastructure/linxo/linxo-payments-config";
 import {
   LinxoPaymentsNetworkError,
   LinxoPaymentsTokenError
@@ -44,10 +50,12 @@ export class LinxoTokenService {
   private cachedToken: CachedToken | null = null;
   private tokenPromise: Promise<string> | null = null;
 
-  constructor(options: {
-    fetch?: FetchLike;
-    config?: LinxoPaymentsConfig;
-  } = {}) {
+  constructor(
+    options: {
+      fetch?: FetchLike;
+      config?: LinxoPaymentsConfig;
+    } = {}
+  ) {
     this.fetch = options.fetch ?? fetch;
     this.config = options.config ?? getLinxoPaymentsConfig();
   }
@@ -73,7 +81,8 @@ export class LinxoTokenService {
   private hasValidCachedToken(): boolean {
     return (
       this.cachedToken !== null &&
-      Date.now() < this.cachedToken.expiresAt - TOKEN_EXPIRATION_SAFETY_MARGIN_MS
+      Date.now() <
+        this.cachedToken.expiresAt - TOKEN_EXPIRATION_SAFETY_MARGIN_MS
     );
   }
 
@@ -81,64 +90,73 @@ export class LinxoTokenService {
     const body = new URLSearchParams();
     body.set("grant_type", this.getGrantType());
 
-    let response: Response;
+    const outboundRequestId = randomUUID();
+    return observeLinxoRequest(
+      "acquireToken",
+      outboundRequestId,
+      async (received) => {
+        let response: Response;
 
-    try {
-      response = await this.fetch(buildTokenUrl(this.config.baseUrl), {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${encodeBasicAuth(
-            this.config.clientId,
-            this.config.clientSecret
-          )}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-          Accept: "application/json"
-        },
-        body: body.toString(),
-        cache: "no-store"
-      });
-    } catch (error) {
-      throw new LinxoPaymentsNetworkError(
-        "Failed to reach Linxo Payments token endpoint.",
-        { cause: error }
-      );
-    }
+        try {
+          response = await this.fetch(buildTokenUrl(this.config.baseUrl), {
+            method: "POST",
+            headers: {
+              Authorization: `Basic ${encodeBasicAuth(
+                this.config.clientId,
+                this.config.clientSecret
+              )}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+              Accept: "application/json",
+              "X-FWD-Request-ID": outboundRequestId
+            },
+            body: body.toString(),
+            cache: "no-store"
+          });
+        } catch (error) {
+          throw new LinxoPaymentsNetworkError(
+            "Failed to reach Linxo Payments token endpoint.",
+            { cause: error }
+          );
+        }
 
-    const requestId = response.headers.get("X-FWD-Request-ID") ?? undefined;
+        received(response);
+        const requestId = response.headers.get("X-FWD-Request-ID") ?? undefined;
 
-    if (!response.ok) {
-      const errorBody = await readJsonSafely<LinxoErrorResponse>(response);
+        if (!response.ok) {
+          const errorBody = await readJsonSafely<LinxoErrorResponse>(response);
 
-      throw new LinxoPaymentsTokenError({
-        message: "Linxo Payments token request failed.",
-        status: response.status,
-        code: errorBody?.error,
-        description: errorBody?.error_description,
-        requestId
-      });
-    }
+          throw new LinxoPaymentsTokenError({
+            message: "Linxo Payments token request failed.",
+            status: response.status,
+            code: errorBody?.error,
+            description: errorBody?.error_description,
+            requestId
+          });
+        }
 
-    const payload = await readJsonSafely<LinxoTokenResponse>(response);
+        const payload = await readJsonSafely<LinxoTokenResponse>(response);
 
-    if (
-      payload === null ||
-      payload.token_type !== "Bearer" ||
-      payload.access_token.trim().length === 0 ||
-      !Number.isFinite(payload.expires_in)
-    ) {
-      throw new LinxoPaymentsTokenError({
-        message: "Linxo Payments token response is invalid.",
-        status: response.status,
-        requestId
-      });
-    }
+        if (
+          payload === null ||
+          payload.token_type !== "Bearer" ||
+          payload.access_token.trim().length === 0 ||
+          !Number.isFinite(payload.expires_in)
+        ) {
+          throw new LinxoPaymentsTokenError({
+            message: "Linxo Payments token response is invalid.",
+            status: response.status,
+            requestId
+          });
+        }
 
-    this.cachedToken = {
-      accessToken: payload.access_token,
-      expiresAt: Date.now() + payload.expires_in * 1000
-    };
+        this.cachedToken = {
+          accessToken: payload.access_token,
+          expiresAt: Date.now() + payload.expires_in * 1000
+        };
 
-    return payload.access_token;
+        return payload.access_token;
+      }
+    );
   }
 
   private getGrantType(): NonNullable<LinxoTokenRequestBody["grant_type"]> {
