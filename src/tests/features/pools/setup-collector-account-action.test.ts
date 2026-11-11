@@ -109,53 +109,64 @@ describe("setup collector account action", () => {
     expect(result.fieldErrors.iban).toBe(t("validation.ibanInvalid"));
   });
 
-  it("redirects after a successful collector account setup", async () => {
-    const redirectError = new Error("NEXT_REDIRECT");
-    const formData = new FormData();
-    formData.set("poolId", "pool_123");
-    formData.set("accountHolderName", "Linxo Team");
-    formData.set("iban", "FR76 3000 6000 0112 3456 7890 189");
-    formData.set("entityType", "NATURAL_PERSON");
-    formData.set("firstName", "Jane");
-    formData.set("surname", "Doe");
-    formData.set("birthDate", "1990-01-15");
-    formData.set("birthCity", "Paris");
-    formData.set("birthCountry", "FR");
+  it.each(["user_123", "local-development-user"])(
+    "derives collector reference from session %s and ignores browser identity",
+    async (userId) => {
+      vi.mocked(requireLinxoSession).mockResolvedValue({
+        id: userId,
+        email: "dev@linxo.com",
+        name: "Local Developer"
+      });
+      const redirectError = new Error("NEXT_REDIRECT");
+      const formData = new FormData();
+      formData.set("userReference", "another-user");
+      formData.set("creatorId", "another-user");
+      formData.set("aliasId", "another-alias");
+      formData.set("poolId", "pool_123");
+      formData.set("accountHolderName", "Linxo Team");
+      formData.set("iban", "FR76 3000 6000 0112 3456 7890 189");
+      formData.set("entityType", "NATURAL_PERSON");
+      formData.set("firstName", "Jane");
+      formData.set("surname", "Doe");
+      formData.set("birthDate", "1990-01-15");
+      formData.set("birthCity", "Paris");
+      formData.set("birthCountry", "FR");
 
-    vi.mocked(setupCollectorAccountForPool).mockResolvedValue({
-      poolId: "pool_123",
-      collectorAuthorizedAccountId: "authorized_account_123",
-      collectorAliasId: "alias_123"
-    });
-    vi.mocked(redirect).mockImplementation(() => {
-      throw redirectError;
-    });
+      vi.mocked(setupCollectorAccountForPool).mockResolvedValue({
+        poolId: "pool_123",
+        collectorAuthorizedAccountId: "authorized_account_123",
+        collectorAliasId: "alias_123"
+      });
+      vi.mocked(redirect).mockImplementation(() => {
+        throw redirectError;
+      });
 
-    await expect(
-      setupCollectorAccountAction(
-        initialSetupCollectorAccountActionState,
-        formData
-      )
-    ).rejects.toThrow("NEXT_REDIRECT");
+      await expect(
+        setupCollectorAccountAction(
+          initialSetupCollectorAccountActionState,
+          formData
+        )
+      ).rejects.toThrow("NEXT_REDIRECT");
 
-    expect(setupCollectorAccountForPool).toHaveBeenCalledOnce();
-    expect(setupCollectorAccountForPool).toHaveBeenCalledWith({
-      poolId: "pool_123",
-      creatorId: "user_123",
-      userReference: "user_123",
-      accountHolderName: "Linxo Team",
-      iban: "FR7630006000011234567890189",
-      entity: {
-        type: "NATURAL_PERSON",
-        firstname: "Jane",
-        surname: "Doe",
-        birth_date: "1990/01/15",
-        birth_city: "Paris",
-        birth_country: "FR"
-      }
-    });
-    expect(redirect).toHaveBeenCalledWith("/dashboard/pools/pool_123");
-  });
+      expect(setupCollectorAccountForPool).toHaveBeenCalledOnce();
+      expect(setupCollectorAccountForPool).toHaveBeenCalledWith({
+        poolId: "pool_123",
+        creatorId: userId,
+        userReference: userId,
+        accountHolderName: "Linxo Team",
+        iban: "FR7630006000011234567890189",
+        entity: {
+          type: "NATURAL_PERSON",
+          firstname: "Jane",
+          surname: "Doe",
+          birth_date: "1990/01/15",
+          birth_city: "Paris",
+          birth_country: "FR"
+        }
+      });
+      expect(redirect).toHaveBeenCalledWith("/dashboard/pools/pool_123");
+    }
+  );
 
   it("accepts accented collector values in the form and leaves normalization to the Linxo call layer", async () => {
     const redirectError = new Error("NEXT_REDIRECT");

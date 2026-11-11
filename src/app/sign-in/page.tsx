@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { hasGoogleOAuthCredentials } from "@/auth";
+import { hasGoogleOAuthCredentials, hasDevelopmentAuth } from "@/auth";
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { t } from "@/i18n/t";
 
@@ -24,9 +24,7 @@ function getErrorMessage(error: string | undefined): string | null {
   }
 }
 
-export default async function SignInPage({
-  searchParams
-}: SignInPageProps) {
+export default async function SignInPage({ searchParams }: SignInPageProps) {
   const { callbackUrl, error } = await searchParams;
   const errorMessage = getErrorMessage(error);
 
@@ -52,18 +50,28 @@ export default async function SignInPage({
             </div>
           ) : null}
 
-          {!hasGoogleOAuthCredentials ? (
+          {!hasGoogleOAuthCredentials && !hasDevelopmentAuth ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
               {t("auth.credentialsMissing")}
             </div>
           ) : null}
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <SignInButton
-              disabled={!hasGoogleOAuthCredentials}
-              label={t("common.signInWithGoogle")}
-              redirectTo={callbackUrl || "/dashboard"}
-            />
+            {hasDevelopmentAuth ? (
+              <SignInButton
+                provider="development"
+                label={t("common.signInDevelopment")}
+                redirectTo={callbackUrl || "/dashboard"}
+              />
+            ) : null}
+            {hasGoogleOAuthCredentials || !hasDevelopmentAuth ? (
+              <SignInButton
+                provider="google"
+                disabled={!hasGoogleOAuthCredentials}
+                label={t("common.signInWithGoogle")}
+                redirectTo={callbackUrl || "/dashboard"}
+              />
+            ) : null}
             <Link
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/70 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"
               href="/"

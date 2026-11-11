@@ -12,6 +12,7 @@ export const fr = {
     signIn: "Se connecter",
     signOut: "Se déconnecter",
     signInWithGoogle: "Se connecter avec Google",
+    signInDevelopment: "Connexion développeur",
     signInToManagePools: "Se connecter pour gérer mes cagnottes",
     loading: "Chargement...",
     save: "Enregistrer",

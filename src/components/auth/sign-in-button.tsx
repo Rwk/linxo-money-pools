@@ -1,18 +1,21 @@
-import { signIn } from "@/auth";
+import { signIn, hasDevelopmentAuth } from "@/auth";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 type SignInButtonProps = {
   disabled?: boolean;
   label: string;
   redirectTo?: string;
   className?: string;
+  provider?: "google" | "development";
 };
 
 export function SignInButton({
   disabled = false,
   label,
   redirectTo = "/dashboard",
-  className
+  className,
+  provider = hasDevelopmentAuth ? "development" : "google"
 }: SignInButtonProps) {
   return (
     <form
@@ -23,7 +26,7 @@ export function SignInButton({
           return;
         }
 
-        await signIn("google", {
+        await signIn(provider, {
           redirectTo
         });
       }}
@@ -33,7 +36,7 @@ export function SignInButton({
         disabled={disabled}
         type="submit"
       >
-        {label}
+        {provider === "development" ? t("common.signInDevelopment") : label}
       </Button>
     </form>
   );

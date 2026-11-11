@@ -1,9 +1,14 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 
 import { isLinxoEmail } from "@/auth/linxo-email-domain";
 import { prisma } from "@/infrastructure/db/prisma";
+import {
+  authorizeDevelopmentUser,
+  isDevelopmentAuthEnabled
+} from "@/auth/development-auth";
 
 type GoogleProfile = {
   email?: unknown;
@@ -19,7 +24,8 @@ const hasGoogleOAuthCredentials =
   Boolean(process.env.AUTH_GOOGLE_ID) &&
   Boolean(process.env.AUTH_GOOGLE_SECRET);
 
-const providers = hasGoogleOAuthCredentials
+const hasDevelopmentAuth = isDevelopmentAuthEnabled();
+const providers: NextAuthConfig["providers"] = hasGoogleOAuthCredentials
   ? [
       Google({
         clientId: process.env.AUTH_GOOGLE_ID,
@@ -28,10 +34,22 @@ const providers = hasGoogleOAuthCredentials
     ]
   : [];
 
+if (hasDevelopmentAuth) {
+  providers.push(
+    Credentials({
+      id: "development",
+      name: "Development",
+      credentials: {},
+      authorize: authorizeDevelopmentUser
+    })
+  );
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: {
-    strategy: "database"
+    // Auth.js Credentials requires JWT sessions. Production keeps database sessions.
+    strategy: hasDevelopmentAuth ? "jwt" : "database"
   },
   pages: {
     signIn: "/sign-in"
@@ -44,11 +62,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       return isLinxoEmail(email);
     },
-    async session({ session, user }) {
-      if (session.user) {
+    async jwt({ token, user }) {
+      if (user) {
+        token.sub = user.id;
+        token.email = user.email;
+        token.name = user.name;
+      }
+      return token;
+    },
+    async session({ session, user, token }) {
+      if (session.user && user) {
         session.user.id = user.id;
         session.user.email = user.email ?? null;
         session.user.name = user.name ?? null;
+      } else if (session.user && hasDevelopmentAuth) {
+        session.user.id = token?.sub ?? "";
+        session.user.email = token?.email ?? "";
+        session.user.name = token?.name ?? null;
       }
 
       return session;
@@ -81,4 +111,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }
 });
 
-export { hasGoogleOAuthCredentials };
+export { hasGoogleOAuthCredentials, hasDevelopmentAuth };

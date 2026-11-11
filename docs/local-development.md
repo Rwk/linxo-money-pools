@@ -1,8 +1,9 @@
-# Local development — DEV-1
+# Local development
 
 Next.js runs directly in WSL; only PostgreSQL runs in Docker Compose. This
-milestone isolates the database. Authentication, Linxo Sandbox and ngrok remain
-separate workstreams. Before starting Next.js, remove production Supabase and
+guide covers the DEV-1 database and DEV-2 development authentication. Linxo
+Sandbox payment acceptance and ngrok setup remain separate workstreams.
+Before starting Next.js, remove production Supabase and
 Linxo credentials from local configuration and replace them as described below.
 
 ## Requirements and startup
@@ -38,7 +39,7 @@ DATABASE_URL="postgresql://linxo_dev:linxo_dev_only@127.0.0.1:5433/linxo_money_p
 ```
 
 Before starting Next.js, also replace the Linxo base URL, client ID and client
-secret with the **matching Sandbox endpoint and credentials** (DEV-2). Set
+secret with the **matching Sandbox endpoint and credentials**. Set
 `LINXO_PAYMENTS_ENVIRONMENT=sandbox`, and use a new local `LINXO_WEBHOOK_SECRET`.
 The environment field is only a validated label: it does **not** choose an API
 endpoint or credentials. Token and payment requests use `LINXO_PAYMENTS_BASE_URL`
@@ -48,10 +49,31 @@ Sandbox is configured, keep the example's nonfunctional Linxo placeholders and
 do not exercise payment flows.
 
 Keep `NEXTAUTH_URL=http://localhost:3000`; later DEV-4 may replace that one value
-with an HTTPS ngrok origin. Set a local `AUTH_SECRET`. Existing Google OAuth
-configuration is still needed for sign-in; DEV-3 test authentication is not yet
-implemented. Do not introduce mock auth settings that the application does not
-support.
+with an HTTPS ngrok origin. Set a local `AUTH_SECRET` and
+`ENABLE_DEV_AUTH=true` for the DEV-2 passwordless test identity. Google OAuth
+credentials can be omitted in this mode. Leave the flag absent or `false` to
+retain normal Google authentication.
+
+### Development sign-in (DEV-2)
+
+After setting the flag, restart `npm run dev`. Open `http://localhost:3000`, click
+**Connexion développeur**, create/view pools in the dashboard, and use
+**Se déconnecter** to sign out. A second sign-in retrieves the same `dev@linxo.com`
+user and owned pools. Auth.js still requires `AUTH_SECRET`; generate a local
+secret rather than reusing production's value.
+
+The provider is disabled by default and never registered outside development or
+on Vercel, even with the flag set. It derives the identity on the server and
+requires the local PostgreSQL database. Auth.js Credentials requires JWT
+sessions: only the enabled development mode uses JWTs; production and disabled
+mode keep Google/database sessions. Sign out before changing the flag, restart
+and sign in again to switch strategies. Pool ownership checks and the collector
+reference derived from the persisted user ID are unchanged.
+
+If ngrok exposes this app publicly, anyone reaching the passwordless sign-in can
+access the shared local test account. Use fake data and Sandbox credentials only,
+never production data or payment credentials. Details are in
+[Authentication](./authentication.md#local-development-authentication-dev-2).
 
 No `DIRECT_URL` or extra environment file is required. Production continues
 using Vercel-managed variables; leave those unchanged.
@@ -96,7 +118,7 @@ Process overrides still win, intentionally. Clear stale exports such as
 `DATABASE_URL` and Linxo settings before using `.env.local`; never print them.
 A non-local database override fails the local guard. Restart commands after
 editing configuration. Only file conflicts are detected automatically; checking
-that Sandbox credentials actually belong to Sandbox remains a manual DEV-2 task.
+that Sandbox credentials actually belong to Sandbox remains a separate manual task.
 
 Once configured:
 
@@ -106,10 +128,9 @@ npm run db:dev:migrate
 npm run dev
 ```
 
-The existing production authentication and authorization rules still apply.
-Opening the authenticated dashboard requires the existing Google setup; DEV-1
-does not add a test login. `db:dev:check` verifies the application database client
-without Google OAuth or Linxo calls.
+Production authentication and all ownership checks remain unchanged. With
+`ENABLE_DEV_AUTH=true`, local dashboard access requires no Google setup.
+`db:dev:check` verifies the database client without authentication or Linxo calls.
 
 For a port conflict, first update `.env.local`'s database URL to use port 5543,
 then set the Compose port in the shell:
@@ -208,10 +229,10 @@ Linxo with the currently configured production credentials.
 - An existing `.env.local` with production values is preserved by this change.
   Manually replace them before local startup. Local Next.js and Prisma now refuse
   its non-local database URL instead of using a separate hardcoded URL.
-- **DEV-2:** configure Linxo Payments Sandbox credentials and sandbox-only
-  validation. No sandbox integration or real Linxo requests are included here.
-- **DEV-3:** local development authentication with a test identity, preserving
-  production Auth.js and authorization behavior.
+- **DEV-2:** local development authentication is implemented. Verify sign-in,
+  pool persistence across sign-ins and sign-out with the local setup above.
+- **Remaining payment work:** Sandbox credentials are configured manually;
+  payment acceptance is separate. Development authentication makes no Linxo calls.
 - **DEV-4:** ngrok setup for local HTTPS callbacks and webhooks.
 
 See the [v1.1.0 roadmap](./roadmap-v1.1.0.md#immediate-prerequisite--safe-local-development)
