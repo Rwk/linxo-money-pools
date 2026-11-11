@@ -1,5 +1,6 @@
 # Documentation index
 
+- [Local development (Docker PostgreSQL)](./local-development.md)
 - [Authentication](./authentication.md)
 - [Database setup](./database.md)
 - [Deployment checklist](./deployment.md)

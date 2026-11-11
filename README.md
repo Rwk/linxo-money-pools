@@ -83,6 +83,11 @@ More details are documented in [docs/security.md](docs/security.md).
 
 ## Local setup
 
+For isolated WSL development with Docker PostgreSQL, follow the
+[local development guide](docs/local-development.md) before starting the app.
+Existing local secrets are preserved; change the database URL manually as
+documented. The migration scripts below explicitly target the local Docker database.
+
 1. Install dependencies:
 
    ```bash
@@ -92,28 +97,34 @@ More details are documented in [docs/security.md](docs/security.md).
 2. Create an untracked `.env.local` file with the required variables.
    You can start from `.env.example`.
 
-3. Generate the Prisma client:
+3. Start the local PostgreSQL database:
+
+   ```bash
+   docker compose up -d --wait
+   ```
+
+4. Generate the Prisma client:
 
    ```bash
    npm run db:generate
    ```
 
-4. Apply the database migrations:
+5. Apply the local database migrations:
 
    ```bash
    npm run db:migrate:dev
    ```
 
-5. Start the app:
+6. Start the app:
 
    ```bash
    npm run dev
    ```
 
-6. For mobile return flow and webhook testing, expose the app through HTTPS
+7. For mobile return flow and webhook testing, expose the app through HTTPS
    with ngrok or deploy it to a public environment.
 
-7. When testing through HTTPS, update:
+8. When testing through HTTPS, update:
    - `NEXTAUTH_URL`
    - the Google OAuth callback URL
    - the Linxo webhook callback URL

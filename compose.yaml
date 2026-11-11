@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: linxo_money_pools_dev
+      POSTGRES_USER: linxo_dev
+      POSTGRES_PASSWORD: linxo_dev_only
+    ports:
+      - "127.0.0.1:${LOCAL_POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U linxo_dev -d linxo_money_pools_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

@@ -1,5 +1,9 @@
 # Database
 
+For isolated local PostgreSQL and guarded migration commands, follow the
+[local development guide](./local-development.md). The Supabase configuration
+below describes hosted environments; local development must use its own URL.
+
 This project uses Prisma 7 with PostgreSQL for persistence.
 
 Supabase is the intended PostgreSQL provider for this project. Auth.js uses the Prisma Adapter, so the database is required for end-to-end Google authentication because users, accounts, and sessions are persisted there.
@@ -20,17 +24,15 @@ At runtime, Prisma uses `@prisma/adapter-pg` in the server-only Prisma singleton
 4. Put it in your untracked `.env.local` file as `DATABASE_URL`.
 5. For Vercel, add the same value to the project environment variables.
 6. Keep the Supabase connection string in SSL mode.
-7. Run Prisma client generation:
+7. Run Prisma client generation (this does not connect to the database):
 
    ```bash
    npm run db:generate
    ```
 
-8. Run Prisma migrations:
-
-   ```bash
-   npm run db:migrate:dev
-   ```
+8. Hosted schema deployment follows the [deployment checklist](./deployment.md).
+   `npm run db:migrate:dev` now explicitly targets Docker PostgreSQL and must
+   not be used to initialize Supabase.
 
 9. Validate the schema when needed:
 
@@ -95,6 +97,9 @@ npm run db:validate
 npm run db:migrate:dev
 npm run db:studio
 ```
+
+Migration and Studio scripts target the local Docker database regardless of
+dotenv database values. See [local commands](./local-development.md#migrations-and-connection-checks).
 
 ## Security note
 
