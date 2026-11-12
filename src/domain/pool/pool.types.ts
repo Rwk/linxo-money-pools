@@ -60,6 +60,7 @@ export type Pool = {
   createdAt: Date;
   updatedAt: Date;
   closedAt?: Date | null;
+  archivedAt?: Date | null;
 };
 
 export type Contribution = {

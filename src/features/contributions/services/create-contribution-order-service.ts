@@ -5,7 +5,10 @@ import {
 } from "@/domain/pool/pool.pricing";
 
 import { buildContributionLabel } from "@/domain/payment/linxo-order-label";
-import { isPoolOpenForContributions } from "@/domain/pool/pool.rules";
+import {
+  isPoolOpenForContributions,
+  getPoolLifecycle
+} from "@/domain/pool/pool.rules";
 import type { PaymentMethod } from "@/domain/pool/pool.types";
 import {
   buildAbsoluteAppUrl,
@@ -170,7 +173,7 @@ export async function createContributionOrderForPool(
     throw new ContributionPoolNotFoundError();
   }
 
-  if (pool.status !== "OPEN") {
+  if (getPoolLifecycle(pool) !== "ACTIVE") {
     throw new ContributionPoolClosedError();
   }
 

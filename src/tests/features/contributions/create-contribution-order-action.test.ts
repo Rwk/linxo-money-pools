@@ -1,3 +1,4 @@
+import { PoolLifecycleError } from "@/domain/pool/pool.rules";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -53,6 +54,27 @@ describe("createContributionOrderAction", () => {
       t("fixedContributions.invalidQuantity")
     );
     expect(result.formError).toBeNull();
+  });
+  it("reports a concurrent lifecycle rejection without redirecting", async () => {
+    const data = new FormData();
+    for (const [key, value] of Object.entries({
+      poolSlug: "gift",
+      contributorFirstName: "Jane",
+      contributorLastName: "Test",
+      contributorEmail: "jane@example.com",
+      amount: "12.00",
+      selectedPaymentMethod: "STANDARD"
+    }))
+      data.set(key, value);
+    vi.mocked(createContributionOrderForPool).mockRejectedValue(
+      new PoolLifecycleError("not_active")
+    );
+    const result = await createContributionOrderAction(
+      getInitialCreateContributionFormState("gift"),
+      data
+    );
+    expect(result.formError).toBe(t("actions.contributionPoolClosed"));
+    expect(redirect).not.toHaveBeenCalled();
   });
   beforeEach(() => {
     vi.clearAllMocks();

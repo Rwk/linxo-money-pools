@@ -1,3 +1,4 @@
+import { PoolLifecycleError } from "@/domain/pool/pool.rules";
 import { ContributionPriceChangedError } from "@/domain/pool/pool.pricing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -117,7 +118,7 @@ describe("createContributionOrderForPool", () => {
           buildReturnUrl: vi.fn()
         }
       )
-    ).rejects.toBeInstanceOf(ContributionPoolNotReadyError);
+    ).rejects.toBeInstanceOf(ContributionPoolClosedError);
   });
 
   it("creates an alias-based Linxo order with exactly one payment method and keeps the return route unchanged", async () => {
@@ -484,4 +485,67 @@ describe("createContributionOrderForPool", () => {
     ).rejects.toBeInstanceOf(ContributionPriceChangedError);
     expect(deps.createOrder).not.toHaveBeenCalled();
   });
+  it("never contacts Linxo after lifecycle rejection under the database lock", async () => {
+    const deps = fixedDependencies();
+    deps.createContributionRecord.mockRejectedValue(
+      new PoolLifecycleError("not_active")
+    );
+    await expect(
+      createContributionOrderForPool(fixedInput("1"), deps)
+    ).rejects.toMatchObject({ code: "not_active" });
+    expect(deps.createOrder).not.toHaveBeenCalled();
+  });
+  it("allows accepted initialization to finish after concurrent closure and archive", async () => {
+    const deps = fixedDependencies();
+    const pool = {
+      ...openReadyPool,
+      contributionMode: "FIXED" as const,
+      fixedUnitPriceCents: 1250,
+      status: "OPEN" as "OPEN" | "CLOSED",
+      archivedAt: null as Date | null
+    };
+    deps.findPoolBySlug.mockResolvedValue(pool);
+    deps.createContributionRecord.mockImplementation(async () => {
+      pool.status = "CLOSED";
+      pool.archivedAt = new Date();
+      return { id: "accepted", paymentAccessToken: "test-token" };
+    });
+    await createContributionOrderForPool(fixedInput("1"), deps);
+    expect(deps.createOrder).toHaveBeenCalledTimes(1);
+    expect(deps.updateContributionAfterOrderCreation).toHaveBeenCalled();
+  });
+  it("rejects an archived pool before acceptance", async () => {
+    const deps = fixedDependencies();
+    deps.findPoolBySlug.mockResolvedValue({
+      ...openReadyPool,
+      contributionMode: "FIXED",
+      fixedUnitPriceCents: 1250,
+      archivedAt: new Date()
+    });
+    await expect(
+      createContributionOrderForPool(fixedInput("1"), deps)
+    ).rejects.toMatchObject({ name: "ContributionPoolClosedError" });
+    expect(deps.createContributionRecord).not.toHaveBeenCalled();
+    expect(deps.createOrder).not.toHaveBeenCalled();
+  });
+  it.each(["network", "uncertain"])(
+    "preserves existing %s error handling after acceptance",
+    async (scenario) => {
+      const deps = fixedDependencies();
+      const error = new Error(
+        scenario === "network"
+          ? "Network unavailable"
+          : "Response lost after request"
+      );
+      deps.createOrder.mockRejectedValue(error);
+      await expect(
+        createContributionOrderForPool(fixedInput("1"), deps)
+      ).rejects.toBe(error);
+      expect(deps.createOrder).toHaveBeenCalledTimes(1);
+      expect(deps.markContributionInitiationFailed).toHaveBeenCalledWith(
+        "fixed-contribution"
+      );
+      expect(deps.updateContributionAfterOrderCreation).not.toHaveBeenCalled();
+    }
+  );
 });

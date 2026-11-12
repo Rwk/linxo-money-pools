@@ -1,7 +1,7 @@
 import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 
-// Both price editing and contribution insertion take this lock first, in short
+// Price edits, lifecycle transitions and contribution acceptance share this lock in short
 // READ COMMITTED transactions. Never hold it while contacting the payment API.
 export async function lockPoolPricing(
   tx: Prisma.TransactionClient,

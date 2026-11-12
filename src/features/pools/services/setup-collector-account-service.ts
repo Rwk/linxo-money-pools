@@ -161,7 +161,7 @@ export async function setupCollectorAccountForPool(
     input.creatorId
   );
 
-  if (!pool || input.userReference !== input.creatorId) {
+  if (!pool || pool.archivedAt || input.userReference !== input.creatorId) {
     throw new PoolCollectorAccountAccessError();
   }
 

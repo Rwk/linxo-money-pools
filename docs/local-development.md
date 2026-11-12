@@ -290,7 +290,9 @@ npm run db:dev:studio
 
 `db:dev:check` opts into Vitest integration checks using the application's actual
 Prisma singleton. It checks `current_database()` and counts users, then tests
-fixed-price edit/contribution concurrency with real PostgreSQL row-lock waits.
+fixed-price edit/contribution concurrency and lifecycle transitions (acceptance,
+closure, archive, reopen and edits) with real PostgreSQL row-lock waits.
+It also checks expiry rejection and post-archive order/status persistence.
 The concurrency tests create and clean up only uniquely identified temporary
 user/pool/contribution fixtures; they make no Linxo calls. It needs the container, migrations and generated client;
 normal unit tests skip it and make no database connection.

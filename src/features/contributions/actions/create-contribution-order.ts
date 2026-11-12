@@ -1,5 +1,7 @@
 "use server";
 
+import { PoolLifecycleError } from "@/domain/pool/pool.rules";
+
 import { ContributionAmountError } from "@/domain/pool/pool.pricing";
 
 import { logLinxoDiagnostic } from "@/infrastructure/linxo/linxo-api-logger";
@@ -38,7 +40,10 @@ function getCreateContributionErrorMessage(error: unknown): string {
     return t("actions.contributionNotFound");
   }
 
-  if (error instanceof ContributionPoolClosedError) {
+  if (
+    error instanceof PoolLifecycleError ||
+    error instanceof ContributionPoolClosedError
+  ) {
     return t("actions.contributionPoolClosed");
   }
 

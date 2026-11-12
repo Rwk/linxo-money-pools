@@ -17,6 +17,7 @@ import {
   parseFixedUnitPrice,
   FixedPriceLockedError
 } from "@/domain/pool/pool.pricing";
+import { PoolLifecycleError } from "@/domain/pool/pool.rules";
 import { t } from "@/i18n/t";
 
 function revalidatePoolPaths(poolId: string, slug: string): void {
@@ -53,6 +54,13 @@ export async function updatePoolAction(
     };
   }
 
+  if (pool.archivedAt)
+    return {
+      values,
+      fieldErrors: {},
+      formError: t("actions.poolArchivedImmutable"),
+      successMessage: null
+    };
   let fixedUnitPriceCents: number | undefined;
   if (values.fixedUnitPrice !== undefined) {
     if (pool.contributionMode !== "FIXED")
@@ -87,9 +95,11 @@ export async function updatePoolAction(
       values,
       fieldErrors: {},
       formError:
-        error instanceof FixedPriceLockedError
-          ? t("fixedContributions.priceLocked")
-          : t("actions.poolUpdateError"),
+        error instanceof PoolLifecycleError
+          ? t("actions.poolArchivedImmutable")
+          : error instanceof FixedPriceLockedError
+            ? t("fixedContributions.priceLocked")
+            : t("actions.poolUpdateError"),
       successMessage: null
     };
   }

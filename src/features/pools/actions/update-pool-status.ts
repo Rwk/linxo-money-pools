@@ -4,11 +4,15 @@ import { revalidatePath } from "next/cache";
 
 import {
   canClosePool,
-  canReopenPool
+  canReopenPool,
+  getPoolLifecycle,
+  parseReopenClosingDate,
+  PoolLifecycleError
 } from "@/domain/pool/pool.rules";
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
 import {
   closePoolRecord,
+  archivePoolRecord,
   findPoolByIdForCreator,
   reopenPoolRecord
 } from "@/features/pools/data-access/pool-repository";
@@ -38,6 +42,8 @@ export async function closePoolAction(
     };
   }
 
+  if (pool.archivedAt)
+    return { error: t("actions.poolArchivedImmutable"), successMessage: null };
   if (!canClosePool(pool)) {
     return {
       error: null,
@@ -68,7 +74,8 @@ export async function closePoolAction(
 
 export async function reopenPoolAction(
   poolId: string,
-  _previousState: PoolStatusActionState
+  _previousState: PoolStatusActionState,
+  formData?: FormData
 ): Promise<PoolStatusActionState> {
   const user = await requireLinxoSession();
   const pool = await findPoolByIdForCreator(poolId, user.id);
@@ -80,14 +87,26 @@ export async function reopenPoolAction(
     };
   }
 
-  if (pool.status === "OPEN") {
+  if (pool.archivedAt)
+    return { error: t("actions.poolArchivedImmutable"), successMessage: null };
+  if (getPoolLifecycle(pool) === "ACTIVE") {
     return {
       error: null,
       successMessage: t("actions.poolAlreadyOpen")
     };
   }
 
-  if (!canReopenPool(pool)) {
+  let newClosingDate: Date | undefined;
+  if (formData?.has("closingDate")) {
+    try {
+      newClosingDate = parseReopenClosingDate(
+        String(formData.get("closingDate") ?? "")
+      );
+    } catch {
+      return { error: t("actions.poolReopenInvalid"), successMessage: null };
+    }
+  }
+  if (!canReopenPool(pool, new Date(), newClosingDate)) {
     return {
       error: t("actions.poolReopenInvalid"),
       successMessage: null
@@ -97,11 +116,16 @@ export async function reopenPoolAction(
   try {
     await reopenPoolRecord({
       poolId,
-      creatorId: user.id
+      creatorId: user.id,
+      ...(newClosingDate ? { newClosingDate } : {})
     });
-  } catch {
+  } catch (error) {
     return {
-      error: t("actions.poolReopenError"),
+      error: t(
+        error instanceof PoolLifecycleError && error.code === "archived"
+          ? "actions.poolArchivedImmutable"
+          : "actions.poolReopenError"
+      ),
       successMessage: null
     };
   }
@@ -112,4 +136,29 @@ export async function reopenPoolAction(
     error: null,
     successMessage: t("actions.poolReopened")
   };
+}
+
+export async function archivePoolAction(
+  poolId: string,
+  _previousState: PoolStatusActionState
+): Promise<PoolStatusActionState> {
+  const user = await requireLinxoSession();
+  const pool = await findPoolByIdForCreator(poolId, user.id);
+  if (!pool)
+    return { error: t("actions.poolArchiveForbidden"), successMessage: null };
+  try {
+    await archivePoolRecord({ poolId, creatorId: user.id });
+  } catch (error) {
+    return {
+      error: t(
+        error instanceof PoolLifecycleError && error.code === "not_completed"
+          ? "actions.poolArchiveOnlyCompleted"
+          : "actions.poolArchiveError"
+      ),
+      successMessage: null
+    };
+  }
+  revalidatePoolPaths(pool.id, pool.slug);
+  revalidatePath("/dashboard");
+  return { error: null, successMessage: t("actions.poolArchived") };
 }

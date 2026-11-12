@@ -1,8 +1,22 @@
 import "server-only";
+import {
+  canReopenPool,
+  getPoolLifecycle,
+  PoolLifecycleError,
+  type PoolLifecycle
+} from "@/domain/pool/pool.rules";
 import { lockPoolPricing } from "@/infrastructure/db/pool-pricing-lock";
-import { FixedPriceLockedError, validatePoolPricing } from "@/domain/pool/pool.pricing";
+import {
+  FixedPriceLockedError,
+  validatePoolPricing
+} from "@/domain/pool/pool.pricing";
 
-import { Contribution, EventType, PoolStatus, Prisma } from "@/generated/prisma/client";
+import {
+  Contribution,
+  EventType,
+  PoolStatus,
+  Prisma
+} from "@/generated/prisma/client";
 import { prisma } from "@/infrastructure/db/prisma";
 
 const contributionSelect = {
@@ -24,8 +38,7 @@ const contributionSelect = {
   linxoPaymentStatus: true,
   linxoSettlementStatus: true,
   cashInStatus: true,
-  createdAt: true
-  ,
+  createdAt: true,
   returnedAt: true
 } satisfies Prisma.ContributionSelect;
 
@@ -46,6 +59,7 @@ const poolBaseSelect = {
   createdAt: true,
   updatedAt: true,
   closedAt: true,
+  archivedAt: true,
   contributions: {
     select: contributionSelect,
     orderBy: {
@@ -175,7 +189,8 @@ export async function updatePoolCollectorReferences(input: {
   const result = await prisma.pool.updateMany({
     where: {
       id: input.poolId,
-      creatorId: input.creatorId
+      creatorId: input.creatorId,
+      archivedAt: null
     },
     data: {
       collectorAuthorizedAccountId: input.collectorAuthorizedAccountId,
@@ -190,11 +205,14 @@ export async function updatePoolCollectorReferences(input: {
   }
 }
 
-export async function updatePoolRecord(input: UpdatePoolRecordInput): Promise<void> {
+export async function updatePoolRecord(
+  input: UpdatePoolRecordInput
+): Promise<void> {
   const result = await prisma.pool.updateMany({
     where: {
       id: input.poolId,
-      creatorId: input.creatorId
+      creatorId: input.creatorId,
+      archivedAt: null
     },
     data: {
       title: input.title,
@@ -218,9 +236,10 @@ export async function updatePoolPriceAndDetails(
       await lockPoolPricing(tx, input.poolId);
       const pool = await tx.pool.findFirst({
         where: { id: input.poolId, creatorId: input.creatorId },
-        select: { contributionMode: true }
+        select: { contributionMode: true, archivedAt: true }
       });
       if (!pool) throw new Error("Pool access denied.");
+      if (pool.archivedAt) throw new PoolLifecycleError("archived");
       if (
         pool.contributionMode !== "FIXED" ||
         (await tx.contribution.count({ where: { poolId: input.poolId } })) !== 0
@@ -241,45 +260,100 @@ export async function updatePoolPriceAndDetails(
   );
 }
 
+async function withOwnerLifecycleLock<T>(
+  input: { poolId: string; creatorId: string },
+  transition: (
+    tx: Prisma.TransactionClient,
+    pool: {
+      id: string;
+      status: PoolStatus;
+      closingDate: Date;
+      archivedAt: Date | null;
+    }
+  ) => Promise<T>
+): Promise<T> {
+  return prisma.$transaction(
+    async (tx) => {
+      await lockPoolPricing(tx, input.poolId);
+      const pool = await tx.pool.findFirst({
+        where: { id: input.poolId, creatorId: input.creatorId },
+        select: { id: true, status: true, closingDate: true, archivedAt: true }
+      });
+      if (!pool) throw new PoolLifecycleError("not_found");
+      return transition(tx, pool);
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
+}
+
 export async function closePoolRecord(input: {
   poolId: string;
   creatorId: string;
   closedAt: Date;
 }): Promise<void> {
-  const result = await prisma.pool.updateMany({
-    where: {
-      id: input.poolId,
-      creatorId: input.creatorId
-    },
-    data: {
-      status: PoolStatus.CLOSED,
-      closedAt: input.closedAt
-    }
+  await withOwnerLifecycleLock(input, async (tx, pool) => {
+    const state = getPoolLifecycle(pool);
+    if (state === "ARCHIVED") throw new PoolLifecycleError("archived");
+    if (state !== "ACTIVE") return;
+    await tx.pool.update({
+      where: { id: pool.id },
+      data: { status: PoolStatus.CLOSED, closedAt: input.closedAt }
+    });
   });
-
-  if (result.count !== 1) {
-    throw new Error("Pool could not be closed.");
-  }
 }
 
 export async function reopenPoolRecord(input: {
   poolId: string;
   creatorId: string;
+  newClosingDate?: Date;
 }): Promise<void> {
-  const result = await prisma.pool.updateMany({
-    where: {
-      id: input.poolId,
-      creatorId: input.creatorId
-    },
-    data: {
-      status: PoolStatus.OPEN,
-      closedAt: null
-    }
+  await withOwnerLifecycleLock(input, async (tx, pool) => {
+    const now = new Date();
+    const state = getPoolLifecycle(pool, now);
+    if (state === "ARCHIVED") throw new PoolLifecycleError("archived");
+    if (state === "ACTIVE") return;
+    if (
+      (input.newClosingDate &&
+        !Number.isFinite(input.newClosingDate.getTime())) ||
+      !canReopenPool(pool, now, input.newClosingDate)
+    )
+      throw new PoolLifecycleError("future_date_required");
+    await tx.pool.update({
+      where: { id: pool.id },
+      data: {
+        status: PoolStatus.OPEN,
+        closedAt: null,
+        ...(input.newClosingDate ? { closingDate: input.newClosingDate } : {})
+      }
+    });
   });
+}
 
-  if (result.count !== 1) {
-    throw new Error("Pool could not be reopened.");
-  }
+export async function archivePoolRecord(input: {
+  poolId: string;
+  creatorId: string;
+}): Promise<void> {
+  await withOwnerLifecycleLock(input, async (tx, pool) => {
+    const state = getPoolLifecycle(pool);
+    if (state === "ARCHIVED") return;
+    if (state !== "COMPLETED") throw new PoolLifecycleError("not_completed");
+    await tx.pool.update({
+      where: { id: pool.id },
+      data: { archivedAt: new Date() }
+    });
+  });
+}
+
+export async function listPoolsByCreatorLifecycle(
+  creatorId: string,
+  lifecycle: PoolLifecycle,
+  now: Date = new Date()
+): Promise<PoolWithContributions[]> {
+  const pools = await listPoolsByCreatorId(creatorId);
+  return pools.filter(
+    (pool) =>
+      pool.creatorId === creatorId && getPoolLifecycle(pool, now) === lifecycle
+  );
 }
 
 export function mapContributionToDomainContribution(
@@ -326,8 +400,7 @@ export function mapContributionToDomainContribution(
     linxoPaymentStatus: contribution.linxoPaymentStatus ?? undefined,
     linxoSettlementStatus: contribution.linxoSettlementStatus ?? undefined,
     cashInStatus: contribution.cashInStatus,
-    createdAt: contribution.createdAt
-    ,
+    createdAt: contribution.createdAt,
     returnedAt: contribution.returnedAt ?? undefined
   };
 }

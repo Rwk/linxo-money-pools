@@ -27,7 +27,12 @@ describe("pricing write transactions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.findFirst.mockResolvedValue({ contributionMode: "FIXED" });
-    mocks.findUnique.mockResolvedValue({ fixedUnitPriceCents: 1250 });
+    mocks.findUnique.mockResolvedValue({
+      fixedUnitPriceCents: 1250,
+      status: "OPEN",
+      closingDate: new Date("2099-01-01"),
+      archivedAt: null
+    });
     mocks.count.mockResolvedValue(0);
     mocks.create.mockResolvedValue({
       id: "contribution",
@@ -52,7 +57,7 @@ describe("pricing write transactions", () => {
     );
     expect(mocks.findFirst).toHaveBeenCalledWith({
       where: { id: "pool", creatorId: "owner" },
-      select: { contributionMode: true }
+      select: { contributionMode: true, archivedAt: true }
     });
     expect(mocks.count).toHaveBeenCalledWith({ where: { poolId: "pool" } });
     expect(mocks.update).toHaveBeenCalledWith({
@@ -73,6 +78,16 @@ describe("pricing write transactions", () => {
     mocks.count.mockResolvedValue(1);
     await expect(updatePoolPriceAndDetails(details)).rejects.toMatchObject({
       name: "FixedPriceLockedError"
+    });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it("rejects edits after archival under the lock", async () => {
+    mocks.findFirst.mockResolvedValue({
+      contributionMode: "FIXED",
+      archivedAt: new Date()
+    });
+    await expect(updatePoolPriceAndDetails(details)).rejects.toMatchObject({
+      code: "archived"
     });
     expect(mocks.update).not.toHaveBeenCalled();
   });
@@ -123,7 +138,12 @@ describe("pricing write transactions", () => {
     expect(data).not.toHaveProperty("expectedFixedUnitPriceCents");
   });
   it("rejects a changed server snapshot instead of persisting a stale amount", async () => {
-    mocks.findUnique.mockResolvedValue({ fixedUnitPriceCents: 1600 });
+    mocks.findUnique.mockResolvedValue({
+      fixedUnitPriceCents: 1600,
+      status: "OPEN",
+      closingDate: new Date("2099-01-01"),
+      archivedAt: null
+    });
     await expect(createContributionRecord(contribution)).rejects.toMatchObject({
       field: "quantity"
     });

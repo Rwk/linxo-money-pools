@@ -124,80 +124,82 @@ describe("refreshPoolContributionStatusesAction", () => {
       formData
     );
 
-    expect(result.formError).toBe(
-      t("actions.refreshForbidden")
-    );
+    expect(result.formError).toBe(t("actions.refreshForbidden"));
     expect(syncContributionStatusByOrderId).not.toHaveBeenCalled();
   });
 
-  it("refreshes only eligible contributions for the owner", async () => {
-    vi.mocked(findPoolByIdForCreator).mockResolvedValue(
-      createPool({
-        contributions: [
-          createContribution({
+  it.each([null, new Date("2026-07-11")])(
+    "refreshes owner contributions even when archivedAt is %s",
+    async (archivedAt) => {
+      vi.mocked(findPoolByIdForCreator).mockResolvedValue(
+        createPool({
+          archivedAt,
+          contributions: [
+            createContribution({
+              id: "contribution_pending",
+              linxoOrderId: "order_pending",
+              cashInStatus: "PENDING"
+            }),
+            createContribution({
+              id: "contribution_done",
+              linxoOrderId: "order_done",
+              cashInStatus: "EXECUTED",
+              linxoPaymentId: "payment_123"
+            }),
+            createContribution({
+              id: "contribution_missing_order",
+              linxoOrderId: null
+            })
+          ]
+        })
+      );
+      vi.mocked(syncContributionStatusByOrderId).mockResolvedValue({
+        status: "synced",
+        contribution: {
+          ...createContribution({
             id: "contribution_pending",
             linxoOrderId: "order_pending",
-            cashInStatus: "PENDING"
-          }),
-          createContribution({
-            id: "contribution_done",
-            linxoOrderId: "order_done",
             cashInStatus: "EXECUTED",
+            linxoOrderStatus: "CLOSED",
+            linxoPaymentStatus: "EXECUTED",
             linxoPaymentId: "payment_123"
           }),
-          createContribution({
-            id: "contribution_missing_order",
-            linxoOrderId: null
-          })
-        ]
-      })
-    );
-    vi.mocked(syncContributionStatusByOrderId).mockResolvedValue({
-      status: "synced",
-      contribution: {
-        ...createContribution({
-          id: "contribution_pending",
-          linxoOrderId: "order_pending",
-          cashInStatus: "EXECUTED",
-          linxoOrderStatus: "CLOSED",
-          linxoPaymentStatus: "EXECUTED",
-          linxoPaymentId: "payment_123"
-        }),
-        amount: "12.00"
-      }
-    });
+          amount: "12.00"
+        }
+      });
 
-    const formData = new FormData();
-    formData.set("poolId", "pool_123");
+      const formData = new FormData();
+      formData.set("poolId", "pool_123");
 
-    const result = await refreshPoolContributionStatusesAction(
-      initialRefreshPoolContributionStatusesActionState,
-      formData
-    );
+      const result = await refreshPoolContributionStatusesAction(
+        initialRefreshPoolContributionStatusesActionState,
+        formData
+      );
 
-    expect(syncContributionStatusByOrderId).toHaveBeenCalledTimes(1);
-    expect(syncContributionStatusByOrderId).toHaveBeenCalledWith(
-      "order_pending"
-    );
-    expect(result.summary).toEqual({
-      checkedCount: 1,
-      updatedCount: 1,
-      unchangedCount: 0,
-      failedCount: 0
-    });
-    expect(result.successMessage).toBe(
-      t("refresh.success", {
+      expect(syncContributionStatusByOrderId).toHaveBeenCalledTimes(1);
+      expect(syncContributionStatusByOrderId).toHaveBeenCalledWith(
+        "order_pending"
+      );
+      expect(result.summary).toEqual({
         checkedCount: 1,
-        checkedPlural: "",
         updatedCount: 1,
-        updatedPlural: "",
-        unchangedSegment: "",
-        failedSegment: ""
-      })
-    );
-    expect(revalidatePath).toHaveBeenCalledWith("/dashboard/pools/pool_123");
-    expect(revalidatePath).toHaveBeenCalledWith("/p/team-gift");
-  });
+        unchangedCount: 0,
+        failedCount: 0
+      });
+      expect(result.successMessage).toBe(
+        t("refresh.success", {
+          checkedCount: 1,
+          checkedPlural: "",
+          updatedCount: 1,
+          updatedPlural: "",
+          unchangedSegment: "",
+          failedSegment: ""
+        })
+      );
+      expect(revalidatePath).toHaveBeenCalledWith("/dashboard/pools/pool_123");
+      expect(revalidatePath).toHaveBeenCalledWith("/p/team-gift");
+    }
+  );
 
   it("continues refreshing after one failed sync and returns safe summary counts", async () => {
     vi.mocked(findPoolByIdForCreator).mockResolvedValue(

@@ -133,6 +133,191 @@ describe.skipIf(process.env.LOCAL_DATABASE_CHECK !== "1")(
         (error) => ({ ok: false as const, error })
       );
     }
+    async function race<A, B>(
+      first: () => Promise<A>,
+      second: () => Promise<B>
+    ) {
+      const gate = holdFirstLock();
+      const a = settle(first());
+      const pid = await gate.pid;
+      let finished = false;
+      const b = settle(second()).finally(() => {
+        finished = true;
+      });
+      try {
+        await assertBlockedBy(pid, () => finished);
+      } finally {
+        gate.release();
+      }
+      return [await a, await b] as const;
+    }
+    it.each([true, false])(
+      "serializes closure and acceptance (closure first: %s)",
+      async (closeFirst) => {
+        const id = await fixture();
+        const close = () =>
+          pools.closePoolRecord({
+            poolId: id,
+            creatorId: ownerId,
+            closedAt: new Date()
+          });
+        const accept = () =>
+          contributions.createContributionRecord(contribution(id));
+        const [a, b] = closeFirst
+          ? await race(close, accept)
+          : await race(accept, close);
+        expect(a.ok).toBe(true);
+        expect(b.ok).toBe(!closeFirst);
+        if (closeFirst && !b.ok)
+          expect(b.error).toMatchObject({ code: "not_active" });
+        expect(await prisma.contribution.count({ where: { poolId: id } })).toBe(
+          closeFirst ? 0 : 1
+        );
+        expect(
+          (await prisma.pool.findUniqueOrThrow({ where: { id } })).status
+        ).toBe("CLOSED");
+      }
+    );
+    it("rejects stale acceptance after archive and preserves the archive timestamp", async () => {
+      const id = await fixture();
+      await prisma.pool.update({ where: { id }, data: { status: "CLOSED" } });
+      const [a, b] = await race(
+        () => pools.archivePoolRecord({ poolId: id, creatorId: ownerId }),
+        () => contributions.createContributionRecord(contribution(id))
+      );
+      expect(a.ok).toBe(true);
+      expect(b).toMatchObject({ ok: false, error: { code: "not_active" } });
+      const before = await prisma.pool.findUniqueOrThrow({ where: { id } });
+      await pools.archivePoolRecord({ poolId: id, creatorId: ownerId });
+      expect(
+        (await prisma.pool.findUniqueOrThrow({ where: { id } })).archivedAt
+      ).toEqual(before.archivedAt);
+      expect(await prisma.contribution.count({ where: { poolId: id } })).toBe(
+        0
+      );
+      expect(await pools.findPoolByIdForCreator(id, ownerId)).not.toBeNull();
+    });
+    it("accepted contribution does not make an active pool eligible for archive", async () => {
+      const id = await fixture();
+      const [a, b] = await race(
+        () => contributions.createContributionRecord(contribution(id)),
+        () => pools.archivePoolRecord({ poolId: id, creatorId: ownerId })
+      );
+      expect(a.ok).toBe(true);
+      expect(b).toMatchObject({ ok: false, error: { code: "not_completed" } });
+    });
+    it.each([true, false])(
+      "serializes archive and reopen (archive first: %s)",
+      async (archiveFirst) => {
+        const id = await fixture();
+        await prisma.pool.update({ where: { id }, data: { status: "CLOSED" } });
+        const archive = () =>
+          pools.archivePoolRecord({ poolId: id, creatorId: ownerId });
+        const reopen = () =>
+          pools.reopenPoolRecord({ poolId: id, creatorId: ownerId });
+        const [a, b] = archiveFirst
+          ? await race(archive, reopen)
+          : await race(reopen, archive);
+        expect(a.ok).toBe(true);
+        expect(b).toMatchObject({
+          ok: false,
+          error: { code: archiveFirst ? "archived" : "not_completed" }
+        });
+        const pool = await prisma.pool.findUniqueOrThrow({ where: { id } });
+        expect(Boolean(pool.archivedAt)).toBe(archiveFirst);
+        expect(pool.status).toBe(archiveFirst ? "CLOSED" : "OPEN");
+      }
+    );
+    it.each([true, false])(
+      "serializes archive with price/date editing of an expired pool (archive first: %s)",
+      async (archiveFirst) => {
+        const id = await fixture();
+        await prisma.pool.update({
+          where: { id },
+          data: { closingDate: new Date("2000-01-01") }
+        });
+        const archive = () =>
+          pools.archivePoolRecord({ poolId: id, creatorId: ownerId });
+        const edit = () => pools.updatePoolPriceAndDetails(details(id));
+        const [a, b] = archiveFirst
+          ? await race(archive, edit)
+          : await race(edit, archive);
+        expect(a.ok).toBe(true);
+        expect(b).toMatchObject({
+          ok: false,
+          error: { code: archiveFirst ? "archived" : "not_completed" }
+        });
+      }
+    );
+    it("conditional ordinary edits cannot reactivate an archived expired pool", async () => {
+      const id = await fixture();
+      await prisma.pool.update({
+        where: { id },
+        data: { closingDate: new Date("2000-01-01") }
+      });
+      const [a, b] = await race(
+        () => pools.archivePoolRecord({ poolId: id, creatorId: ownerId }),
+        () => pools.updatePoolRecord(details(id))
+      );
+      expect(a.ok).toBe(true);
+      expect(b.ok).toBe(false);
+      const pool = await prisma.pool.findUniqueOrThrow({ where: { id } });
+      expect(pool.archivedAt).not.toBeNull();
+      expect(pool.closingDate).toEqual(new Date("2000-01-01"));
+    });
+    it("rechecks expiry for FREE pools under lock", async () => {
+      const id = await fixture();
+      await prisma.pool.update({
+        where: { id },
+        data: {
+          contributionMode: "FREE",
+          fixedUnitPriceCents: null,
+          closingDate: new Date("2000-01-01")
+        }
+      });
+      await expect(
+        contributions.createContributionRecord({
+          ...contribution(id),
+          expectedFixedUnitPriceCents: null
+        })
+      ).rejects.toMatchObject({ code: "not_active" });
+      expect(await prisma.contribution.count({ where: { poolId: id } })).toBe(
+        0
+      );
+    });
+    it("late order initialization and status persistence remain possible after closure and archive", async () => {
+      const id = await fixture();
+      const accepted = await contributions.createContributionRecord(
+        contribution(id)
+      );
+      await pools.closePoolRecord({
+        poolId: id,
+        creatorId: ownerId,
+        closedAt: new Date()
+      });
+      await pools.archivePoolRecord({ poolId: id, creatorId: ownerId });
+      await contributions.updateContributionAfterOrderCreation({
+        contributionId: accepted.id,
+        linxoOrderId: `fictional-${randomUUID()}`,
+        linxoOrderStatus: "AUTHORIZED",
+        authUrl: null,
+        shortAuthUrl: null
+      });
+      await contributions.updateContributionStatusSnapshot({
+        contributionId: accepted.id,
+        linxoOrderStatus: "CLOSED",
+        linxoPaymentStatus: "EXECUTED",
+        cashInStatus: "EXECUTED"
+      });
+      const record = await contributions.findContributionStatusRecordById(
+        accepted.id
+      );
+      expect(record?.cashInStatus).toBe("EXECUTED");
+      expect(record?.amount.toFixed(2)).toBe("12.50");
+      expect(
+        (await prisma.pool.findUniqueOrThrow({ where: { id } })).archivedAt
+      ).not.toBeNull();
+    });
     it("price edit wins: a simultaneous contribution with the old snapshot creates no row", async () => {
       const id = await fixture();
       const gate = holdFirstLock();

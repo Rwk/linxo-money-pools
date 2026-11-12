@@ -40,10 +40,14 @@ function createContributionRecord() {
 
 describe("syncContributionStatusForReturn", () => {
   it("does not mark success just because the payer returned", async () => {
-    const updateContributionStatusSnapshot = vi.fn().mockResolvedValue(undefined);
+    const updateContributionStatusSnapshot = vi
+      .fn()
+      .mockResolvedValue(undefined);
 
     const result = await syncContributionStatusForReturn("contribution_123", {
-      findContributionById: vi.fn().mockResolvedValue(createContributionRecord()),
+      findContributionById: vi
+        .fn()
+        .mockResolvedValue(createContributionRecord()),
       getRunningOrder: vi.fn().mockResolvedValue({
         id: "order_123",
         order_status: "AUTHORIZED",
@@ -65,10 +69,14 @@ describe("syncContributionStatusForReturn", () => {
   });
 
   it("stores executed status for closed and executed running orders", async () => {
-    const updateContributionStatusSnapshot = vi.fn().mockResolvedValue(undefined);
+    const updateContributionStatusSnapshot = vi
+      .fn()
+      .mockResolvedValue(undefined);
 
     const result = await syncContributionStatusForReturn("contribution_123", {
-      findContributionById: vi.fn().mockResolvedValue(createContributionRecord()),
+      findContributionById: vi
+        .fn()
+        .mockResolvedValue(createContributionRecord()),
       getRunningOrder: vi.fn().mockResolvedValue({
         id: "order_123",
         order_status: "CLOSED",
@@ -116,10 +124,14 @@ describe("syncContributionStatusForReturn", () => {
   });
 
   it("keeps the contribution safe when the Linxo status refresh fails", async () => {
-    const updateContributionStatusSnapshot = vi.fn().mockResolvedValue(undefined);
+    const updateContributionStatusSnapshot = vi
+      .fn()
+      .mockResolvedValue(undefined);
 
     const result = await syncContributionStatusForReturn("contribution_123", {
-      findContributionById: vi.fn().mockResolvedValue(createContributionRecord()),
+      findContributionById: vi
+        .fn()
+        .mockResolvedValue(createContributionRecord()),
       getRunningOrder: vi.fn().mockRejectedValue(new Error("network failure")),
       updateContributionStatusSnapshot,
       now: () => new Date("2026-06-28T10:00:00.000Z")
@@ -131,65 +143,77 @@ describe("syncContributionStatusForReturn", () => {
     expect(updateContributionStatusSnapshot).not.toHaveBeenCalled();
   });
 
-  it("updates an in-progress contribution to executed through webhook sync", async () => {
-    const updateContributionStatusSnapshot = vi.fn().mockResolvedValue(undefined);
+  it.each([null, new Date("2026-07-11")])(
+    "webhook sync updates existing orders even when pool archivedAt is %s",
+    async (archivedAt) => {
+      const updateContributionStatusSnapshot = vi
+        .fn()
+        .mockResolvedValue(undefined);
 
-    const result = await syncContributionStatusByOrderId("order_123", {
-      findContributionById: vi.fn(),
-      findContributionByLinxoOrderId: vi.fn().mockResolvedValue({
-        ...createContributionRecord(),
-        linxoOrderStatus: "AUTHORIZED",
-        linxoPaymentStatus: "SUBMITTED"
-      }),
-      getRunningOrder: vi.fn().mockResolvedValue({
-        id: "order_123",
-        order_status: "CLOSED",
-        redirect_url: "https://app.test/return",
-        instructions: [
-          {
-            id: "instruction_123",
-            amount: "12.00",
-            currency: "EUR",
-            beneficiary: {
-              schema: "ALIAS",
-              alias_id: "alias_123"
-            },
-            label: "Contribution",
-            payments: [
-              {
-                id: "payment_123",
-                status: "EXECUTED",
-                amount: "12.00",
-                currency: "EUR",
-                creation_date: "2026-06-28T10:00:00.000Z"
-              }
-            ]
-          }
-        ]
-      }),
-      updateContributionStatusSnapshot,
-      now: () => new Date("2026-06-28T10:00:00.000Z")
-    });
+      const result = await syncContributionStatusByOrderId("order_123", {
+        findContributionById: vi.fn(),
+        findContributionByLinxoOrderId: vi.fn().mockResolvedValue({
+          ...createContributionRecord(),
+          pool: {
+            ...createContributionRecord().pool,
+            status: "CLOSED",
+            archivedAt
+          },
+          linxoOrderStatus: "AUTHORIZED",
+          linxoPaymentStatus: "SUBMITTED"
+        }),
+        getRunningOrder: vi.fn().mockResolvedValue({
+          id: "order_123",
+          order_status: "CLOSED",
+          redirect_url: "https://app.test/return",
+          instructions: [
+            {
+              id: "instruction_123",
+              amount: "12.00",
+              currency: "EUR",
+              beneficiary: {
+                schema: "ALIAS",
+                alias_id: "alias_123"
+              },
+              label: "Contribution",
+              payments: [
+                {
+                  id: "payment_123",
+                  status: "EXECUTED",
+                  amount: "12.00",
+                  currency: "EUR",
+                  creation_date: "2026-06-28T10:00:00.000Z"
+                }
+              ]
+            }
+          ]
+        }),
+        updateContributionStatusSnapshot,
+        now: () => new Date("2026-06-28T10:00:00.000Z")
+      });
 
-    expect(result).toMatchObject({
-      status: "synced"
-    });
-    if (result.status === "synced") {
-      expect(result.contribution.cashInStatus).toBe("EXECUTED");
-      expect(result.contribution.returnedAt).toBeUndefined();
+      expect(result).toMatchObject({
+        status: "synced"
+      });
+      if (result.status === "synced") {
+        expect(result.contribution.cashInStatus).toBe("EXECUTED");
+        expect(result.contribution.returnedAt).toBeUndefined();
+      }
+      expect(updateContributionStatusSnapshot).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cashInStatus: CashInStatus.EXECUTED,
+          linxoOrderStatus: "CLOSED",
+          linxoPaymentStatus: "EXECUTED",
+          returnedAt: undefined
+        })
+      );
     }
-    expect(updateContributionStatusSnapshot).toHaveBeenCalledWith(
-      expect.objectContaining({
-        cashInStatus: CashInStatus.EXECUTED,
-        linxoOrderStatus: "CLOSED",
-        linxoPaymentStatus: "EXECUTED",
-        returnedAt: undefined
-      })
-    );
-  });
+  );
 
   it("updates an in-progress contribution to rejected through webhook sync", async () => {
-    const updateContributionStatusSnapshot = vi.fn().mockResolvedValue(undefined);
+    const updateContributionStatusSnapshot = vi
+      .fn()
+      .mockResolvedValue(undefined);
 
     const result = await syncContributionStatusByOrderId("order_123", {
       findContributionById: vi.fn(),

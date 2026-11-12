@@ -212,7 +212,7 @@ export const fr = {
     lifecycleBody:
       "Clôturer cette cagnotte empêche les nouvelles contributions mais n'annule pas les virements déjà initiés ni les ordres Linxo existants. La réouverture permet à nouveau les contributions si la date de clôture reste valide et si le compte collecteur est configuré.",
     updateClosingDateToReopen:
-      "Mettez à jour la date de clôture avant de rouvrir cette cagnotte.",
+      "Pour rouvrir une cagnotte expirée, choisissez explicitement une nouvelle date de clôture valide.",
     closePool: "Clôturer la cagnotte",
     closingPool: "Clôture en cours...",
     reopenPool: "Rouvrir la cagnotte",
@@ -445,6 +445,11 @@ export const fr = {
     failedSegment: ", {{count}} en échec"
   },
   actions: {
+    poolArchivedImmutable: "Cette cagnotte est archivée définitivement et ne peut plus être modifiée ni rouverte.",
+    poolArchiveForbidden: "Vous n'êtes pas autorisé à archiver cette cagnotte.",
+    poolArchiveOnlyCompleted: "Seule une cagnotte terminée peut être archivée.",
+    poolArchiveError: "La cagnotte n'a pas pu être archivée. Actualisez la page et réessayez.",
+    poolArchived: "La cagnotte a été archivée définitivement.",
     poolCreateError:
       "La cagnotte n'a pas pu être créée. Veuillez réessayer.",
     poolUpdateForbidden:
@@ -462,7 +467,7 @@ export const fr = {
       "Vous n'êtes pas autorisé à rouvrir cette cagnotte.",
     poolAlreadyOpen: "Cette cagnotte est déjà ouverte.",
     poolReopenInvalid:
-      "Mettez à jour la date de clôture avant de rouvrir cette cagnotte.",
+      "Pour rouvrir une cagnotte expirée, choisissez explicitement une nouvelle date de clôture valide.",
     poolReopenError:
       "La cagnotte n'a pas pu être rouverte. Veuillez réessayer.",
     poolReopened: "Cagnotte rouverte.",

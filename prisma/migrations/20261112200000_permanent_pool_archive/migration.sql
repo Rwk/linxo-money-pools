@@ -1,0 +1,1 @@
+ALTER TABLE "Pool" ADD COLUMN "archivedAt" TIMESTAMP(3);

@@ -77,6 +77,7 @@ function contribution(overrides: Partial<Record> = {}): Record {
 }
 function pool(): PoolWithContributions {
   return {
+    archivedAt: null,
     contributionMode: "FREE",
     fixedUnitPriceCents: null,
     id: "pool_test",
@@ -142,6 +143,19 @@ describe("pool amount privacy at presentation and response boundaries", () => {
     expect(JSON.stringify(publicView)).not.toContain("37.50");
     expect(JSON.stringify(publicView)).not.toContain("50.00");
     expect(JSON.stringify(publicView)).not.toContain("quantity");
+  });
+  it("preserves amount privacy and owner totals after archive", () => {
+    const fixture = pool();
+    fixture.archivedAt = new Date();
+    expect(toPublicPoolDetailViewModel(fixture).confirmedAmountLabel).toBe(
+      "12.34 EUR"
+    );
+    expect(toPrivatePoolDetailViewModel(fixture).confirmedAmountLabel).toBe(
+      "931.07 EUR"
+    );
+    expect(JSON.stringify(toPublicPoolDetailViewModel(fixture))).not.toContain(
+      "918.73"
+    );
   });
   beforeEach(() => {
     vi.clearAllMocks();

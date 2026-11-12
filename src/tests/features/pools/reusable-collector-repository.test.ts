@@ -28,7 +28,7 @@ describe("reusable collector repository", () => {
     };
     await updatePoolRecord(input);
     expect(updateMany).toHaveBeenCalledWith({
-      where: { id: "pool", creatorId: "owner" },
+      where: { id: "pool", creatorId: "owner", archivedAt: null },
       data: {
         title: input.title,
         description: input.description,
@@ -80,7 +80,7 @@ describe("reusable collector repository", () => {
       ...references
     });
     expect(updateMany).toHaveBeenCalledWith({
-      where: { id: "pool", creatorId: "owner" },
+      where: { id: "pool", creatorId: "owner", archivedAt: null },
       data: references
     });
   });

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn()
@@ -35,7 +35,10 @@ const initialPoolStatusActionState: PoolStatusActionState = {
 };
 
 describe("pool status actions", () => {
+  afterEach(() => vi.useRealTimers());
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-01T12:00:00Z"));
     vi.clearAllMocks();
   });
 
@@ -81,11 +84,15 @@ describe("pool status actions", () => {
     vi.mocked(findPoolByIdForCreator).mockResolvedValue({
       id: "pool_123",
       slug: "team-gift",
-      status: "OPEN"
+      status: "OPEN",
+      closingDate: new Date("2026-07-05T23:59:59.999Z")
     } as Awaited<ReturnType<typeof findPoolByIdForCreator>>);
     vi.mocked(closePoolRecord).mockResolvedValue(undefined);
 
-    const result = await closePoolAction("pool_123", initialPoolStatusActionState);
+    const result = await closePoolAction(
+      "pool_123",
+      initialPoolStatusActionState
+    );
 
     expect(closePoolRecord).toHaveBeenCalledWith({
       poolId: "pool_123",
@@ -111,7 +118,10 @@ describe("pool status actions", () => {
     } as Awaited<ReturnType<typeof findPoolByIdForCreator>>);
     vi.mocked(reopenPoolRecord).mockResolvedValue(undefined);
 
-    const result = await reopenPoolAction("pool_123", initialPoolStatusActionState);
+    const result = await reopenPoolAction(
+      "pool_123",
+      initialPoolStatusActionState
+    );
 
     expect(reopenPoolRecord).toHaveBeenCalledWith({
       poolId: "pool_123",
@@ -135,7 +145,10 @@ describe("pool status actions", () => {
       closingDate: new Date("2026-06-01T23:59:59.999Z")
     } as Awaited<ReturnType<typeof findPoolByIdForCreator>>);
 
-    const result = await reopenPoolAction("pool_123", initialPoolStatusActionState);
+    const result = await reopenPoolAction(
+      "pool_123",
+      initialPoolStatusActionState
+    );
 
     expect(reopenPoolRecord).not.toHaveBeenCalled();
     expect(result.error).toBe(t("actions.poolReopenInvalid"));

@@ -86,7 +86,12 @@ describe("pool rules", () => {
         new Date("2026-06-15T12:00:00.000Z")
       )
     ).toBe(true);
-    expect(canReopenPool(createPool({ status: "OPEN" }))).toBe(false);
+    expect(
+      canReopenPool(
+        createPool({ status: "OPEN" }),
+        new Date("2026-06-15T12:00:00Z")
+      )
+    ).toBe(false);
   });
 
   it("does not allow reopening when the closing date is in the past", () => {
@@ -102,8 +107,18 @@ describe("pool rules", () => {
   });
 
   it("allows closing only when the pool is open", () => {
-    expect(canClosePool(createPool({ status: "OPEN" }))).toBe(true);
-    expect(canClosePool(createPool({ status: "CLOSED" }))).toBe(false);
+    expect(
+      canClosePool(
+        createPool({ status: "OPEN" }),
+        new Date("2026-06-15T12:00:00Z")
+      )
+    ).toBe(true);
+    expect(
+      canClosePool(
+        createPool({ status: "CLOSED" }),
+        new Date("2026-06-15T12:00:00Z")
+      )
+    ).toBe(false);
   });
 
   it("allows editing only for the creator", () => {
@@ -157,7 +172,9 @@ describe("pool visibility", () => {
   it("hides the contribution amount when requested", () => {
     const contribution = createContribution({ hideAmount: true });
 
-    expect(getPublicContributionAmount(contribution)).toBe(t("common.hiddenAmount"));
+    expect(getPublicContributionAmount(contribution)).toBe(
+      t("common.hiddenAmount")
+    );
   });
 
   it("returns the public amount when it can be displayed", () => {

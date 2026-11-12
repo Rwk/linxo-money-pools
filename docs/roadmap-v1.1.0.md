@@ -47,6 +47,7 @@ functional product requirements and their priorities remain unchanged.
 | Linxo API observability              | **Implemented, deployed**: `0f295cd`. Structured, privacy-conscious logging supports `LINXO_API_LOG_LEVEL=off\|error\|info`; disabled by default on Vercel.                                                                                                                   | Use safe diagnostics during investigation; deployment alone does not validate payments. See [API observability](./linxo-payments.md#api-observability).        |
 | Beneficiary complementary name       | **Implemented, locally validated**: `63a47fe`. The order builder normalizes this field to the documented character set and 140-character limit, with a nonempty fallback. DEV-3 checked serialized JSON and successful Sandbox order creation; focused regression tests pass. | Production deployment is unverified. Do not infer that this correction caused or resolved historical production failures.                                      |
 | Collector account reuse              | **Implemented locally; manual acceptance pending.** New pools can select an owner-scoped, provenance-bound alias/account pair or use the existing new-collector path. See [collector reuse](./collector-account-reuse.md).                                                    | Complete the documented Sandbox acceptance; legacy references without provenance/entity type are excluded. No production deployment is implied.                |
+| Pool lifecycle P1-A | **Implemented locally**, including permanent archive, atomic contribution acceptance and PostgreSQL concurrency tests. See [lifecycle verification](./pool-lifecycle.md). | P1-B tabs/controls and manual lifecycle acceptance remain pending. |
 | Remaining P0, P1 and P2 requirements | **Planned**. Existing visibility controls and dashboard redesigns are partial foundations, not evidence that these requirements are complete.                                                                                                                                 | Implement and validate after the local development prerequisite.                                                                                               |
 | Safe local development               | **Accepted; workstream closed**. DEV-1 through DEV-4 were implemented and manually accepted by the developer. See the acceptance record below.                                                                                                                                | Delayed authorization-to-execution transition remains an observation with an unconfirmed cause; it does not block acceptance of the environment.               |
 
@@ -59,7 +60,7 @@ functional product requirements and their priorities remain unchanged.
 | P0           | Public/private contribution amounts                           | Privacy holds across public pages, API responses and progress indicators; private totals remain complete. |
 | P1           | Collector account reuse                                       | Only the authenticated user's authorized Linxo resources can be selected.                                 |
 | P1           | Fixed-price contributions                                     | Server-enforced quantity and integer-cent calculation preserve existing payment behavior.                 |
-| P1           | Pool organization and archiving                               | Correct three-tab classification and reversible, owner-only archiving.                                    |
+| P1           | Pool organization and archiving                               | Permanent owner-only archiving of completed pools (P1-A); three-tab UI remains P1-B.                                    |
 | P2           | Favorite payment providers                                    | Verified BIC configuration with the full bank list still accessible.                                      |
 | P2           | Dashboard redesign                                            | Desktop/mobile acceptance, coordinated with the three-tab organization.                                   |
 
@@ -141,11 +142,23 @@ migration or deployment has been performed.
 | Completed   | Manually closed or expired, and not archived.       |
 | Archived    | Explicitly archived by the owner.                   |
 
-Archiving must be an explicit, reversible owner action. It must not delete pools
-or contributions, modify payment statuses or amounts, or replace the pool's
-closure state. A nullable `archivedAt` field is the proposed design. Restricting
-archiving to completed pools is a recommendation **pending final product
-validation**, not an agreed rule.
+**P1-A implemented locally:** archiving is an explicit, permanent owner action,
+allowed only for completed pools. Archived pools cannot be unarchived, reopened,
+edited or accept new contributions; their history remains readable to the owner.
+Reopening an expired pool (including one still persisted as `OPEN`) requires an
+explicit valid future closing date. A manually closed pool with an unexpired date
+may retain it. Effective state priority is `ARCHIVED > COMPLETED > ACTIVE`.
+
+Atomic PostgreSQL contribution acceptance while effectively ACTIVE is the payment
+cutoff. An already accepted contribution may finish Linxo order initialization
+after closure or archive. Existing orders, late webhooks and reconciliation remain
+operational. No database lock spans a Linxo request. See [lifecycle rules and
+verification](./pool-lifecycle.md).
+
+**P1-B remains planned:** dashboard tabs, lifecycle labels and management controls,
+including the permanent archive confirmation and explicit reopen-date input.
+The additive `archivedAt` migration must ship with previous pending migrations
+at the future v1.1.0 production release; no production migration was applied.
 
 ### P2 — User experience
 
@@ -254,7 +267,7 @@ Authentication and identity verification requirements remain undecided.
    validated; production deployment remains unverified. Retain the delayed
    authorization-to-execution observation without assigning an unconfirmed cause.
 3. Resume P0, then P1 and P2 in small changes with automated checks and targeted
-   manual acceptance. Resolve the archiving recommendation and verify bank BICs
+   manual acceptance. Follow the permanent-archiving decision and verify bank BICs
    before their respective implementations.
 4. Validate the complete v1.1.0 release before creating its final tag. Pushes and
    deployments require approval.
