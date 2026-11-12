@@ -1,10 +1,34 @@
 # DEV-4 — Local Sandbox payment lifecycle
 
-Date: 2026-11-12. **End-to-end acceptance is pending developer confirmation.**
-No banking authorization, payment simulation, subscription registration or
-authenticated webhook replay was initiated during this review.
+Date: 2026-11-12. **DEV-4 accepted by the developer; local development is
+operational with the delayed authorization-to-execution observation below.**
+Manual results were supplied by the developer after the initial technical review;
+the agent did not initiate banking authorization or payment simulation. Detailed
+request traces and webhook replay results were not supplied.
 
-## Verified
+## Developer acceptance results
+
+| Sandbox scenario                    | Observed result                                                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Immediate execution                 | **PASS**, reported by the developer                                                                                            |
+| Immediate rejection                 | **PASS**, reported by the developer                                                                                            |
+| Authorization followed by execution | Expected transition was **not observed after several minutes**; cause unconfirmed                                              |
+| Authorization followed by rejection | **PASS**; webhook updated the contribution without manual synchronization, and refreshing the page displayed the updated state |
+
+The developer confirmed functional browser payment simulation through the local
+environment, local PostgreSQL persistence, development-user login/logout/login,
+Sandbox authorized-account and alias creation, orders visible in the Linxo
+dashboard, and successful order creation for pool titles containing accents and
+emojis. These observations accept **DEV-1 through DEV-4** and close the local
+development environment workstream.
+
+The delayed execution scenario remains an unresolved observation. The available
+evidence does not establish a cause in the provider, application, webhook delivery
+or test setup. It is **not a confirmed Linxo defect** and does not block the
+developer's acceptance of the environment. Preserve safe status/timing and request
+ID evidence if investigating it later; no speculative code change is justified.
+
+## Verified during the initial technical review
 
 - Reviewed the current initiation, short URL fallback, return handling, webhook
   authentication, status synchronization, persistence, reconciliation and totals.
@@ -172,28 +196,33 @@ alone does not prove cancellation. Test `CANCELLED` only if an actual Sandbox
 action produces that state; no automatic close/cancel API call is part of this
 procedure.
 
-## Pending manual verification
+## Evidence limits and remaining observations
 
-| Acceptance step                                           | Result / safe evidence to record                                   |
-| --------------------------------------------------------- | ------------------------------------------------------------------ |
-| Sandbox subscription registered for current tunnel/client | Pending — subscription HTTP status/request ID                      |
-| New public contribution and its remote redirect           | Pending — creation status/request ID; origin/path checks only      |
-| Bank selection and successful simulation                  | Pending — selected simulator outcome, no bank data                 |
-| Return to correct origin and pool                         | Pending — path/pool match, no query tokens                         |
-| Genuine webhook received and acknowledged                 | Pending — time, method, path, status and outbound Linxo request ID |
-| Final statuses persisted in PostgreSQL                    | Pending — order/payment/cash-in status                             |
-| Public and private rendered totals updated once           | Pending — before/after totals and visible/incomplete counts        |
-| Genuine webhook replay without duplicate counting         | Pending — second status, unchanged counts/totals                   |
-| Optional refusal/expiration scenario                      | Not run                                                            |
+The checklist above remains a reproducible procedure, not a claim that every
+individual check has separately recorded evidence. The developer's manual
+acceptance supplements the initial automated checks; those checks did not execute
+a bank simulation.
+
+- Genuine webhook processing is developer-confirmed for authorization followed
+  by rejection, without owner reconciliation. Individual callback HTTP statuses,
+  subscription registration response and request IDs were not supplied.
+- Browser simulation and the local environment are accepted. Detailed per-view
+  before/after totals and exact return-path traces were not supplied separately;
+  do not invent those measurements.
+- Live replay without duplicate counting was not reported. Existing mocked route
+  tests and snapshot-based processing remain the available evidence; live replay
+  is an optional follow-up, not a claimed manual pass.
+- Immediate rejection passed. Separate cancellation and expiration tests were
+  not reported.
+- Authorization followed by execution remains unconfirmed as described above;
+  do not present it as a passed transition or an attributed provider failure.
 
 ## Blocked
 
-No current infrastructure or implementation blocker was demonstrated: the
-tunnel and app are reachable, and automated checks/build pass. Final DEV-4
-sign-off is gated on the developer's manual bank simulation and genuine webhook
-evidence. Sandbox subscription registration has not been inspected or changed;
-if it is absent or delivery does not occur, step 6 remains blocked until that
-configuration/delivery issue is resolved.
+**None for environment acceptance.** The developer accepted the environment as
+operational despite the unresolved delayed execution observation. DEV-4 sign-off
+is complete; further investigation or additional evidence collection does not
+reopen this prerequisite by default.
 
 For failures, identify the first failing step before changing code. Use existing
 `linxo.api.request` logs: operation, endpoint template, HTTP status, safe error

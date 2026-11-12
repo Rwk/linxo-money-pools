@@ -3,8 +3,9 @@
 ## Release objectives
 
 Linxo Money Pools is a production application used by Linxo employees and the
-CSE to collect real payments. Functional development is paused while a safe,
-isolated local development environment is established.
+CSE to collect real payments. The isolated local development environment is
+accepted and its prerequisite workstream is closed; functional work can resume
+in the priority order below.
 
 - **v1.0.0** is the production baseline at commit
   `73495310146ec82d6c4a0de3879a411f6acfc527` (verified against the existing tag).
@@ -19,9 +20,13 @@ This roadmap records future requirements. Existing behavior is described in
 
 ## Implementation status
 
-Snapshot: 2026-11-11, repository HEAD `0f295cd` before this documentation commit.
-Git history and source establish implementation status; deployment statements
-below come from the supplied operational context, not Git alone.
+Snapshot: 2026-11-12. The local environment was reviewed on `master`, initially
+at `5d99aa5a88acc49e60b8a0349c44a62e9326a0a0`. The previously uncommitted DEV-3
+beneficiary correction and its tests are now committed separately as `63a47fe`
+(`fix: sanitize Linxo beneficiary complementary names`). Git history and source
+establish implementation status; manual acceptance and deployment statements
+below come from the developer's operational reports, not Git alone. Local
+acceptance does not establish production deployment of the correction.
 
 | Status      | Meaning                                                                   |
 | ----------- | ------------------------------------------------------------------------- |
@@ -32,17 +37,18 @@ below come from the supplied operational context, not Git alone.
 | Validated   | Relevant automated checks and targeted end-to-end acceptance have passed. |
 | Blocked     | An identified dependency prevents progress; name the dependency.          |
 
-No milestone is marked in progress or validated without evidence. Functional
-work is paused pending the local development prerequisite.
+No milestone is marked in progress or validated without evidence. DEV-1 through
+DEV-4 are accepted on the automated and developer-reported evidence below;
+functional product requirements and their priorities remain unchanged.
 
-| Work                                 | Known status and evidence                                                                                                                                                                                                                                                                              | Remaining work                                                                                                                                                                                 |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Payment label sanitization           | **Implemented, deployed**: `d37253b`. The utility passes automated tests and produces labels matching the documented Linxo API pattern.                                                                                                                                                                | End-to-end acceptance remains **inconclusive**. Production payment failures occurred on some pools and have not been conclusively attributed to this change.                                   |
-| Linxo API observability              | **Implemented, deployed**: `0f295cd`. Structured, privacy-conscious logging supports `LINXO_API_LOG_LEVEL=off\|error\|info`; disabled by default on Vercel.                                                                                                                                            | Use safe diagnostics during investigation; deployment alone does not validate payments. See [API observability](./linxo-payments.md#api-observability).                                        |
-| Beneficiary complementary name       | **Planned correction; not implemented in inspected HEAD**. The [order builder](../src/features/contributions/services/create-contribution-order-service.ts) still sends `collectorDisplayName` unchanged as `beneficiary.complementary_name`. No corrective commit was found in available Git history. | Normalize and validate this separate API contract gap: the unnormalized display name can violate the documented Linxo pattern. Deployment of a correction is unverified; do not mark complete. |
-| Collector account reuse              | **Planned; no reuse implementation verified**. Current setup creates an authorized account and an alias. A previous specification is reported to exist but was not found in tracked documentation or available history.                                                                                | Recover/review that specification and reconcile it with the current API and authorization model.                                                                                               |
-| Remaining P0, P1 and P2 requirements | **Planned**. Existing visibility controls and dashboard redesigns are partial foundations, not evidence that these requirements are complete.                                                                                                                                                          | Implement and validate after the local development prerequisite.                                                                                                                               |
-| Safe local development               | **Planned; next technical workstream**.                                                                                                                                                                                                                                                                | Establish isolation before resuming functional milestones.                                                                                                                                     |
+| Work                                 | Known status and evidence                                                                                                                                                                                                                                                     | Remaining work                                                                                                                                                 |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Payment label sanitization           | **Implemented, deployed**: `d37253b`. Contract tests pass; the developer confirmed Sandbox orders for pool titles containing accents/emojis and successful browser payment simulation.                                                                                        | Local Sandbox acceptance is recorded in DEV-3/DEV-4. Historical production failures remain unattributed; local acceptance does not establish their resolution. |
+| Linxo API observability              | **Implemented, deployed**: `0f295cd`. Structured, privacy-conscious logging supports `LINXO_API_LOG_LEVEL=off\|error\|info`; disabled by default on Vercel.                                                                                                                   | Use safe diagnostics during investigation; deployment alone does not validate payments. See [API observability](./linxo-payments.md#api-observability).        |
+| Beneficiary complementary name       | **Implemented, locally validated**: `63a47fe`. The order builder normalizes this field to the documented character set and 140-character limit, with a nonempty fallback. DEV-3 checked serialized JSON and successful Sandbox order creation; focused regression tests pass. | Production deployment is unverified. Do not infer that this correction caused or resolved historical production failures.                                      |
+| Collector account reuse              | **Planned; no reuse implementation verified**. Current setup creates an authorized account and an alias. A previous specification is reported to exist but was not found in tracked documentation or available history.                                                       | Recover/review that specification and reconcile it with the current API and authorization model.                                                               |
+| Remaining P0, P1 and P2 requirements | **Planned**. Existing visibility controls and dashboard redesigns are partial foundations, not evidence that these requirements are complete.                                                                                                                                 | Implement and validate after the local development prerequisite.                                                                                               |
+| Safe local development               | **Accepted; workstream closed**. DEV-1 through DEV-4 were implemented and manually accepted by the developer. See the acceptance record below.                                                                                                                                | Delayed authorization-to-execution transition remains an observation with an unconfirmed cause; it does not block acceptance of the environment.               |
 
 ## Prioritized milestones
 
@@ -147,13 +153,16 @@ Known technical debt and observations, **not automatically confirmed regressions
 - Collector aliases may be stored without verifying accessibility under the
   effective Linxo credentials.
 - Local development has historically used shared production resources.
+  The accepted local setup now uses isolated PostgreSQL and confirmed Sandbox
+  credentials; this historical risk is not a statement about current local use.
 - Production payment failures require further investigation in an isolated test
   environment. Label compatibility, complementary name validation and resource
   accessibility are investigation areas, not proven causes.
 
 ### Immediate prerequisite — Safe local development
 
-This is the next technical workstream, before resuming functional milestones:
+**Accepted and closed on 2026-11-12.** The environment is operational for local
+development and Sandbox testing. Its acceptance scope was:
 
 - Separate local PostgreSQL database and Linxo Payments Sandbox credentials.
 - Local development authentication with a test identity and fake data only.
@@ -163,10 +172,26 @@ This is the next technical workstream, before resuming functional milestones:
   safeguards against unsafe environment combinations.
 - Prefer a lightweight setup; avoid unnecessary deployment infrastructure.
 
-The current [database](./database.md) and [authentication](./authentication.md)
-guides describe existing behavior, not proof of local isolation. Update setup
-instructions as part of that future workstream. This roadmap does not implement
-the environment or authorize changes to production resources.
+| Milestone                                     | Acceptance evidence                                                                                                                                                                                       | Status                                  |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| DEV-1 — Local PostgreSQL/Prisma               | PostgreSQL 17 through Docker Compose, applied migrations and developer-confirmed persistence                                                                                                              | **Accepted**                            |
+| DEV-2 — Development authentication            | Stable test identity; developer confirmed login, logout and login again with persistence                                                                                                                  | **Accepted**                            |
+| DEV-3 — Linxo Sandbox integration             | Authorized-account/alias creation, accessible alias, orders visible in Linxo dashboard, successful orders with accents/emojis, and beneficiary serialization correction                                   | **Accepted**                            |
+| DEV-4 — Browser, tunnel and webhook lifecycle | Developer completed browser Sandbox simulations: immediate execution PASS, immediate rejection PASS, authorization followed by rejection PASS with webhook-driven state update visible after page refresh | **Accepted with the observation below** |
+
+For authorization followed by execution, the expected status transition was not
+observed after several minutes. Its cause remains unconfirmed; this is **not a
+confirmed Linxo defect**. The developer explicitly accepted the environment as
+operational despite this limitation. No speculative implementation change is
+justified by that observation alone.
+
+See [local development](./local-development.md), [DEV-3 validation](./dev-3-sandbox-validation.md)
+and [DEV-4 results and evidence limits](./dev-4-sandbox-validation.md). The DEV-4
+review recorded 225 relevant tests, ESLint and a production build passing; the
+closure check reran the 35 label/contribution service tests and targeted ESLint
+successfully. Live webhook replay and detailed per-view total measurements were
+not separately reported. This acceptance does not authorize changes to
+production resources or certify all v1.1.0 product requirements.
 
 ### Engineering principles
 
@@ -201,11 +226,13 @@ Authentication and identity verification requirements remain undecided.
 
 ## Next steps
 
-1. Establish and validate the isolated local development environment.
+1. The isolated local development prerequisite is accepted; resume functional
+   work in the existing priority order.
 2. Reassess historical test/type errors, recover the collector-reuse
    specification, and investigate payment failures with sandbox data and safe
-   diagnostics. Verify the complementary name correction before claiming any
-   implementation or deployment.
+   diagnostics. The complementary name correction is implemented and locally
+   validated; production deployment remains unverified. Retain the delayed
+   authorization-to-execution observation without assigning an unconfirmed cause.
 3. Resume P0, then P1 and P2 in small changes with automated checks and targeted
    manual acceptance. Resolve the archiving recommendation and verify bank BICs
    before their respective implementations.
