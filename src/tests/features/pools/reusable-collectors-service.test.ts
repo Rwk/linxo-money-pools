@@ -172,6 +172,8 @@ describe("new pool persistence with reused references", () => {
     );
     expect(createPoolRecord).toHaveBeenCalledExactlyOnceWith({
       ...input,
+      contributionMode: "FREE",
+      fixedUnitPriceCents: null,
       collectorDisplayName: "My company",
       slug: "gift",
       collectorReferences: {
@@ -210,6 +212,47 @@ describe("new pool persistence with reused references", () => {
       resolveReusableCollector: resolve
     });
     expect(resolve).not.toHaveBeenCalled();
-    expect(createPoolRecord).toHaveBeenCalledWith({ ...input, slug: "gift" });
+    expect(createPoolRecord).toHaveBeenCalledWith({
+      ...input,
+      slug: "gift",
+      contributionMode: "FREE",
+      fixedUnitPriceCents: null
+    });
   });
+  it.each([undefined, "source-pool"])(
+    "preserves FIXED pricing with collector source %s",
+    async (collectorSourcePoolId) => {
+      const createPoolRecord = vi.fn().mockResolvedValue({ id: "new" });
+      const deps = dependencies();
+      await createPoolForCreator(
+        {
+          ...input,
+          contributionMode: "FIXED",
+          fixedUnitPriceCents: 1250,
+          collectorSourcePoolId
+        },
+        {
+          createPoolRecord,
+          isPoolSlugTaken: vi.fn(),
+          createUniquePoolSlug: vi.fn().mockResolvedValue("fixed-gift"),
+          resolveReusableCollector: (owner, id) =>
+            resolveReusableCollector(owner, id, deps)
+        }
+      );
+      expect(createPoolRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contributionMode: "FIXED",
+          fixedUnitPriceCents: 1250
+        })
+      );
+      if (collectorSourcePoolId)
+        expect(
+          createPoolRecord.mock.calls[0][0].collectorReferences
+        ).toMatchObject({
+          collectorAliasId: "alias-1",
+          collectorAuthorizedAccountId: "account-1"
+        });
+      else expect(deps.getAlias).not.toHaveBeenCalled();
+    }
+  );
 });

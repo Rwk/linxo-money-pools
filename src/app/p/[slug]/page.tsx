@@ -57,6 +57,8 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
         ) : isOpenForContributions ? (
           <PublicContributionForm
             collectorDisplayName={pool.collectorDisplayName}
+            contributionMode={pool.contributionMode}
+            fixedUnitPriceCents={pool.fixedUnitPriceCents}
             poolSlug={pool.slug}
           />
         ) : (

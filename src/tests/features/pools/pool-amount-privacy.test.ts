@@ -77,6 +77,8 @@ function contribution(overrides: Partial<Record> = {}): Record {
 }
 function pool(): PoolWithContributions {
   return {
+    contributionMode: "FREE",
+    fixedUnitPriceCents: null,
     id: "pool_test",
     slug: "privacy-test",
     title: "Cadeau",
@@ -120,6 +122,27 @@ function pool(): PoolWithContributions {
 }
 
 describe("pool amount privacy at presentation and response boundaries", () => {
+  it("keeps hidden fixed-price amounts out of public aggregates and never exposes their quantity", () => {
+    const fixture = pool();
+    fixture.contributionMode = "FIXED";
+    fixture.fixedUnitPriceCents = 1250;
+    fixture.contributions = [
+      contribution({ amount: new Prisma.Decimal("12.50") }),
+      contribution({
+        id: "hidden",
+        amount: new Prisma.Decimal("37.50"),
+        hideAmount: true
+      })
+    ];
+    const publicView = toPublicPoolDetailViewModel(fixture);
+    expect(publicView.confirmedAmountLabel).toBe("12.50 EUR");
+    expect(toPrivatePoolDetailViewModel(fixture).confirmedAmountLabel).toBe(
+      "50.00 EUR"
+    );
+    expect(JSON.stringify(publicView)).not.toContain("37.50");
+    expect(JSON.stringify(publicView)).not.toContain("50.00");
+    expect(JSON.stringify(publicView)).not.toContain("quantity");
+  });
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -245,6 +268,8 @@ describe("pool amount privacy at presentation and response boundaries", () => {
     ])
       expect(html).not.toContain(value);
     expect(mocks.publicForm.mock.calls[0][0]).toEqual({
+      contributionMode: "FREE",
+      fixedUnitPriceCents: null,
       collectorDisplayName: "Équipe",
       poolSlug: "privacy-test"
     });

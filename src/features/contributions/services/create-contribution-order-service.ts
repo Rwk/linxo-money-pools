@@ -1,4 +1,5 @@
 import "server-only";
+import { calculateContributionAmount } from "@/domain/pool/pool.pricing";
 
 import { buildContributionLabel } from "@/domain/payment/linxo-order-label";
 import { isPoolOpenForContributions } from "@/domain/pool/pool.rules";
@@ -149,6 +150,7 @@ export async function createContributionOrderForPool(
     contributorLastName: string;
     contributorEmail: string;
     amount: string;
+    quantity?: string;
     selectedPaymentMethod: PaymentMethod;
     displayAsAnonymous: boolean;
     hideAmount: boolean;
@@ -172,12 +174,13 @@ export async function createContributionOrderForPool(
     throw new ContributionPoolNotReadyError();
   }
 
+  const amount = calculateContributionAmount(pool, input);
   const contribution = await dependencies.createContributionRecord({
     poolId: pool.id,
     contributorFirstName: input.contributorFirstName,
     contributorLastName: input.contributorLastName,
     contributorEmail: input.contributorEmail,
-    amount: input.amount,
+    amount,
     selectedPaymentMethod: input.selectedPaymentMethod,
     displayAsAnonymous: input.displayAsAnonymous,
     hideAmount: input.hideAmount
@@ -194,7 +197,7 @@ export async function createContributionOrderForPool(
     contributorFirstName: input.contributorFirstName,
     contributorLastName: input.contributorLastName,
     contributorEmail: input.contributorEmail,
-    amount: input.amount,
+    amount,
     selectedPaymentMethod: input.selectedPaymentMethod,
     redirectUrl
   });

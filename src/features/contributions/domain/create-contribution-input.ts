@@ -35,7 +35,8 @@ const CreateContributionSchema = z
       .trim()
       .email(t("validation.emailInvalid"))
       .transform((value) => value.trim().toLowerCase()),
-    amount: z.string().min(1, t("validation.amountRequired")),
+    amount: z.string(),
+    quantity: z.string().optional(),
     selectedPaymentMethod: z.enum(PAYMENT_METHODS, {
       message: t("validation.paymentMethodRequired")
     }),
@@ -50,6 +51,7 @@ export type CreateContributionInput = {
   contributorLastName: string;
   contributorEmail: string;
   amount: string;
+  quantity?: string;
   selectedPaymentMethod: (typeof PAYMENT_METHODS)[number];
   displayAsAnonymous: boolean;
   hideAmount: boolean;
@@ -63,6 +65,9 @@ export function parseCreateContributionFormValues(
   formData: FormData
 ): CreateContributionFormValues {
   return {
+    ...(formData.has("quantity")
+      ? { quantity: String(formData.get("quantity")) }
+      : {}),
     poolSlug: String(formData.get("poolSlug") ?? ""),
     contributorFirstName: String(formData.get("contributorFirstName") ?? ""),
     contributorLastName: String(formData.get("contributorLastName") ?? ""),
@@ -77,7 +82,8 @@ export function parseCreateContributionFormValues(
 }
 
 export function validateCreateContributionInput(
-  values: CreateContributionFormValues
+  values: CreateContributionFormValues,
+  options: { deferAmountValidation?: boolean } = {}
 ):
   | { success: true; data: CreateContributionInput }
   | {
@@ -122,7 +128,12 @@ export function validateCreateContributionInput(
         contributorFirstName: result.data.contributorFirstName,
         contributorLastName: result.data.contributorLastName,
         contributorEmail: result.data.contributorEmail,
-        amount: normalizeAmountInput(result.data.amount),
+        amount: options.deferAmountValidation
+          ? result.data.amount
+          : normalizeAmountInput(result.data.amount),
+        ...(result.data.quantity !== undefined
+          ? { quantity: result.data.quantity }
+          : {}),
         selectedPaymentMethod: result.data.selectedPaymentMethod,
         displayAsAnonymous: result.data.displayAsAnonymous,
         hideAmount: result.data.hideAmount
@@ -133,9 +144,7 @@ export function validateCreateContributionInput(
       success: false,
       fieldErrors: {
         amount:
-          error instanceof Error
-            ? error.message
-            : t("validation.amountInvalid")
+          error instanceof Error ? error.message : t("validation.amountInvalid")
       }
     };
   }

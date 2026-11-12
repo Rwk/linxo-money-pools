@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseFixedUnitPrice } from "@/domain/pool/pool.pricing";
 
 import { EVENT_TYPES } from "@/domain/pool/pool.types";
 import type { CreatePoolFormValues } from "@/features/pools/forms/create-pool-form-state";
@@ -29,11 +30,18 @@ export function isClosingDateOnOrAfterToday(
 
 const CreatePoolSchema = z
   .object({
+    contributionMode: z
+      .enum(["FREE", "FIXED"], { message: t("fixedContributions.invalidMode") })
+      .default("FREE"),
+    fixedUnitPrice: z.string().optional(),
     title: z
       .string()
       .trim()
       .min(1, t("validation.titleRequired"))
-      .max(TITLE_MAX_LENGTH, t("validation.titleMax", { count: TITLE_MAX_LENGTH })),
+      .max(
+        TITLE_MAX_LENGTH,
+        t("validation.titleMax", { count: TITLE_MAX_LENGTH })
+      ),
     description: z
       .string()
       .trim()
@@ -70,15 +78,29 @@ export type CreatePoolInput = {
   eventType: (typeof EVENT_TYPES)[number];
   closingDate: Date;
   collectorDisplayName: string;
+  contributionMode: "FREE" | "FIXED";
+  fixedUnitPriceCents: number | null;
 };
 
 export function parseCreatePoolFormValues(
   formData: FormData
 ): CreatePoolFormValues {
   return {
+    ...(formData.has("contributionMode")
+      ? {
+          contributionMode: String(
+            formData.get("contributionMode")
+          ) as CreatePoolFormValues["contributionMode"]
+        }
+      : {}),
+    ...(formData.has("fixedUnitPrice")
+      ? { fixedUnitPrice: String(formData.get("fixedUnitPrice")) }
+      : {}),
     title: String(formData.get("title") ?? ""),
     description: String(formData.get("description") ?? ""),
-    eventType: String(formData.get("eventType") ?? "") as CreatePoolFormValues["eventType"],
+    eventType: String(
+      formData.get("eventType") ?? ""
+    ) as CreatePoolFormValues["eventType"],
     closingDate: String(formData.get("closingDate") ?? ""),
     collectorDisplayName: String(formData.get("collectorDisplayName") ?? "")
   };
@@ -94,6 +116,17 @@ export function validateCreatePoolInput(
       fieldErrors: Partial<Record<keyof CreatePoolFormValues, string>>;
     } {
   const result = CreatePoolSchema.superRefine((value, ctx) => {
+    if (value.contributionMode === "FIXED") {
+      try {
+        parseFixedUnitPrice(value.fixedUnitPrice ?? "");
+      } catch {
+        ctx.addIssue({
+          code: "custom",
+          message: t("fixedContributions.invalidPrice"),
+          path: ["fixedUnitPrice"]
+        });
+      }
+    }
     if (!isClosingDateOnOrAfterToday(value.closingDate, now)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -109,6 +142,8 @@ export function validateCreatePoolInput(
     return {
       success: false,
       fieldErrors: {
+        contributionMode: flattened.contributionMode?.[0],
+        fixedUnitPrice: flattened.fixedUnitPrice?.[0],
         title: flattened.title?.[0],
         description: flattened.description?.[0],
         eventType: flattened.eventType?.[0],
@@ -121,6 +156,11 @@ export function validateCreatePoolInput(
   return {
     success: true,
     data: {
+      contributionMode: result.data.contributionMode,
+      fixedUnitPriceCents:
+        result.data.contributionMode === "FIXED"
+          ? parseFixedUnitPrice(result.data.fixedUnitPrice ?? "")
+          : null,
       title: result.data.title,
       description: result.data.description,
       eventType: result.data.eventType,

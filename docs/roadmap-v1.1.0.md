@@ -122,6 +122,14 @@ or configure a new one.
   [database conventions](./database.md#data-handling-constraints) store decimal
   amounts. This requirement does not imply a destructive storage migration.
 
+Fixed-price contributions are **implemented locally; manual Sandbox acceptance
+is pending**. FREE remains the historical/default mode. Mode and unit price are
+set at creation and preserved by editing. See [fixed contributions](./fixed-contributions.md)
+for server enforcement, privacy, validation and acceptance. Its additive Prisma
+migration must be applied to Supabase Production during the future v1.1.0
+deployment before the new application code serves traffic; no production
+migration or deployment has been performed.
+
 **Pool organization and archiving:** organize the private dashboard into:
 
 | Tab         | Membership                                          |

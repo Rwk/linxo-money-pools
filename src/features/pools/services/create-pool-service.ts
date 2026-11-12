@@ -1,4 +1,5 @@
 import "server-only";
+import { validatePoolPricing } from "@/domain/pool/pool.pricing";
 
 import { EventType } from "@/generated/prisma/client";
 
@@ -19,6 +20,8 @@ export type CreatePoolForCreatorInput = {
   creatorId: string;
   collectorDisplayName: string;
   collectorSourcePoolId?: string;
+  contributionMode?: "FREE" | "FIXED";
+  fixedUnitPriceCents?: number | null;
 };
 
 type CreatePoolDependencies = {
@@ -41,6 +44,10 @@ export async function createPoolForCreator(
   input: CreatePoolForCreatorInput,
   dependencies: CreatePoolDependencies = defaultDependencies
 ): Promise<{ id: string; slug: string }> {
+  const pricing = validatePoolPricing(
+    input.contributionMode,
+    input.fixedUnitPriceCents
+  );
   const collector = input.collectorSourcePoolId
     ? await (dependencies.resolveReusableCollector ?? resolveReusableCollector)(
         input.creatorId,
@@ -53,6 +60,7 @@ export async function createPoolForCreator(
   );
 
   const pool = await dependencies.createPoolRecord({
+    ...pricing,
     slug,
     title: input.title,
     description: input.description,

@@ -1,5 +1,7 @@
 "use server";
 
+import { ContributionAmountError } from "@/domain/pool/pool.pricing";
+
 import { logLinxoDiagnostic } from "@/infrastructure/linxo/linxo-api-logger";
 import { redirect } from "next/navigation";
 
@@ -69,7 +71,9 @@ export async function createContributionOrderAction(
   formData: FormData
 ): Promise<CreateContributionActionState> {
   const values = parseCreateContributionFormValues(formData);
-  const validation = validateCreateContributionInput(values);
+  const validation = validateCreateContributionInput(values, {
+    deferAmountValidation: true
+  });
 
   if (!validation.success) {
     return {
@@ -87,6 +91,13 @@ export async function createContributionOrderAction(
     contributionId = result.contributionId;
     paymentAccessToken = result.paymentAccessToken;
   } catch (error) {
+    if (error instanceof ContributionAmountError) {
+      return {
+        values,
+        fieldErrors: { [error.field]: error.message },
+        formError: null
+      };
+    }
     if (
       error instanceof LinxoPaymentsConfigurationError ||
       error instanceof ContributionPaymentInitiationError

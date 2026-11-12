@@ -29,6 +29,12 @@ export function CreatePoolForm({
     initialCreatePoolActionState
   );
   const safeState = normalizeCreatePoolFormState(state);
+  const [contributionMode, setContributionMode] = useState(
+    safeState.values.contributionMode ?? "FREE"
+  );
+  const [fixedUnitPrice, setFixedUnitPrice] = useState(
+    safeState.values.fixedUnitPrice ?? ""
+  );
   const [title, setTitle] = useState(safeState.values.title);
   const [collectorDisplayName, setCollectorDisplayName] = useState(
     safeState.values.collectorDisplayName
@@ -128,6 +134,55 @@ export function CreatePoolForm({
           <FieldError message={safeState.fieldErrors.closingDate} />
         </div>
       </div>
+
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-semibold text-slate-900">
+          {t("fixedContributions.mode")}
+        </legend>
+        {(["FREE", "FIXED"] as const).map((mode) => (
+          <label
+            key={mode}
+            className="flex min-h-11 items-center gap-2 text-sm text-slate-900"
+          >
+            <input
+              type="radio"
+              name="contributionMode"
+              value={mode}
+              checked={contributionMode === mode}
+              onChange={() => setContributionMode(mode)}
+            />
+            {t(
+              mode === "FREE"
+                ? "fixedContributions.free"
+                : "fixedContributions.fixed"
+            )}
+          </label>
+        ))}
+        <FieldError message={safeState.fieldErrors.contributionMode} />
+        {contributionMode === "FIXED" ? (
+          <div className="space-y-2">
+            <label
+              htmlFor="fixedUnitPrice"
+              className="text-sm font-semibold text-slate-900"
+            >
+              {t("fixedContributions.unitPrice")}
+            </label>
+            <input
+              id="fixedUnitPrice"
+              name="fixedUnitPrice"
+              inputMode="decimal"
+              required
+              value={fixedUnitPrice}
+              onChange={(event) => setFixedUnitPrice(event.target.value)}
+              className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950"
+            />
+            <p className="text-sm text-slate-600">
+              {t("fixedContributions.hint")}
+            </p>
+            <FieldError message={safeState.fieldErrors.fixedUnitPrice} />
+          </div>
+        ) : null}
+      </fieldset>
 
       {reusableCollectors.length ? (
         <fieldset className="space-y-3">

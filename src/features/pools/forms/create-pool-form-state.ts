@@ -4,6 +4,8 @@ export type CreatePoolFormValues = {
   eventType: "BIRTHDAY" | "BIRTH" | "WEDDING" | "FAREWELL" | "OTHER";
   closingDate: string;
   collectorDisplayName: string;
+  contributionMode?: "FREE" | "FIXED";
+  fixedUnitPrice?: string;
 };
 
 export type CreatePoolActionState = {

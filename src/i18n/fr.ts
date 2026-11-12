@@ -296,6 +296,18 @@ export const fr = {
     refreshBody:
       "Les webhooks restent le mécanisme principal. Utilisez le rafraîchissement seulement en secours si un statut semble bloqué."
   },
+  fixedContributions: {
+    mode: "Mode de contribution",
+    free: "Montant libre",
+    fixed: "Montant fixe par participation",
+    unitPrice: "Prix unitaire en euros",
+    quantity: "Nombre de participations",
+    total: "Montant à payer",
+    hint: "Chaque contributeur choisira entre 1 et 10 participations. Le prix ne pourra pas être modifié après la création.",
+    invalidMode: "Choisissez un mode de contribution valide.",
+    invalidPrice: "Saisissez un prix positif avec au plus deux décimales, inférieur ou égal à 21 474 836,47 €.",
+    invalidQuantity: "Choisissez un nombre entier de participations entre 1 et 10."
+  },
   collectorReuse: {
     title: "Compte collecteur",
     existing: "Utiliser un compte collecteur existant",

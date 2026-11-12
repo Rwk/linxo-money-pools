@@ -287,20 +287,16 @@ describe("createContributionOrderForPool", () => {
         },
         {
           findPoolBySlug: vi.fn().mockResolvedValue(pool),
-          createContributionRecord: vi
-            .fn()
-            .mockResolvedValue({
-              id: "contribution_123",
-              paymentAccessToken: "test_token"
-            }),
+          createContributionRecord: vi.fn().mockResolvedValue({
+            id: "contribution_123",
+            paymentAccessToken: "test_token"
+          }),
           updateContributionAfterOrderCreation: vi.fn(),
           markContributionInitiationFailed: vi.fn(),
           createOrder,
-          shortenOrderAuthUrl: vi
-            .fn()
-            .mockResolvedValue({
-              shortAuthUrl: "https://short.linxo.test/order_123"
-            }),
+          shortenOrderAuthUrl: vi.fn().mockResolvedValue({
+            shortAuthUrl: "https://short.linxo.test/order_123"
+          }),
           buildReturnUrl: vi.fn().mockReturnValue("https://app.test/return")
         }
       );
@@ -383,6 +379,89 @@ describe("createContributionOrderForPool", () => {
       });
       expect(pool).toEqual(originalPool);
       expect(pool.title).toBe(title);
+    }
+  );
+  function fixedDependencies() {
+    return {
+      findPoolBySlug: vi
+        .fn()
+        .mockResolvedValue({
+          ...openReadyPool,
+          contributionMode: "FIXED",
+          fixedUnitPriceCents: 1250
+        }),
+      createContributionRecord: vi
+        .fn()
+        .mockResolvedValue({
+          id: "fixed-contribution",
+          paymentAccessToken: "test-token"
+        }),
+      updateContributionAfterOrderCreation: vi.fn(),
+      markContributionInitiationFailed: vi.fn(),
+      createOrder: vi
+        .fn()
+        .mockResolvedValue({
+          id: "fixed-order",
+          order_status: "NEW",
+          auth_url: "https://payments.invalid/auth"
+        }),
+      shortenOrderAuthUrl: vi
+        .fn()
+        .mockResolvedValue({ shortAuthUrl: "https://payments.invalid/short" }),
+      buildReturnUrl: vi.fn().mockReturnValue("https://app.test/return")
+    };
+  }
+  function fixedInput(quantity?: string) {
+    return {
+      poolSlug: "team-gift",
+      contributorFirstName: "Jane",
+      contributorLastName: "Doe",
+      contributorEmail: "jane@example.com",
+      amount: "0.01",
+      quantity,
+      fixedUnitPriceCents: 1,
+      total: "0.01",
+      selectedPaymentMethod: "STANDARD" as const,
+      displayAsAnonymous: false,
+      hideAmount: true
+    };
+  }
+  it.each(Array.from({ length: 10 }, (_, index) => String(index + 1)))(
+    "uses one server-calculated amount for persistence and Linxo for quantity %s",
+    async (quantity) => {
+      const deps = fixedDependencies();
+      await createContributionOrderForPool(fixedInput(quantity), deps);
+      const expected = ((1250 * Number(quantity)) / 100).toFixed(2);
+      expect(deps.createContributionRecord.mock.calls[0][0]).toMatchObject({
+        amount: expected,
+        hideAmount: true
+      });
+      expect(deps.createContributionRecord.mock.calls[0][0]).not.toHaveProperty(
+        "quantity"
+      );
+      expect(deps.createOrder.mock.calls[0][0].instructions[0].amount).toBe(
+        expected
+      );
+      expect(deps.updateContributionAfterOrderCreation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          linxoOrderId: "fixed-order",
+          linxoOrderStatus: "NEW"
+        })
+      );
+    }
+  );
+  it.each([undefined, "0", "11", "-1", "1.5", "bad"])(
+    "rejects quantity %j before persistence or a payment request",
+    async (quantity) => {
+      const deps = fixedDependencies();
+      await expect(
+        createContributionOrderForPool(fixedInput(quantity), deps)
+      ).rejects.toMatchObject({
+        name: "ContributionAmountError",
+        field: "quantity"
+      });
+      expect(deps.createContributionRecord).not.toHaveBeenCalled();
+      expect(deps.createOrder).not.toHaveBeenCalled();
     }
   );
 });

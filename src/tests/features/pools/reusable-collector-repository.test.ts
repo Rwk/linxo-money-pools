@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 const { findMany, create, updateMany } = vi.hoisted(() => ({
   findMany: vi.fn().mockResolvedValue([]),
   create: vi.fn().mockResolvedValue({ id: "new-pool" }),
@@ -10,9 +10,33 @@ vi.mock("@/infrastructure/db/prisma", () => ({
 import { findReusableCollectorSources } from "@/features/pools/data-access/reusable-collector-repository";
 import {
   createPoolRecord,
+  updatePoolRecord,
   updatePoolCollectorReferences
 } from "@/features/pools/data-access/pool-repository";
 describe("reusable collector repository", () => {
+  beforeEach(() => vi.clearAllMocks());
+  it("ignores mode and price fields during existing pool editing", async () => {
+    const input = {
+      poolId: "pool",
+      creatorId: "owner",
+      title: "Edited",
+      description: "Description",
+      eventType: "OTHER" as const,
+      closingDate: new Date("2099-01-01"),
+      contributionMode: "FREE",
+      fixedUnitPriceCents: null
+    };
+    await updatePoolRecord(input);
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { id: "pool", creatorId: "owner" },
+      data: {
+        title: input.title,
+        description: input.description,
+        eventType: input.eventType,
+        closingDate: input.closingDate
+      }
+    });
+  });
   const references = {
     collectorAliasId: "alias",
     collectorAuthorizedAccountId: "account",
@@ -33,6 +57,8 @@ describe("reusable collector repository", () => {
     await createPoolRecord(input);
     expect(create).toHaveBeenCalledWith({
       data: {
+        contributionMode: "FREE",
+        fixedUnitPriceCents: null,
         slug: input.slug,
         title: input.title,
         description: input.description,

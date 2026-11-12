@@ -52,6 +52,8 @@ describe("create pool reuse action", () => {
       createPoolAction(initialCreatePoolActionState, data)
     ).rejects.toThrow("REDIRECT");
     expect(createPoolForCreator).toHaveBeenCalledExactlyOnceWith({
+      contributionMode: "FREE",
+      fixedUnitPriceCents: null,
       creatorId: "owner",
       collectorSourcePoolId: "source",
       collectorDisplayName: t("collectorReuse.existing"),

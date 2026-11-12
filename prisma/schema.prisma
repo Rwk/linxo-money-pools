@@ -30,6 +30,11 @@ enum CollectorEntityType {
   COMPANY
 }
 
+enum ContributionMode {
+  FREE
+  FIXED
+}
+
 enum LinxoOrderStatus {
   NEW
   AUTHORIZED
@@ -135,6 +140,8 @@ model Pool {
   collectorAliasId             String?
   collectorEntityType          CollectorEntityType?
   collectorProjectKey          String?
+  contributionMode             ContributionMode @default(FREE)
+  fixedUnitPriceCents           Int?
   createdAt                    DateTime       @default(now())
   updatedAt                    DateTime       @updatedAt
   closedAt                     DateTime?

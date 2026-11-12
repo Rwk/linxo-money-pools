@@ -31,6 +31,8 @@ const poolBaseSelect = {
   id: true,
   slug: true,
   title: true,
+  contributionMode: true,
+  fixedUnitPriceCents: true,
   description: true,
   eventType: true,
   status: true,
@@ -62,6 +64,8 @@ export type CreatePoolRecordInput = {
   closingDate: Date;
   creatorId: string;
   collectorDisplayName: string;
+  contributionMode?: "FREE" | "FIXED";
+  fixedUnitPriceCents?: number | null;
   collectorReferences?: {
     collectorAuthorizedAccountId: string;
     collectorAliasId: string;
@@ -135,6 +139,9 @@ export async function createPoolRecord(
 ): Promise<{ id: string }> {
   const pool = await prisma.pool.create({
     data: {
+      contributionMode: input.contributionMode ?? "FREE",
+      fixedUnitPriceCents:
+        input.contributionMode === "FIXED" ? input.fixedUnitPriceCents : null,
       slug: input.slug,
       title: input.title,
       description: input.description,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { createContributionOrderAction } from "@/features/contributions/actions/create-contribution-order";
@@ -8,6 +8,7 @@ import {
   getInitialCreateContributionFormState,
   normalizeCreateContributionFormState
 } from "@/features/contributions/forms/create-contribution-form-state";
+import { formatCents, type ContributionMode } from "@/domain/pool/pool.pricing";
 import { t } from "@/i18n/t";
 
 function FieldError({ message }: { message?: string }) {
@@ -20,16 +21,21 @@ function FieldError({ message }: { message?: string }) {
 
 export function PublicContributionForm({
   poolSlug,
-  collectorDisplayName
+  collectorDisplayName,
+  contributionMode = "FREE",
+  fixedUnitPriceCents = null
 }: {
   poolSlug: string;
   collectorDisplayName: string;
+  contributionMode?: ContributionMode;
+  fixedUnitPriceCents?: number | null;
 }) {
   const [state, formAction, isPending] = useActionState(
     createContributionOrderAction,
     getInitialCreateContributionFormState(poolSlug)
   );
   const safeState = normalizeCreateContributionFormState(poolSlug, state);
+  const [quantity, setQuantity] = useState("1");
 
   return (
     <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
@@ -108,21 +114,63 @@ export function PublicContributionForm({
             <FieldError message={safeState.fieldErrors.contributorEmail} />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-900" htmlFor="amount">
-              {t("common.amountEur")}
-            </label>
-            <input
-              className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
-              defaultValue={safeState.values.amount}
-              id="amount"
-              inputMode="decimal"
-              name="amount"
-              placeholder={t("contributions.amountPlaceholder")}
-              required
-            />
-            <FieldError message={safeState.fieldErrors.amount} />
-          </div>
+          {contributionMode === "FIXED" ? (
+            <div className="space-y-2">
+              <p>
+                {t("fixedContributions.unitPrice")}:{" "}
+                {fixedUnitPriceCents !== null
+                  ? formatCents(fixedUnitPriceCents)
+                  : "—"}{" "}
+                EUR
+              </p>
+              <label
+                htmlFor="quantity"
+                className="text-sm font-semibold text-slate-900"
+              >
+                {t("fixedContributions.quantity")}
+              </label>
+              <select
+                id="quantity"
+                name="quantity"
+                value={quantity}
+                onChange={(event) => setQuantity(event.target.value)}
+                className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950"
+              >
+                {Array.from({ length: 10 }, (_, index) => (
+                  <option key={index + 1} value={index + 1}>
+                    {index + 1}
+                  </option>
+                ))}
+              </select>
+              <p aria-live="polite">
+                {t("fixedContributions.total")}:{" "}
+                {fixedUnitPriceCents !== null
+                  ? formatCents(fixedUnitPriceCents * Number(quantity))
+                  : "—"}{" "}
+                EUR
+              </p>
+              <FieldError message={safeState.fieldErrors.quantity} />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <label
+                className="text-sm font-semibold text-slate-900"
+                htmlFor="amount"
+              >
+                {t("common.amountEur")}
+              </label>
+              <input
+                className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                defaultValue={safeState.values.amount}
+                id="amount"
+                inputMode="decimal"
+                name="amount"
+                placeholder={t("contributions.amountPlaceholder")}
+                required
+              />
+              <FieldError message={safeState.fieldErrors.amount} />
+            </div>
+          )}
         </div>
 
         <fieldset className="space-y-3">
@@ -132,24 +180,32 @@ export function PublicContributionForm({
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="rounded-2xl border border-teal-200 bg-teal-50 p-4 text-sm text-slate-900">
               <input
-                defaultChecked={safeState.values.selectedPaymentMethod === "INSTANT"}
+                defaultChecked={
+                  safeState.values.selectedPaymentMethod === "INSTANT"
+                }
                 name="selectedPaymentMethod"
                 type="radio"
                 value="INSTANT"
               />
-              <span className="ml-3 font-semibold">{t("contributions.instantTransfer")}</span>
+              <span className="ml-3 font-semibold">
+                {t("contributions.instantTransfer")}
+              </span>
               <span className="mt-2 block text-slate-700">
                 {t("contributions.instantTransferBody")}
               </span>
             </label>
             <label className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-900">
               <input
-                defaultChecked={safeState.values.selectedPaymentMethod === "STANDARD"}
+                defaultChecked={
+                  safeState.values.selectedPaymentMethod === "STANDARD"
+                }
                 name="selectedPaymentMethod"
                 type="radio"
                 value="STANDARD"
               />
-              <span className="ml-3 font-semibold">{t("contributions.standardTransfer")}</span>
+              <span className="ml-3 font-semibold">
+                {t("contributions.standardTransfer")}
+              </span>
               <span className="mt-2 block text-slate-700">
                 {t("contributions.standardTransferBody")}
               </span>
@@ -182,7 +238,9 @@ export function PublicContributionForm({
         </div>
 
         <Button disabled={isPending} type="submit">
-          {isPending ? t("common.redirecting") : t("contributions.continueToBank")}
+          {isPending
+            ? t("common.redirecting")
+            : t("contributions.continueToBank")}
         </Button>
       </form>
     </section>

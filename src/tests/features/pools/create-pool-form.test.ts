@@ -14,12 +14,32 @@ import { t } from "@/i18n/t";
 
 describe("CreatePoolForm", () => {
   afterEach(cleanup);
+  it("defaults to FREE and toggles a required fixed unit price without adding a step", () => {
+    render(React.createElement(CreatePoolForm));
+    expect(
+      (screen.getByLabelText(t("fixedContributions.free")) as HTMLInputElement)
+        .checked
+    ).toBe(true);
+    expect(
+      screen.queryByLabelText(t("fixedContributions.unitPrice"))
+    ).toBeNull();
+    fireEvent.click(screen.getByLabelText(t("fixedContributions.fixed")));
+    const price = screen.getByLabelText(
+      t("fixedContributions.unitPrice")
+    ) as HTMLInputElement;
+    expect(price.required).toBe(true);
+    fireEvent.change(price, { target: { value: "12,50" } });
+    fireEvent.click(screen.getByLabelText(t("fixedContributions.free")));
+    expect(
+      screen.queryByLabelText(t("fixedContributions.unitPrice"))
+    ).toBeNull();
+  });
   it("shows the current new-collector fields directly without an unnecessary choice", () => {
     render(React.createElement(CreatePoolForm));
     expect(
       screen.getByLabelText(t("poolForms.collectorDisplayName"))
     ).toBeTruthy();
-    expect(screen.queryByRole("radio")).toBeNull();
+    expect(screen.queryByLabelText(t("collectorReuse.existing"))).toBeNull();
   });
   it("defaults to reuse, labels distinct options, and switches back to the original fields", () => {
     render(

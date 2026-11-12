@@ -24,8 +24,36 @@ import {
 } from "@/infrastructure/linxo/linxo-payments-errors";
 import { redirect } from "next/navigation";
 import { t } from "@/i18n/t";
+import { ContributionAmountError } from "@/domain/pool/pool.pricing";
 
 describe("createContributionOrderAction", () => {
+  it("returns quantity errors from persisted-pool validation on the quantity field", async () => {
+    const data = new FormData();
+    for (const [key, value] of Object.entries({
+      poolSlug: "fixed",
+      contributorFirstName: "Jane",
+      contributorLastName: "Doe",
+      contributorEmail: "jane@example.com",
+      selectedPaymentMethod: "STANDARD",
+      quantity: "11",
+      amount: "0.01"
+    }))
+      data.set(key, value);
+    vi.mocked(createContributionOrderForPool).mockRejectedValue(
+      new ContributionAmountError(
+        "quantity",
+        t("fixedContributions.invalidQuantity")
+      )
+    );
+    const result = await createContributionOrderAction(
+      getInitialCreateContributionFormState("fixed"),
+      data
+    );
+    expect(result.fieldErrors.quantity).toBe(
+      t("fixedContributions.invalidQuantity")
+    );
+    expect(result.formError).toBeNull();
+  });
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => undefined);
