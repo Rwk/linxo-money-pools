@@ -67,6 +67,11 @@ export default async function PoolManagementPage({
           collectorAliasId={pool.collectorAliasId}
           pool={viewModel}
           poolForEditing={{
+            contributionMode: pool.contributionMode,
+            fixedUnitPriceCents: pool.fixedUnitPriceCents,
+            canEditFixedPrice:
+              pool.contributionMode === "FIXED" &&
+              pool.contributions.length === 0,
             id: pool.id,
             title: pool.title,
             description: pool.description,

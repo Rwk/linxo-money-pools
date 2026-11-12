@@ -1,9 +1,7 @@
 import { z } from "zod";
 
 import { EVENT_TYPES } from "@/domain/pool/pool.types";
-import {
-  isClosingDateOnOrAfterToday
-} from "@/domain/pool/pool.rules";
+import { isClosingDateOnOrAfterToday } from "@/domain/pool/pool.rules";
 import type { ManagePoolFormValues } from "@/features/pools/forms/manage-pool-form-state";
 import { t } from "@/i18n/t";
 
@@ -20,7 +18,10 @@ const ManagePoolSchema = z
       .string()
       .trim()
       .min(1, t("validation.titleRequired"))
-      .max(TITLE_MAX_LENGTH, t("validation.titleMax", { count: TITLE_MAX_LENGTH })),
+      .max(
+        TITLE_MAX_LENGTH,
+        t("validation.titleMax", { count: TITLE_MAX_LENGTH })
+      ),
     description: z
       .string()
       .trim()
@@ -48,11 +49,18 @@ export type ManagePoolInput = {
   closingDate: Date;
 };
 
-export function parseManagePoolFormValues(formData: FormData): ManagePoolFormValues {
+export function parseManagePoolFormValues(
+  formData: FormData
+): ManagePoolFormValues {
   return {
+    ...(formData.has("fixedUnitPrice")
+      ? { fixedUnitPrice: String(formData.get("fixedUnitPrice")) }
+      : {}),
     title: String(formData.get("title") ?? ""),
     description: String(formData.get("description") ?? ""),
-    eventType: String(formData.get("eventType") ?? "") as ManagePoolFormValues["eventType"],
+    eventType: String(
+      formData.get("eventType") ?? ""
+    ) as ManagePoolFormValues["eventType"],
     closingDate: String(formData.get("closingDate") ?? "")
   };
 }
@@ -67,7 +75,9 @@ export function validateManagePoolInput(
       fieldErrors: Partial<Record<keyof ManagePoolFormValues, string>>;
     } {
   const result = ManagePoolSchema.superRefine((value, ctx) => {
-    if (!isClosingDateOnOrAfterToday(parseClosingDate(value.closingDate), now)) {
+    if (
+      !isClosingDateOnOrAfterToday(parseClosingDate(value.closingDate), now)
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: t("validation.closingDateFuture"),

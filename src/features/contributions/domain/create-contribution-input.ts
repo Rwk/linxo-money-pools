@@ -37,6 +37,7 @@ const CreateContributionSchema = z
       .transform((value) => value.trim().toLowerCase()),
     amount: z.string(),
     quantity: z.string().optional(),
+    expectedUnitPriceCents: z.string().optional(),
     selectedPaymentMethod: z.enum(PAYMENT_METHODS, {
       message: t("validation.paymentMethodRequired")
     }),
@@ -52,6 +53,7 @@ export type CreateContributionInput = {
   contributorEmail: string;
   amount: string;
   quantity?: string;
+  expectedUnitPriceCents?: string;
   selectedPaymentMethod: (typeof PAYMENT_METHODS)[number];
   displayAsAnonymous: boolean;
   hideAmount: boolean;
@@ -67,6 +69,11 @@ export function parseCreateContributionFormValues(
   return {
     ...(formData.has("quantity")
       ? { quantity: String(formData.get("quantity")) }
+      : {}),
+    ...(formData.has("expectedUnitPriceCents")
+      ? {
+          expectedUnitPriceCents: String(formData.get("expectedUnitPriceCents"))
+        }
       : {}),
     poolSlug: String(formData.get("poolSlug") ?? ""),
     contributorFirstName: String(formData.get("contributorFirstName") ?? ""),
@@ -133,6 +140,9 @@ export function validateCreateContributionInput(
           : normalizeAmountInput(result.data.amount),
         ...(result.data.quantity !== undefined
           ? { quantity: result.data.quantity }
+          : {}),
+        ...(result.data.expectedUnitPriceCents !== undefined
+          ? { expectedUnitPriceCents: result.data.expectedUnitPriceCents }
           : {}),
         selectedPaymentMethod: result.data.selectedPaymentMethod,
         displayAsAnonymous: result.data.displayAsAnonymous,

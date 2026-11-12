@@ -288,9 +288,11 @@ npm run db:dev:check
 npm run db:dev:studio
 ```
 
-`db:dev:check` opts into a read-only Vitest integration check using the
-application's actual Prisma singleton: it checks `current_database()` and counts
-users through Prisma. It needs the container, migrations and generated client;
+`db:dev:check` opts into Vitest integration checks using the application's actual
+Prisma singleton. It checks `current_database()` and counts users, then tests
+fixed-price edit/contribution concurrency with real PostgreSQL row-lock waits.
+The concurrency tests create and clean up only uniquely identified temporary
+user/pool/contribution fixtures; they make no Linxo calls. It needs the container, migrations and generated client;
 normal unit tests skip it and make no database connection.
 
 All database development commands require a PostgreSQL URL on `127.0.0.1`,

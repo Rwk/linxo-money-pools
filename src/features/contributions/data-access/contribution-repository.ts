@@ -1,4 +1,6 @@
 import "server-only";
+import { lockPoolPricing } from "@/infrastructure/db/pool-pricing-lock";
+import { ContributionPriceChangedError } from "@/domain/pool/pool.pricing";
 
 import {
   CashInStatus,
@@ -18,6 +20,7 @@ export type CreateContributionRecordInput = {
   contributorLastName: string;
   contributorEmail: string;
   amount: string;
+  expectedFixedUnitPriceCents: number | null;
   selectedPaymentMethod: PaymentMethod;
   displayAsAnonymous: boolean;
   hideAmount: boolean;
@@ -26,25 +29,40 @@ export type CreateContributionRecordInput = {
 export async function createContributionRecord(
   input: CreateContributionRecordInput
 ): Promise<{ id: string; paymentAccessToken: string }> {
-  const contribution = await prisma.contribution.create({
-    data: {
-      poolId: input.poolId,
-      paymentAccessToken: createPaymentAccessToken(),
-      contributorFirstName: input.contributorFirstName,
-      contributorLastName: input.contributorLastName,
-      contributorEmail: input.contributorEmail,
-      amount: new Prisma.Decimal(input.amount),
-      currency: "EUR",
-      displayAsAnonymous: input.displayAsAnonymous,
-      hideAmount: input.hideAmount,
-      selectedPaymentMethod: input.selectedPaymentMethod,
-      cashInStatus: CashInStatus.PENDING
+  const contribution = await prisma.$transaction(
+    async (tx) => {
+      await lockPoolPricing(tx, input.poolId);
+      const pool = await tx.pool.findUnique({
+        where: { id: input.poolId },
+        select: { fixedUnitPriceCents: true }
+      });
+      if (
+        !pool ||
+        pool.fixedUnitPriceCents !== input.expectedFixedUnitPriceCents
+      )
+        throw new ContributionPriceChangedError();
+      return tx.contribution.create({
+        data: {
+          poolId: input.poolId,
+          paymentAccessToken: createPaymentAccessToken(),
+          contributorFirstName: input.contributorFirstName,
+          contributorLastName: input.contributorLastName,
+          contributorEmail: input.contributorEmail,
+          amount: new Prisma.Decimal(input.amount),
+          currency: "EUR",
+          displayAsAnonymous: input.displayAsAnonymous,
+          hideAmount: input.hideAmount,
+          selectedPaymentMethod: input.selectedPaymentMethod,
+          cashInStatus: CashInStatus.PENDING
+        },
+        select: {
+          id: true,
+          paymentAccessToken: true
+        }
+      });
     },
-    select: {
-      id: true,
-      paymentAccessToken: true
-    }
-  });
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
 
   if (!contribution.paymentAccessToken) {
     throw new Error("Contribution payment access token was not generated.");

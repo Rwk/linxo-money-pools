@@ -298,12 +298,17 @@ export const fr = {
   },
   fixedContributions: {
     mode: "Mode de contribution",
+    fixedShort: "Montant fixe",
+    priceEditable: "Le prix unitaire peut être modifié tant qu'aucune contribution n'existe.",
+    priceLocked: "Le prix unitaire est verrouillé dès la première contribution, quel que soit son statut. Actualisez la page pour afficher les informations à jour.",
+    priceChanged: "Le prix unitaire a changé. Actualisez la page avant de poursuivre votre contribution.",
+    modeImmutable: "Le mode de contribution ne peut pas être modifié après la création.",
     free: "Montant libre",
     fixed: "Montant fixe par participation",
     unitPrice: "Prix unitaire en euros",
     quantity: "Nombre de participations",
     total: "Montant à payer",
-    hint: "Chaque contributeur choisira entre 1 et 10 participations. Le prix ne pourra pas être modifié après la création.",
+    hint: "Chaque contributeur choisira entre 1 et 10 participations. Le prix pourra être modifié uniquement avant la première contribution.",
     invalidMode: "Choisissez un mode de contribution valide.",
     invalidPrice: "Saisissez un prix positif avec au plus deux décimales, inférieur ou égal à 21 474 836,47 €.",
     invalidQuantity: "Choisissez un nombre entier de participations entre 1 et 10."

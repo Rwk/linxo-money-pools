@@ -123,6 +123,11 @@ export function PublicContributionForm({
                   : "—"}{" "}
                 EUR
               </p>
+              <input
+                type="hidden"
+                name="expectedUnitPriceCents"
+                value={fixedUnitPriceCents ?? ""}
+              />
               <label
                 htmlFor="quantity"
                 className="text-sm font-semibold text-slate-900"

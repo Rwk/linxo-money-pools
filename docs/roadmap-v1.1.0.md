@@ -122,9 +122,12 @@ or configure a new one.
   [database conventions](./database.md#data-handling-constraints) store decimal
   amounts. This requirement does not imply a destructive storage migration.
 
-Fixed-price contributions are **implemented locally; manual Sandbox acceptance
-is pending**. FREE remains the historical/default mode. Mode and unit price are
-set at creation and preserved by editing. See [fixed contributions](./fixed-contributions.md)
+The original fixed-price contribution flow is **manually accepted in Sandbox**.
+The owner detail/price-edit follow-up is **implemented locally; manual acceptance
+pending**. FREE remains the historical/default mode. Mode is immutable; a FIXED
+unit price can be edited only before any contribution of any status exists.
+Price changes and contribution insertion share a PostgreSQL row lock, and stale
+public price displays are rejected before payment initiation. See [fixed contributions](./fixed-contributions.md)
 for server enforcement, privacy, validation and acceptance. Its additive Prisma
 migration must be applied to Supabase Production during the future v1.1.0
 deployment before the new application code serves traffic; no production

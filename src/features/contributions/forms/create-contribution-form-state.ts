@@ -7,6 +7,7 @@ export type CreateContributionFormValues = {
   contributorEmail: string;
   amount: string;
   quantity?: string;
+  expectedUnitPriceCents?: string;
   selectedPaymentMethod: PaymentMethod;
   displayAsAnonymous: boolean;
   hideAmount: boolean;

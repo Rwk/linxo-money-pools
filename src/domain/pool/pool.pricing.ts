@@ -15,6 +15,19 @@ export class ContributionAmountError extends Error {
   }
 }
 
+export class FixedPriceLockedError extends Error {
+  constructor() {
+    super(t("fixedContributions.priceLocked"));
+    this.name = "FixedPriceLockedError";
+  }
+}
+
+export class ContributionPriceChangedError extends ContributionAmountError {
+  constructor() {
+    super("quantity", t("fixedContributions.priceChanged"));
+  }
+}
+
 export function formatCents(cents: number): string {
   return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, "0")}`;
 }

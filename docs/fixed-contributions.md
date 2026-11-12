@@ -1,6 +1,8 @@
 # Fixed-price contributions
 
-Implemented locally; **manual Sandbox acceptance is pending**.
+The original fixed-price flow was **manually accepted in Sandbox by the developer**.
+The owner detail/price-edit follow-up is implemented; its manual acceptance is
+pending.
 
 ## Behavior and server enforcement
 
@@ -32,9 +34,44 @@ The normalizer also validates the calculated total. No Linxo API client changes
 or new payment implementation were needed.
 
 Both new and reused collectors use the same creation and payment paths.
-Editing, closing and reopening existing pools leave mode and unit price intact;
-there are no post-creation price/mode controls. Contribution history, order
+Mode remains immutable. The owner may edit a FIXED unit price only before any
+contribution exists. Once a contribution of any status exists, price is locked.
+Other pool details remain editable, and closing/reopening does not change pricing. Contribution history, order
 references, status synchronization and webhooks retain their existing behavior.
+
+## Owner details and safe price editing
+
+The existing **Détails de la cagnotte** card always shows **Montant libre** or
+**Montant fixe**. FIXED details include the stored unit price formatted as French
+euros. These additional owner props are supplied only after authentication and
+ownership checks. The public page receives no new private eligibility/history
+information.
+
+The existing edit form offers the unit-price input only for FIXED pools with no
+contributions. The same creation-time euro parser validates it and produces
+integer cents. FREE pools cannot become FIXED, nor FIXED pools become FREE.
+A French explanation states that pending, failed, rejected, cancelled, expired
+and confirmed contributions all lock the price. Submitting a price field against
+a locked pool is rejected without partially saving the other details; ordinary
+detail editing without that field remains available.
+
+Both `updatePoolPriceAndDetails` and `createContributionRecord` take the same
+PostgreSQL row lock (`SELECT ... FOR UPDATE` on the pool) in short **READ
+COMMITTED** transactions. Ownership, mode and the unfiltered contribution count
+are checked after acquiring the edit lock; details and price are then written
+atomically. Contribution insertion checks the server's pricing snapshot after
+acquiring the same lock. If an edit committed first, a stale insertion fails; if
+an insertion committed first, the edit sees the new contribution and fails.
+Locks are released before any Linxo network request. No schema change, extra
+infrastructure or changes to existing contribution amounts/orders are needed.
+See [PostgreSQL row-lock behavior](https://www.postgresql.org/docs/17/explicit-locking.html#LOCKING-ROWS).
+
+FIXED forms also send the displayed `expectedUnitPriceCents` as a freshness check.
+The server compares it with the stored price, but never uses it to calculate the
+charge. Missing/stale values produce a French reload message before payment
+initiation. This prevents an old open form from silently accepting a newly
+increased price. Existing open FIXED forms from before this update need a reload.
+Quantity and amount calculations still use the persisted price exclusively.
 
 ## Schema, history and privacy
 
@@ -84,7 +121,7 @@ bounds, quantities 1–10 and invalid quantities, cent arithmetic, forged totals
 equal persisted/order amounts, both collector paths, editing preservation,
 privacy, public form updates and unchanged payment status handling.
 
-Verification on 2026-11-12:
+Initial implementation verification on 2026-11-12:
 
 - Targeted Vitest: **150 tests passed** across pricing, creation, form updates,
   collector reuse, privacy, editing preservation and payment lifecycle behavior.
@@ -98,6 +135,22 @@ Verification on 2026-11-12:
   errors were reported in the changed implementation or new tests.
 - Local Prisma status: **four migrations applied, schema up to date**. The
   read-only local database/client check also passed.
+
+Owner price-management follow-up verification on 2026-11-12:
+
+- **75 targeted tests passed**, including read-only display, eligible/locked edit
+  UI, repeat editing, ownership, invalid prices, unchanged ordinary fields,
+  stale-form rejection and absence of Linxo calls after a rejected insertion.
+- **Four local database checks passed** through `npm run db:dev:check`, including
+  real row-lock waits for both competing transaction orders and a test of all
+  cash-in statuses (including an order marked failed). Temporary fixtures were
+  cleaned up; existing pools and provider resources were not changed.
+- Full suite: **471 passed, 4 historical date-dependent failures, 4 skipped**.
+  The skipped tests are the four real-database checks run separately above.
+- ESLint and production build passed. Standalone TypeScript still reports only
+  the eight historical test-fixture errors described above.
+- No new schema migration is needed for this follow-up. Production data was not
+  accessed or modified. Manual acceptance of the owner UI remains pending.
 
 ## Manual acceptance in local Sandbox
 
@@ -122,8 +175,17 @@ The developer performs bank simulation; do not use real accounts or payments.
    and no contribution/order creation. For a valid quantity 3, adding forged
    `amount=0.01`, total, mode or unit-price fields must still charge **37.50 EUR**.
    Automated tests verify this without creating provider orders.
-5. **Lifecycle:** exercise the existing Sandbox success/refusal flow and verify
-   status synchronization, return and public/private totals. Edit the pool's
-   title/description/closing date; confirm mode and price remain unchanged.
+5. **Owner details and price editing:** before contributing to a fresh FIXED pool,
+   verify its read-only mode/price, edit the price, save and reopen editing to
+   confirm the stored value. Keep a public form open at the previous price: its
+   submission must request a reload and create no contribution/order. Reload it
+   and verify subsequent quantity totals use the new stored price.
+6. **Price lock and lifecycle:** create a pending contribution, then verify the
+   owner details explain the lock and the price input is absent. Rejected/failed
+   or confirmed contributions must retain that lock. Try a forged edit request
+   with a new price: it must fail while a normal title/description/date edit still
+   succeeds. Exercise the usual Sandbox return/status flow and verify public and
+   owner totals. The mode remains unchanged throughout.
 
-Record the browser/Sandbox outcomes before marking this feature manually accepted.
+Record the owner-management follow-up outcomes before marking that follow-up
+manually accepted.

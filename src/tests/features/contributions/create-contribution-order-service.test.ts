@@ -1,3 +1,4 @@
+import { ContributionPriceChangedError } from "@/domain/pool/pool.pricing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -383,28 +384,22 @@ describe("createContributionOrderForPool", () => {
   );
   function fixedDependencies() {
     return {
-      findPoolBySlug: vi
-        .fn()
-        .mockResolvedValue({
-          ...openReadyPool,
-          contributionMode: "FIXED",
-          fixedUnitPriceCents: 1250
-        }),
-      createContributionRecord: vi
-        .fn()
-        .mockResolvedValue({
-          id: "fixed-contribution",
-          paymentAccessToken: "test-token"
-        }),
+      findPoolBySlug: vi.fn().mockResolvedValue({
+        ...openReadyPool,
+        contributionMode: "FIXED",
+        fixedUnitPriceCents: 1250
+      }),
+      createContributionRecord: vi.fn().mockResolvedValue({
+        id: "fixed-contribution",
+        paymentAccessToken: "test-token"
+      }),
       updateContributionAfterOrderCreation: vi.fn(),
       markContributionInitiationFailed: vi.fn(),
-      createOrder: vi
-        .fn()
-        .mockResolvedValue({
-          id: "fixed-order",
-          order_status: "NEW",
-          auth_url: "https://payments.invalid/auth"
-        }),
+      createOrder: vi.fn().mockResolvedValue({
+        id: "fixed-order",
+        order_status: "NEW",
+        auth_url: "https://payments.invalid/auth"
+      }),
       shortenOrderAuthUrl: vi
         .fn()
         .mockResolvedValue({ shortAuthUrl: "https://payments.invalid/short" }),
@@ -419,6 +414,7 @@ describe("createContributionOrderForPool", () => {
       contributorEmail: "jane@example.com",
       amount: "0.01",
       quantity,
+      expectedUnitPriceCents: "1250",
       fixedUnitPriceCents: 1,
       total: "0.01",
       selectedPaymentMethod: "STANDARD" as const,
@@ -464,4 +460,28 @@ describe("createContributionOrderForPool", () => {
       expect(deps.createOrder).not.toHaveBeenCalled();
     }
   );
+  it.each([undefined, "1249", "1600"])(
+    "rejects stale or missing displayed unit price %j before persisting or charging",
+    async (expectedUnitPriceCents) => {
+      const deps = fixedDependencies();
+      await expect(
+        createContributionOrderForPool(
+          { ...fixedInput("1"), expectedUnitPriceCents },
+          deps
+        )
+      ).rejects.toBeInstanceOf(ContributionPriceChangedError);
+      expect(deps.createContributionRecord).not.toHaveBeenCalled();
+      expect(deps.createOrder).not.toHaveBeenCalled();
+    }
+  );
+  it("never contacts Linxo when a concurrent edit invalidates the insertion snapshot", async () => {
+    const deps = fixedDependencies();
+    deps.createContributionRecord.mockRejectedValue(
+      new ContributionPriceChangedError()
+    );
+    await expect(
+      createContributionOrderForPool(fixedInput("1"), deps)
+    ).rejects.toBeInstanceOf(ContributionPriceChangedError);
+    expect(deps.createOrder).not.toHaveBeenCalled();
+  });
 });

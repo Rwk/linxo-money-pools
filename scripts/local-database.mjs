@@ -46,7 +46,8 @@ const command =
     ? [
         require.resolve("vitest/vitest.mjs"),
         "run",
-        "src/tests/infrastructure/db/local-database.test.ts"
+        "src/tests/infrastructure/db/local-database.test.ts",
+        "src/tests/infrastructure/db/fixed-price-concurrency.test.ts"
       ]
     : [
         join(dirname(require.resolve("prisma/package.json")), "build/index.js"),

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { CopyToClipboardButton } from "@/components/copy-to-clipboard-button";
@@ -29,6 +29,7 @@ import {
   initialRefreshPoolContributionStatusesActionState,
   normalizeRefreshPoolContributionStatusesActionState
 } from "@/features/contributions/forms/refresh-pool-contribution-statuses-form-state";
+import { formatCents, type ContributionMode } from "@/domain/pool/pool.pricing";
 import { t } from "@/i18n/t";
 
 type PoolManagementCockpitProps = {
@@ -42,6 +43,9 @@ type PoolManagementCockpitProps = {
     closingDate: Date;
     closingDateInputValue: string;
     status: PoolStatus;
+    contributionMode: ContributionMode;
+    fixedUnitPriceCents: number | null;
+    canEditFixedPrice: boolean;
   };
 };
 
@@ -180,7 +184,7 @@ function PoolManagementHeader({ pool }: { pool: PrivatePoolDetailViewModel }) {
   );
 }
 
-function PoolDetailsCard({
+export function PoolDetailsCard({
   isEditing,
   onCancelEditing,
   pool,
@@ -196,6 +200,9 @@ function PoolDetailsCard({
   poolId: string;
 }) {
   const initialValues: ManagePoolFormValues = {
+    ...(pool.canEditFixedPrice && pool.fixedUnitPriceCents !== null
+      ? { fixedUnitPrice: formatCents(pool.fixedUnitPriceCents) }
+      : {}),
     title: pool.title,
     description: pool.description,
     eventType: pool.eventType,
@@ -206,12 +213,14 @@ function PoolDetailsCard({
     getInitialManagePoolActionState(initialValues)
   );
   const safeState = normalizeManagePoolFormState(initialValues, state);
+  const handledSuccess = useRef(state);
 
   useEffect(() => {
-    if (safeState.successMessage) {
+    if (safeState.successMessage && handledSuccess.current !== state) {
+      handledSuccess.current = state;
       onCancelEditing();
     }
-  }, [onCancelEditing, safeState.successMessage]);
+  }, [onCancelEditing, safeState.successMessage, state]);
 
   return (
     <section
@@ -223,8 +232,42 @@ function PoolDetailsCard({
           {t("poolManagement.detailsTitle")}
         </h2>
         <p className="text-sm leading-6 text-[var(--muted)]">
-          {isEditing ? t("poolManagement.editHint") : t("poolManagement.detailsBody")}
+          {isEditing
+            ? t("poolManagement.editHint")
+            : t("poolManagement.detailsBody")}
         </p>
+      </div>
+
+      <div className="mt-5 rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+          {t("fixedContributions.mode")}
+        </p>
+        <p className="mt-2 font-semibold text-slate-950">
+          {t(
+            pool.contributionMode === "FIXED"
+              ? "fixedContributions.fixedShort"
+              : "fixedContributions.free"
+          )}
+        </p>
+        {pool.contributionMode === "FIXED" &&
+        pool.fixedUnitPriceCents !== null ? (
+          <p>
+            {t("fixedContributions.unitPrice")}:{" "}
+            {new Intl.NumberFormat("fr-FR", {
+              style: "currency",
+              currency: "EUR"
+            }).format(pool.fixedUnitPriceCents / 100)}
+          </p>
+        ) : null}
+        {pool.contributionMode === "FIXED" ? (
+          <p className="mt-2 text-sm text-[var(--muted)]">
+            {t(
+              pool.canEditFixedPrice
+                ? "fixedContributions.priceEditable"
+                : "fixedContributions.priceLocked"
+            )}
+          </p>
+        ) : null}
       </div>
 
       {!isEditing ? (
@@ -235,7 +278,9 @@ function PoolDetailsCard({
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
                 {t("poolForms.title")}
               </p>
-              <p className="mt-2 text-lg font-semibold text-slate-950">{pool.title}</p>
+              <p className="mt-2 text-lg font-semibold text-slate-950">
+                {pool.title}
+              </p>
             </div>
             <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -282,7 +327,10 @@ function PoolDetailsCard({
           />
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-900" htmlFor="title">
+            <label
+              className="text-sm font-semibold text-slate-900"
+              htmlFor="title"
+            >
               {t("poolForms.title")}
             </label>
             <input
@@ -298,7 +346,10 @@ function PoolDetailsCard({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-900" htmlFor="description">
+            <label
+              className="text-sm font-semibold text-slate-900"
+              htmlFor="description"
+            >
               {t("poolForms.description")}
             </label>
             <textarea
@@ -314,7 +365,10 @@ function PoolDetailsCard({
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-900" htmlFor="eventType">
+              <label
+                className="text-sm font-semibold text-slate-900"
+                htmlFor="eventType"
+              >
                 {t("poolForms.eventType")}
               </label>
               <select
@@ -334,7 +388,10 @@ function PoolDetailsCard({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-900" htmlFor="closingDate">
+              <label
+                className="text-sm font-semibold text-slate-900"
+                htmlFor="closingDate"
+              >
                 {t("poolForms.closingDate")}
               </label>
               <input
@@ -349,6 +406,25 @@ function PoolDetailsCard({
             </div>
           </div>
 
+          {pool.canEditFixedPrice && pool.contributionMode === "FIXED" ? (
+            <div className="space-y-2">
+              <label
+                htmlFor="fixedUnitPrice"
+                className="text-sm font-semibold text-slate-900"
+              >
+                {t("fixedContributions.unitPrice")}
+              </label>
+              <input
+                id="fixedUnitPrice"
+                name="fixedUnitPrice"
+                required
+                inputMode="decimal"
+                defaultValue={safeState.values.fixedUnitPrice}
+                className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950"
+              />
+              <FieldError message={safeState.fieldErrors.fixedUnitPrice} />
+            </div>
+          ) : null}
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button disabled={isPending} type="submit">
               {isPending ? t("common.saving") : t("poolManagement.saveChanges")}

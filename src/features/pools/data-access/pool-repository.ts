@@ -1,4 +1,6 @@
 import "server-only";
+import { lockPoolPricing } from "@/infrastructure/db/pool-pricing-lock";
+import { FixedPriceLockedError, validatePoolPricing } from "@/domain/pool/pool.pricing";
 
 import { Contribution, EventType, PoolStatus, Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/infrastructure/db/prisma";
@@ -205,6 +207,38 @@ export async function updatePoolRecord(input: UpdatePoolRecordInput): Promise<vo
   if (result.count !== 1) {
     throw new Error("Pool could not be updated.");
   }
+}
+
+export async function updatePoolPriceAndDetails(
+  input: UpdatePoolRecordInput & { fixedUnitPriceCents: number }
+): Promise<void> {
+  const pricing = validatePoolPricing("FIXED", input.fixedUnitPriceCents);
+  await prisma.$transaction(
+    async (tx) => {
+      await lockPoolPricing(tx, input.poolId);
+      const pool = await tx.pool.findFirst({
+        where: { id: input.poolId, creatorId: input.creatorId },
+        select: { contributionMode: true }
+      });
+      if (!pool) throw new Error("Pool access denied.");
+      if (
+        pool.contributionMode !== "FIXED" ||
+        (await tx.contribution.count({ where: { poolId: input.poolId } })) !== 0
+      )
+        throw new FixedPriceLockedError();
+      await tx.pool.update({
+        where: { id: input.poolId },
+        data: {
+          title: input.title,
+          description: input.description,
+          eventType: input.eventType,
+          closingDate: input.closingDate,
+          fixedUnitPriceCents: pricing.fixedUnitPriceCents
+        }
+      });
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
 }
 
 export async function closePoolRecord(input: {

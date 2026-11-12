@@ -5,6 +5,7 @@ export type ManagePoolFormValues = {
   description: string;
   eventType: EventType;
   closingDate: string;
+  fixedUnitPrice?: string;
 };
 
 export type ManagePoolActionState = {
@@ -18,6 +19,9 @@ export function getManagePoolDefaultValues(
   values?: Partial<ManagePoolFormValues>
 ): ManagePoolFormValues {
   return {
+    ...(values?.fixedUnitPrice !== undefined
+      ? { fixedUnitPrice: values.fixedUnitPrice }
+      : {}),
     title: values?.title ?? "",
     description: values?.description ?? "",
     eventType: values?.eventType ?? "BIRTHDAY",

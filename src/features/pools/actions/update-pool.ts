@@ -5,13 +5,18 @@ import { revalidatePath } from "next/cache";
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
 import {
   findPoolByIdForCreator,
-  updatePoolRecord
+  updatePoolRecord,
+  updatePoolPriceAndDetails
 } from "@/features/pools/data-access/pool-repository";
 import {
   parseManagePoolFormValues,
   validateManagePoolInput
 } from "@/features/pools/domain/manage-pool-input";
 import type { ManagePoolActionState } from "@/features/pools/forms/manage-pool-form-state";
+import {
+  parseFixedUnitPrice,
+  FixedPriceLockedError
+} from "@/domain/pool/pool.pricing";
 import { t } from "@/i18n/t";
 
 function revalidatePoolPaths(poolId: string, slug: string): void {
@@ -48,17 +53,43 @@ export async function updatePoolAction(
     };
   }
 
+  let fixedUnitPriceCents: number | undefined;
+  if (values.fixedUnitPrice !== undefined) {
+    if (pool.contributionMode !== "FIXED")
+      return {
+        values,
+        fieldErrors: {},
+        formError: t("fixedContributions.modeImmutable"),
+        successMessage: null
+      };
+    try {
+      fixedUnitPriceCents = parseFixedUnitPrice(values.fixedUnitPrice);
+    } catch {
+      return {
+        values,
+        fieldErrors: { fixedUnitPrice: t("fixedContributions.invalidPrice") },
+        formError: null,
+        successMessage: null
+      };
+    }
+  }
   try {
-    await updatePoolRecord({
+    const details = {
       poolId,
       creatorId: user.id,
       ...validation.data
-    });
-  } catch {
+    };
+    if (fixedUnitPriceCents !== undefined)
+      await updatePoolPriceAndDetails({ ...details, fixedUnitPriceCents });
+    else await updatePoolRecord(details);
+  } catch (error) {
     return {
       values,
       fieldErrors: {},
-      formError: t("actions.poolUpdateError"),
+      formError:
+        error instanceof FixedPriceLockedError
+          ? t("fixedContributions.priceLocked")
+          : t("actions.poolUpdateError"),
       successMessage: null
     };
   }
@@ -67,6 +98,9 @@ export async function updatePoolAction(
 
   return {
     values: {
+      ...(fixedUnitPriceCents !== undefined
+        ? { fixedUnitPrice: values.fixedUnitPrice }
+        : {}),
       title: validation.data.title,
       description: validation.data.description,
       eventType: validation.data.eventType,
