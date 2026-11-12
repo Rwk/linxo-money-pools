@@ -261,6 +261,63 @@ describe("createContributionOrderForPool", () => {
   });
 
   it.each([
+    ["Équipe DEV-3 🧪", "Equipe DEV-3"],
+    ["L’équipe / Noël !", "L equipe Noel"],
+    ["🧪💶", "Money pool"],
+    ["A".repeat(150), "A".repeat(140)]
+  ])(
+    "serializes collector name %j according to the Linxo contract",
+    async (collectorDisplayName, expected) => {
+      const pool = Object.freeze({ ...openReadyPool, collectorDisplayName });
+      const createOrder = vi.fn().mockResolvedValue({
+        id: "order_123",
+        order_status: "NEW",
+        auth_url: "https://auth.linxo.test/order_123"
+      });
+      await createContributionOrderForPool(
+        {
+          poolSlug: "team-gift",
+          contributorFirstName: "Jane",
+          contributorLastName: "Doe",
+          contributorEmail: "jane@example.com",
+          amount: "1.00",
+          selectedPaymentMethod: "STANDARD",
+          displayAsAnonymous: false,
+          hideAmount: false
+        },
+        {
+          findPoolBySlug: vi.fn().mockResolvedValue(pool),
+          createContributionRecord: vi
+            .fn()
+            .mockResolvedValue({
+              id: "contribution_123",
+              paymentAccessToken: "test_token"
+            }),
+          updateContributionAfterOrderCreation: vi.fn(),
+          markContributionInitiationFailed: vi.fn(),
+          createOrder,
+          shortenOrderAuthUrl: vi
+            .fn()
+            .mockResolvedValue({
+              shortAuthUrl: "https://short.linxo.test/order_123"
+            }),
+          buildReturnUrl: vi.fn().mockReturnValue("https://app.test/return")
+        }
+      );
+      const serialized = JSON.parse(
+        JSON.stringify(createOrder.mock.calls[0][0])
+      );
+      expect(serialized.instructions[0].beneficiary.complementary_name).toBe(
+        expected
+      );
+      expect(serialized.instructions[0].beneficiary.complementary_name).toMatch(
+        /^[a-zA-Z0-9 ,-]{1,140}$/
+      );
+      expect(pool.collectorDisplayName).toBe(collectorDisplayName);
+    }
+  );
+
+  it.each([
     ["🎂 Départ de Chloé / Noël !", "Contribution to Depart de Chloe Noel"],
     ["🎉🎁", "Contribution to Money pool"]
   ])(

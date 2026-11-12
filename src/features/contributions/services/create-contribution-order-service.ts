@@ -18,6 +18,7 @@ import {
 } from "@/features/pools/data-access/pool-repository";
 import { mapPaymentMethodToLinxoPaymentMethods } from "@/infrastructure/linxo/linxo-payment-method-mapper";
 import { LinxoPaymentsClient } from "@/infrastructure/linxo/linxo-payments-client";
+import { normalizeTextForLinxo } from "@/infrastructure/linxo/linxo-text-normalizer";
 import type {
   LinxoCreateOrderRequest,
   LinxoOrder
@@ -123,7 +124,13 @@ function buildLinxoOrderRequest(input: {
         beneficiary: {
           schema: "ALIAS",
           alias_id: input.pool.collectorAliasId!,
-          complementary_name: input.pool.collectorDisplayName
+          complementary_name:
+            normalizeTextForLinxo(input.pool.collectorDisplayName)
+              .replace(/[^a-zA-Z0-9 ,-]+/g, " ")
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 140)
+              .trim() || "Money pool"
         },
         label: buildContributionLabel(input.pool.title)
       }
