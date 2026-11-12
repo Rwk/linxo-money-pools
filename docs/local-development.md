@@ -1,8 +1,8 @@
 # Local development
 
 Next.js runs directly in WSL; only PostgreSQL runs in Docker Compose. This
-guide covers the DEV-1 database and DEV-2 development authentication. Linxo
-Sandbox payment acceptance and ngrok setup remain separate workstreams.
+guide covers the local database, development authentication, and the DEV-4
+ngrok/Sandbox payment acceptance procedure.
 Before starting Next.js, remove production Supabase and
 Linxo credentials from local configuration and replace them as described below.
 
@@ -48,8 +48,8 @@ Supabase or Linxo credentials in `.env.local` or exported shell variables. Until
 Sandbox is configured, keep the example's nonfunctional Linxo placeholders and
 do not exercise payment flows.
 
-Keep `NEXTAUTH_URL=http://localhost:3000`; later DEV-4 may replace that one value
-with an HTTPS ngrok origin. Set a local `AUTH_SECRET` and
+Use `NEXTAUTH_URL=http://localhost:3000` without a tunnel; for DEV-4, replace it
+manually with the current HTTPS ngrok origin as described below. Set a local `AUTH_SECRET` and
 `ENABLE_DEV_AUTH=true` for the DEV-2 passwordless test identity. Google OAuth
 credentials can be omitted in this mode. Leave the flag absent or `false` to
 retain normal Google authentication.
@@ -145,6 +145,133 @@ npm run db:dev:migrate
 URL. Compose does not automatically read `.env.local`. Database names and
 credentials remain those defined in [compose.yaml](../compose.yaml).
 
+## Sandbox callbacks through the existing ngrok tunnel (DEV-4)
+
+Use the existing ngrok tunnel forwarding to port 3000; no installation or new
+tunnel configuration is needed. Copy its current HTTPS origin from the ngrok
+terminal or the existing local inspector at `http://127.0.0.1:4040`. Edit only
+the URL value in `.env.local` manually:
+
+```dotenv
+NEXTAUTH_URL="https://<current-ngrok-host>"
+```
+
+Replace the placeholder with the actual host. Keep the existing Sandbox client
+credentials and `LINXO_WEBHOOK_SECRET`. Sandbox credentials select the Linxo
+mode; both modes use `https://pay.oxlin.io`. An environment label alone is not
+proof of Sandbox credentials. Restart `npm run dev` after any URL change and
+use the HTTPS origin for the browser test, including developer sign-in. Sign in
+again there if your existing session belongs to localhost. Next.js already
+derives its development origin allowlist from `NEXTAUTH_URL`.
+
+`NEXTAUTH_URL` controls public pool links, payment QR/start links, and the
+`redirect_url` sent when a contribution order is created:
+
+```text
+https://<current-ngrok-host>/contributions/<contributionId>/return?pool_slug=<slug>&token=<payment-access-token>
+```
+
+The return page uses the contribution's database pool, then offers a link back
+to `/p/<slug>`. Existing Linxo orders keep their original redirect; create a
+**new contribution** after changing the URL. Do not change the existing
+collector or reuse an old DEV-3 order for the new redirect test.
+
+### Register the Sandbox webhook
+
+The local endpoint is **GET `/api/linxo/webhooks/payments`**. The complete URL
+to register is the current HTTPS origin plus this path and the URL-encoded
+existing secret:
+
+```text
+https://<current-ngrok-host>/api/linxo/webhooks/payments?token=<URL-encoded-LINXO_WEBHOOK_SECRET>
+```
+
+This endpoint authenticates the query token with a timing-safe comparison. It
+does not use HMAC headers or a signed JSON body. Keep this validation enabled.
+Linxo adds `resource_type=orders` and `resource_id=<order-id>` to the callback;
+do not include a fixed order ID when registering it. The application does not
+register subscriptions automatically.
+
+Register the URL for the **confirmed Sandbox client** through Linxo's
+`POST /v1/subscribe` API (`callback_url` JSON property). From the repository
+root, the following optional manual command reads `.env.local`, constructs the
+complete URL in memory, and registers it without printing the secret or token.
+It changes the callback subscription for those credentials; run it only for
+the intended Sandbox project, never a production/shared client whose callback
+must be preserved. If registration is managed by your Linxo contact, give them
+the complete URL privately instead.
+
+```bash
+node --input-type=module <<'NODE'
+import { readFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import { parse } from 'dotenv';
+const e = parse(readFileSync('.env.local'));
+const codes = ['invalid_client', 'invalid_request', 'FORMAT_ERROR', 'BAD_PARAMETER'];
+async function request(endpoint, headers, body) {
+  const requestId = randomUUID();
+  const r = await fetch(`https://pay.oxlin.io${endpoint}`, {
+    method: 'POST', headers: { ...headers, 'X-FWD-Request-ID': requestId },
+    body, signal: AbortSignal.timeout(15000)
+  });
+  const data = await r.json().catch(() => null);
+  console.log(JSON.stringify({ endpoint, status: r.status, requestId,
+    ...(!r.ok ? { errorCode: codes.includes(data?.error) ? data.error : 'UNKNOWN' } : {}) }));
+  if (!r.ok) throw new Error('Request failed');
+  return data;
+}
+try {
+  if (e.LINXO_PAYMENTS_ENVIRONMENT !== 'sandbox' ||
+      e.LINXO_PAYMENTS_BASE_URL?.replace(/\/+$/, '') !== 'https://pay.oxlin.io' ||
+      !e.LINXO_PAYMENTS_CLIENT_ID || !e.LINXO_PAYMENTS_CLIENT_SECRET ||
+      !e.LINXO_WEBHOOK_SECRET?.trim()) throw new Error('Check Sandbox settings');
+  const origin = new URL(e.NEXTAUTH_URL);
+  if (origin.protocol !== 'https:' || origin.pathname !== '/' || origin.search ||
+      origin.hash || origin.username || origin.password) throw new Error('Check HTTPS origin');
+  const callback = new URL('/api/linxo/webhooks/payments', origin);
+  callback.searchParams.set('token', e.LINXO_WEBHOOK_SECRET.trim());
+  const oauth = await request('/token', {
+    Authorization: `Basic ${Buffer.from(`${e.LINXO_PAYMENTS_CLIENT_ID}:${e.LINXO_PAYMENTS_CLIENT_SECRET}`).toString('base64')}`,
+    'Content-Type': 'application/x-www-form-urlencoded'
+  }, new URLSearchParams({ grant_type: 'client_credentials' }));
+  if (!oauth?.access_token || oauth.token_type !== 'Bearer') throw new Error('Invalid OAuth response');
+  await request('/v1/subscribe', {
+    Authorization: `Bearer ${oauth.access_token}`, 'Content-Type': 'application/json'
+  }, JSON.stringify({ callback_url: callback.href }));
+} catch {
+  console.error('Registration stopped. Check configuration and safe status metadata; do not print credentials.');
+  process.exitCode = 1;
+}
+NODE
+```
+
+Expect OAuth HTTP 200 and subscription HTTP 201. Re-register when the tunnel
+origin or secret changes. No subscription registration was performed as part
+of preparing this guide.
+
+### Run acceptance and inspect failures
+
+Follow the [DEV-4 acceptance checklist](./dev-4-sandbox-validation.md#manual-acceptance-procedure)
+using the existing DEV-3 pool and collector. The developer performs all bank
+selection and Sandbox simulation manually. Keep query tokens, ngrok request
+details and payment URLs out of screenshots, issue reports and committed files.
+
+Use `LINXO_API_LOG_LEVEL=info` temporarily in `.env.local`, then restart, to see
+the existing safe `linxo.api.request` events. Record operation, endpoint template,
+HTTP status, allowlisted error code and request ID. Successful webhook reception
+is visible in ngrok's request history; the application logs the ensuing
+`getRunningOrder` API request, not a separate webhook-success event.
+
+Webhook responses: 401 means a missing/incorrect secret; 400 means a missing
+order ID; 204 acknowledges processing, ignored non-order resources, or an order
+not found locally; 500 means synchronization failed. For 204, verify the known
+contribution actually changed and check for `local_order_not_found`. A return-page
+update alone does not prove webhook delivery. Reload public/private views after
+the callback. The handoff polls local database state every three seconds; it
+does not poll Linxo. The owner already has **Synchronisation manuelle** in the
+dashboard to reconcile nonterminal orders; using it is a fallback, not proof of
+webhook reception.
+
 ## Migrations and connection checks
 
 The existing Prisma 7 schema and both committed migrations are reused unchanged.
@@ -233,7 +360,8 @@ Linxo with the currently configured production credentials.
   pool persistence across sign-ins and sign-out with the local setup above.
 - **Remaining payment work:** Sandbox credentials are configured manually;
   payment acceptance is separate. Development authentication makes no Linxo calls.
-- **DEV-4:** ngrok setup for local HTTPS callbacks and webhooks.
+- **DEV-4:** the existing ngrok/Sandbox callback procedure is documented above;
+  banking simulation and genuine webhook acceptance require manual confirmation.
 
 See the [v1.1.0 roadmap](./roadmap-v1.1.0.md#immediate-prerequisite--safe-local-development)
 for the broader isolation requirements. DEV-1 alone does not establish complete
