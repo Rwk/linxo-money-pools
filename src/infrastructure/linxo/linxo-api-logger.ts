@@ -15,6 +15,7 @@ const operations = {
     endpoint: "/v1/authorized_accounts"
   },
   createAccountAlias: { method: "POST", endpoint: "/v1/alias" },
+  getAccountAlias: { method: "GET", endpoint: "/v1/alias/{aliasId}" },
   shortenOrderAuthUrl: {
     method: "POST",
     endpoint: "/v1/orders/{orderId}/shorten"

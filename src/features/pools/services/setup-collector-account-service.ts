@@ -7,6 +7,10 @@ import {
 } from "@/features/pools/data-access/pool-repository";
 import { LinxoPaymentsClient } from "@/infrastructure/linxo/linxo-payments-client";
 import { LinxoPaymentsResponseError } from "@/infrastructure/linxo/linxo-payments-errors";
+import {
+  getLinxoCollectorProjectKey,
+  getLinxoPaymentsConfig
+} from "@/infrastructure/linxo/linxo-payments-config";
 import { normalizeTextForLinxo } from "@/infrastructure/linxo/linxo-text-normalizer";
 
 export class PoolCollectorAccountAccessError extends Error {
@@ -17,6 +21,7 @@ export class PoolCollectorAccountAccessError extends Error {
 }
 
 type SetupCollectorAccountDependencies = {
+  getProjectKey: () => string;
   findPoolByIdForCreator: (
     poolId: string,
     creatorId: string
@@ -26,6 +31,8 @@ type SetupCollectorAccountDependencies = {
     creatorId: string;
     collectorAuthorizedAccountId: string;
     collectorAliasId: string;
+    collectorEntityType: "NATURAL_PERSON" | "COMPANY";
+    collectorProjectKey: string;
   }) => Promise<void>;
   createAuthorizedAccount: (input: {
     identification: {
@@ -64,14 +71,17 @@ type SetupCollectorAccountDependencies = {
   }>;
 };
 
-const defaultDependencies: SetupCollectorAccountDependencies = {
-  findPoolByIdForCreator,
-  updatePoolCollectorReferences,
-  createAuthorizedAccount: (input) =>
-    new LinxoPaymentsClient().createAuthorizedAccount(input),
-  createAccountAlias: (input) =>
-    new LinxoPaymentsClient().createAccountAlias(input)
-};
+function createDefaultDependencies(): SetupCollectorAccountDependencies {
+  const config = getLinxoPaymentsConfig();
+  const client = new LinxoPaymentsClient({ config });
+  return {
+    getProjectKey: () => getLinxoCollectorProjectKey(config),
+    findPoolByIdForCreator,
+    updatePoolCollectorReferences,
+    createAuthorizedAccount: (input) => client.createAuthorizedAccount(input),
+    createAccountAlias: (input) => client.createAccountAlias(input)
+  };
+}
 
 function normalizeCollectorPayloadForLinxo(input: {
   accountHolderName: string;
@@ -140,7 +150,7 @@ export async function setupCollectorAccountForPool(
           country: string;
         };
   },
-  dependencies: SetupCollectorAccountDependencies = defaultDependencies
+  dependencies: SetupCollectorAccountDependencies = createDefaultDependencies()
 ): Promise<{
   poolId: string;
   collectorAuthorizedAccountId: string;
@@ -151,10 +161,11 @@ export async function setupCollectorAccountForPool(
     input.creatorId
   );
 
-  if (!pool) {
+  if (!pool || input.userReference !== input.creatorId) {
     throw new PoolCollectorAccountAccessError();
   }
 
+  const collectorProjectKey = dependencies.getProjectKey();
   const normalized = normalizeCollectorPayloadForLinxo({
     accountHolderName: input.accountHolderName,
     entity: input.entity
@@ -194,7 +205,9 @@ export async function setupCollectorAccountForPool(
     poolId: pool.id,
     creatorId: input.creatorId,
     collectorAuthorizedAccountId: authorizedAccount.id,
-    collectorAliasId: alias.id
+    collectorAliasId: alias.id,
+    collectorEntityType: input.entity.type,
+    collectorProjectKey
   });
 
   return {

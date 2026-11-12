@@ -9,6 +9,8 @@ import {
 } from "@/features/pools/data-access/pool-repository";
 import { createUniquePoolSlug } from "@/features/pools/domain/pool-slug";
 
+import { resolveReusableCollector } from "@/features/pools/services/reusable-collectors-service";
+
 export type CreatePoolForCreatorInput = {
   title: string;
   description: string;
@@ -16,9 +18,11 @@ export type CreatePoolForCreatorInput = {
   closingDate: Date;
   creatorId: string;
   collectorDisplayName: string;
+  collectorSourcePoolId?: string;
 };
 
 type CreatePoolDependencies = {
+  resolveReusableCollector?: typeof resolveReusableCollector;
   createPoolRecord: (input: CreatePoolRecordInput) => Promise<{ id: string }>;
   isPoolSlugTaken: (slug: string) => Promise<boolean>;
   createUniquePoolSlug: (
@@ -37,6 +41,12 @@ export async function createPoolForCreator(
   input: CreatePoolForCreatorInput,
   dependencies: CreatePoolDependencies = defaultDependencies
 ): Promise<{ id: string; slug: string }> {
+  const collector = input.collectorSourcePoolId
+    ? await (dependencies.resolveReusableCollector ?? resolveReusableCollector)(
+        input.creatorId,
+        input.collectorSourcePoolId
+      )
+    : null;
   const slug = await dependencies.createUniquePoolSlug(
     input.title,
     dependencies.isPoolSlugTaken
@@ -49,7 +59,9 @@ export async function createPoolForCreator(
     eventType: input.eventType,
     closingDate: input.closingDate,
     creatorId: input.creatorId,
-    collectorDisplayName: input.collectorDisplayName
+    collectorDisplayName:
+      collector?.collectorDisplayName ?? input.collectorDisplayName,
+    ...(collector ? { collectorReferences: collector.collectorReferences } : {})
   });
 
   return {

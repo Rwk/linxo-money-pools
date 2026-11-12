@@ -2,10 +2,12 @@ import Link from "next/link";
 
 import { CreatePoolForm } from "@/features/pools/components/create-pool-form";
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
+import { listReusableCollectors } from "@/features/pools/services/reusable-collectors-service";
 import { t } from "@/i18n/t";
 
 export default async function NewPoolPage() {
-  await requireLinxoSession();
+  const user = await requireLinxoSession();
+  const reusableCollectors = await listReusableCollectors(user.id);
 
   return (
     <main className="px-4 py-10 sm:px-6">
@@ -23,7 +25,7 @@ export default async function NewPoolPage() {
             </p>
           </div>
 
-          <CreatePoolForm />
+          <CreatePoolForm reusableCollectors={reusableCollectors} />
 
           <Link
             className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/80 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"

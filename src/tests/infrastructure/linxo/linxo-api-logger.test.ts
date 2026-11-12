@@ -486,4 +486,26 @@ describe("additional transport safety", () => {
     await client(fetchMock).createOrder(payload as never);
     expect(events()[0]).not.toHaveProperty("responseRequestId");
   });
+
+  it("logs alias accessibility using a static endpoint without banking fields or ownership identifiers", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      response(200, {
+        id: secrets[5],
+        user_reference: "PRIVATE_PERSON",
+        label: "PRIVATE_DESCRIPTION",
+        account: { schema: "SEPA", iban: secrets[3] }
+      })
+    );
+    await expect(
+      client(fetchMock).getAccountAlias(secrets[5])
+    ).resolves.toEqual({ id: secrets[5], userReference: "PRIVATE_PERSON" });
+    expect(events()).toHaveLength(1);
+    expect(events()[0]).toMatchObject({
+      operation: "getAccountAlias",
+      method: "GET",
+      endpoint: "/v1/alias/{aliasId}",
+      status: 200
+    });
+    for (const secret of secrets) expect(logs()).not.toContain(secret);
+  });
 });

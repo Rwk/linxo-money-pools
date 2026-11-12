@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 
 import { LinxoPaymentsConfigurationError } from "@/infrastructure/linxo/linxo-payments-errors";
 
@@ -12,6 +13,22 @@ export type LinxoPaymentsConfig = {
   clientSecret: string;
   environment: LinxoPaymentsEnvironment;
 };
+
+// Deliberately binds reuse to the same OAuth client, not an inferred project name.
+// Secret rotation preserves identity; a different client requires fresh setup.
+export function getLinxoCollectorProjectKey(
+  config: LinxoPaymentsConfig = getLinxoPaymentsConfig()
+): string {
+  return createHash("sha256")
+    .update(
+      JSON.stringify([
+        config.baseUrl.replace(/\/+$/, ""),
+        config.clientId,
+        config.environment
+      ])
+    )
+    .digest("hex");
+}
 
 function readRequiredEnv(key: string): string {
   const value = process.env[key];

@@ -18,15 +18,62 @@ function createTokenService(): LinxoTokenService {
 }
 
 describe("LinxoPaymentsClient", () => {
+  it("retrieves a single alias and returns only ownership metadata", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: "alias/1",
+          user_reference: "owner",
+          label: "Bank account",
+          account: { schema: "SEPA", iban: "FICTIONAL_PRIVATE_IBAN" },
+          bic: "PRIVATE_BIC"
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      )
+    );
+    const client = new LinxoPaymentsClient({
+      fetch: fetchMock,
+      config,
+      tokenService: createTokenService()
+    });
+    await expect(client.getAccountAlias("alias/1")).resolves.toEqual({
+      id: "alias/1",
+      userReference: "owner"
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://pay.oxlin.io/v1/alias/alias%2F1",
+      expect.objectContaining({ method: "GET", body: undefined })
+    );
+  });
+  it("rejects malformed alias ownership metadata", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ id: "alias" }), {
+          headers: { "content-type": "application/json" }
+        })
+      );
+    const client = new LinxoPaymentsClient({
+      fetch: fetchMock,
+      config,
+      tokenService: createTokenService()
+    });
+    await expect(client.getAccountAlias("alias")).rejects.toMatchObject({
+      name: "LinxoPaymentsResponseError"
+    });
+  });
   it("shortens an order auth url and forces ask_for_alias=false", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(JSON.stringify({ short_auth_url: "https://short.url/abc" }), {
-        status: 200,
-        headers: {
-          "content-type": "application/json",
-          "X-FWD-Request-ID": "response-request-id"
+      new Response(
+        JSON.stringify({ short_auth_url: "https://short.url/abc" }),
+        {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+            "X-FWD-Request-ID": "response-request-id"
+          }
         }
-      })
+      )
     );
 
     const client = new LinxoPaymentsClient({
@@ -85,9 +132,7 @@ describe("LinxoPaymentsClient", () => {
       tokenService: createTokenService()
     });
 
-    await expect(
-      client.createOrder({} as never)
-    ).rejects.toMatchObject({
+    await expect(client.createOrder({} as never)).rejects.toMatchObject({
       name: "LinxoPaymentsApiError",
       status: 400,
       code: "BAD_PARAMETER",

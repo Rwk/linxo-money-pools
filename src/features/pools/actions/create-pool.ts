@@ -9,6 +9,7 @@ import {
 } from "@/features/pools/domain/create-pool-input";
 import type { CreatePoolActionState } from "@/features/pools/forms/create-pool-form-state";
 import { createPoolForCreator } from "@/features/pools/services/create-pool-service";
+import { CollectorReuseError } from "@/features/pools/services/reusable-collectors-service";
 import { t } from "@/i18n/t";
 
 export async function createPoolAction(
@@ -17,7 +18,23 @@ export async function createPoolAction(
 ): Promise<CreatePoolActionState> {
   const user = await requireLinxoSession();
   const values = parseCreatePoolFormValues(formData);
-  const validation = validateCreatePoolInput(values);
+  const mode = String(formData.get("collectorMode") ?? "new");
+  const sourcePoolId = String(formData.get("collectorSourcePoolId") ?? "");
+  if (
+    !["new", "existing"].includes(mode) ||
+    (mode === "existing" && !sourcePoolId)
+  ) {
+    return {
+      values,
+      fieldErrors: {},
+      formError: t("collectorReuse.unavailable")
+    };
+  }
+  const validation = validateCreatePoolInput(
+    mode === "existing"
+      ? { ...values, collectorDisplayName: t("collectorReuse.existing") }
+      : values
+  );
 
   if (!validation.success) {
     return {
@@ -32,14 +49,19 @@ export async function createPoolAction(
   try {
     const pool = await createPoolForCreator({
       ...validation.data,
-      creatorId: user.id
+      creatorId: user.id,
+      ...(mode === "existing" ? { collectorSourcePoolId: sourcePoolId } : {})
     });
     poolId = pool.id;
-  } catch {
+  } catch (error) {
     return {
       values,
       fieldErrors: {},
-      formError: t("actions.poolCreateError")
+      formError: t(
+        error instanceof CollectorReuseError
+          ? "collectorReuse.unavailable"
+          : "actions.poolCreateError"
+      )
     };
   }
 

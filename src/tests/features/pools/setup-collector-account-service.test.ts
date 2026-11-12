@@ -6,6 +6,38 @@ import {
 } from "@/features/pools/services/setup-collector-account-service";
 
 describe("setupCollectorAccountForPool", () => {
+  it("rejects a different user_reference before creating resources or recording provenance", async () => {
+    const createAuthorizedAccount = vi.fn();
+    const createAccountAlias = vi.fn();
+    const updatePoolCollectorReferences = vi.fn();
+    await expect(
+      setupCollectorAccountForPool(
+        {
+          poolId: "pool",
+          creatorId: "owner",
+          userReference: "forged",
+          accountHolderName: "Company",
+          iban: "FICTIONAL",
+          entity: {
+            type: "COMPANY",
+            company_name: "Company",
+            national_identification: "99999999999999",
+            country: "FR"
+          }
+        },
+        {
+          getProjectKey: () => "key",
+          findPoolByIdForCreator: vi.fn().mockResolvedValue({ id: "pool" }),
+          createAuthorizedAccount,
+          createAccountAlias,
+          updatePoolCollectorReferences
+        }
+      )
+    ).rejects.toBeInstanceOf(PoolCollectorAccountAccessError);
+    expect(createAuthorizedAccount).not.toHaveBeenCalled();
+    expect(createAccountAlias).not.toHaveBeenCalled();
+    expect(updatePoolCollectorReferences).not.toHaveBeenCalled();
+  });
   it("stores only the returned authorized account id and alias id on the pool", async () => {
     const findPoolByIdForCreator = vi.fn().mockResolvedValue({
       id: "pool_123",
@@ -24,7 +56,7 @@ describe("setupCollectorAccountForPool", () => {
       {
         poolId: "pool_123",
         creatorId: "user_123",
-        userReference: "pool_creator:user_123",
+        userReference: "user_123",
         accountHolderName: "Linxo Team",
         iban: "FR7630006000011234567890189",
         entity: {
@@ -37,6 +69,7 @@ describe("setupCollectorAccountForPool", () => {
         }
       },
       {
+        getProjectKey: () => "project-test",
         findPoolByIdForCreator,
         updatePoolCollectorReferences,
         createAuthorizedAccount,
@@ -60,7 +93,7 @@ describe("setupCollectorAccountForPool", () => {
       }
     });
     expect(createAccountAlias).toHaveBeenCalledWith({
-      userReference: "pool_creator:user_123",
+      userReference: "user_123",
       label: "Linxo Team",
       account: {
         schema: "SEPA",
@@ -71,7 +104,9 @@ describe("setupCollectorAccountForPool", () => {
       poolId: "pool_123",
       creatorId: "user_123",
       collectorAuthorizedAccountId: "authorized_account_123",
-      collectorAliasId: "alias_123"
+      collectorAliasId: "alias_123",
+      collectorEntityType: "NATURAL_PERSON",
+      collectorProjectKey: "project-test"
     });
     expect(result).toEqual({
       poolId: "pool_123",
@@ -91,7 +126,7 @@ describe("setupCollectorAccountForPool", () => {
         {
           poolId: "pool_123",
           creatorId: "user_123",
-          userReference: "pool_creator:user_123",
+          userReference: "user_123",
           accountHolderName: "Linxo Team",
           iban: "FR7630006000011234567890189",
           entity: {
@@ -102,6 +137,7 @@ describe("setupCollectorAccountForPool", () => {
           }
         },
         {
+          getProjectKey: () => "project-test",
           findPoolByIdForCreator,
           updatePoolCollectorReferences,
           createAuthorizedAccount,
@@ -128,7 +164,7 @@ describe("setupCollectorAccountForPool", () => {
       {
         poolId: "pool_123",
         creatorId: "user_123",
-        userReference: "pool_creator:user_123",
+        userReference: "user_123",
         accountHolderName: "Équipe Raph",
         iban: "FR7630006000011234567890189",
         entity: {
@@ -141,6 +177,7 @@ describe("setupCollectorAccountForPool", () => {
         }
       },
       {
+        getProjectKey: () => "project-test",
         findPoolByIdForCreator: vi.fn().mockResolvedValue({
           id: "pool_123",
           title: "Team gift"
@@ -167,7 +204,7 @@ describe("setupCollectorAccountForPool", () => {
       }
     });
     expect(createAccountAlias).toHaveBeenCalledWith({
-      userReference: "pool_creator:user_123",
+      userReference: "user_123",
       label: "Equipe Raph",
       account: {
         schema: "SEPA",

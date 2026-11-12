@@ -47,6 +47,12 @@ configure a collector account in the protected dashboard.
 - The app does not store IBAN, BIC, account number, birth data, company KYC
   data, or natural person KYC data locally
 
+Collector reuse for new pools uses owner-scoped local references and a targeted
+alias ownership/accessibility check at submission. See
+[collector reuse](./collector-account-reuse.md) for provenance, migration,
+legacy-record exclusions and manual Sandbox acceptance. The existing new-account
+form and authorized-account/alias creation path remain available.
+
 ### Example request samples
 
 The Linxo documentation explicitly requires using its documented request samples

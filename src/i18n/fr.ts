@@ -296,6 +296,13 @@ export const fr = {
     refreshBody:
       "Les webhooks restent le mécanisme principal. Utilisez le rafraîchissement seulement en secours si un statut semble bloqué."
   },
+  collectorReuse: {
+    title: "Compte collecteur",
+    existing: "Utiliser un compte collecteur existant",
+    new: "Créer un nouveau compte collecteur",
+    select: "Compte à réutiliser",
+    unavailable: "Ce compte collecteur ne peut pas être réutilisé. Sélectionnez un autre compte ou choisissez de créer un nouveau compte collecteur."
+  },
   collectorAccount: {
     title: "Compte collecteur",
     body:

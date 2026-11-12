@@ -62,6 +62,12 @@ export type CreatePoolRecordInput = {
   closingDate: Date;
   creatorId: string;
   collectorDisplayName: string;
+  collectorReferences?: {
+    collectorAuthorizedAccountId: string;
+    collectorAliasId: string;
+    collectorEntityType: "NATURAL_PERSON" | "COMPANY";
+    collectorProjectKey: string;
+  };
 };
 
 export type UpdatePoolRecordInput = {
@@ -138,7 +144,8 @@ export async function createPoolRecord(
       creatorId: input.creatorId,
       collectorDisplayName: input.collectorDisplayName,
       collectorAuthorizedAccountId: null,
-      collectorAliasId: null
+      collectorAliasId: null,
+      ...input.collectorReferences
     },
     select: {
       id: true
@@ -153,6 +160,8 @@ export async function updatePoolCollectorReferences(input: {
   creatorId: string;
   collectorAuthorizedAccountId: string;
   collectorAliasId: string;
+  collectorEntityType: "NATURAL_PERSON" | "COMPANY";
+  collectorProjectKey: string;
 }): Promise<void> {
   const result = await prisma.pool.updateMany({
     where: {
@@ -161,7 +170,9 @@ export async function updatePoolCollectorReferences(input: {
     },
     data: {
       collectorAuthorizedAccountId: input.collectorAuthorizedAccountId,
-      collectorAliasId: input.collectorAliasId
+      collectorAliasId: input.collectorAliasId,
+      collectorEntityType: input.collectorEntityType,
+      collectorProjectKey: input.collectorProjectKey
     }
   });
 

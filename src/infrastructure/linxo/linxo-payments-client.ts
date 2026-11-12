@@ -9,7 +9,8 @@ import {
 } from "@/infrastructure/linxo/linxo-payments-config";
 import {
   LinxoPaymentsApiError,
-  LinxoPaymentsNetworkError
+  LinxoPaymentsNetworkError,
+  LinxoPaymentsResponseError
 } from "@/infrastructure/linxo/linxo-payments-errors";
 import type {
   LinxoCreateAuthorizedAccountRequest,
@@ -116,6 +117,30 @@ export class LinxoPaymentsClient {
       path: "/v1/orders",
       body: input
     });
+  }
+
+  async getAccountAlias(
+    aliasId: string
+  ): Promise<{ id: string; userReference: string }> {
+    // Linxo returns banking fields too. Only ownership metadata leaves this method;
+    // the response must never be logged, persisted or passed to a client component.
+    const alias = await this.requestJson<{
+      id?: unknown;
+      user_reference?: unknown;
+    }>({
+      method: "GET",
+      operation: "getAccountAlias",
+      path: `/v1/alias/${encodeURIComponent(aliasId)}`
+    });
+    if (
+      typeof alias?.id !== "string" ||
+      typeof alias.user_reference !== "string"
+    ) {
+      throw new LinxoPaymentsResponseError(
+        "Linxo returned invalid alias ownership metadata."
+      );
+    }
+    return { id: alias.id, userReference: alias.user_reference };
   }
 
   async createAuthorizedAccount(input: {

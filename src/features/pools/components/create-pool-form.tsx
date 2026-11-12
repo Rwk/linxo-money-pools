@@ -8,6 +8,7 @@ import {
   initialCreatePoolActionState,
   normalizeCreatePoolFormState
 } from "@/features/pools/forms/create-pool-form-state";
+import type { ReusableCollectorOption } from "@/features/pools/services/reusable-collectors-service";
 import { t } from "@/i18n/t";
 
 function FieldError({ message }: { message?: string }) {
@@ -18,13 +19,26 @@ function FieldError({ message }: { message?: string }) {
   return <p className="text-sm text-rose-700">{message}</p>;
 }
 
-export function CreatePoolForm() {
+export function CreatePoolForm({
+  reusableCollectors = []
+}: {
+  reusableCollectors?: ReusableCollectorOption[];
+}) {
   const [state, formAction, isPending] = useActionState(
     createPoolAction,
     initialCreatePoolActionState
   );
   const safeState = normalizeCreatePoolFormState(state);
   const [title, setTitle] = useState(safeState.values.title);
+  const [collectorDisplayName, setCollectorDisplayName] = useState(
+    safeState.values.collectorDisplayName
+  );
+  const [collectorMode, setCollectorMode] = useState(
+    reusableCollectors.length ? "existing" : "new"
+  );
+  const [collectorSourcePoolId, setCollectorSourcePoolId] = useState(
+    reusableCollectors[0]?.sourcePoolId ?? ""
+  );
 
   return (
     <form action={formAction} className="space-y-5">
@@ -115,24 +129,91 @@ export function CreatePoolForm() {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label
-          className="text-sm font-semibold text-slate-900"
-          htmlFor="collectorDisplayName"
-        >
-          {t("poolForms.collectorDisplayName")}
-        </label>
-        <input
-          className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
-          defaultValue={safeState.values.collectorDisplayName}
-          id="collectorDisplayName"
-          maxLength={120}
-          name="collectorDisplayName"
-          placeholder={t("poolForms.collectorDisplayNamePlaceholder")}
-          required
-        />
-        <FieldError message={safeState.fieldErrors.collectorDisplayName} />
-      </div>
+      {reusableCollectors.length ? (
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold text-slate-900">
+            {t("collectorReuse.title")}
+          </legend>
+          {(["existing", "new"] as const).map((mode) => (
+            <label
+              key={mode}
+              className="flex min-h-11 items-center gap-2 text-sm text-slate-900"
+            >
+              <input
+                type="radio"
+                name="collectorMode"
+                value={mode}
+                checked={collectorMode === mode}
+                onChange={() => setCollectorMode(mode)}
+              />
+              {t(
+                mode === "existing"
+                  ? "collectorReuse.existing"
+                  : "collectorReuse.new"
+              )}
+            </label>
+          ))}
+          {collectorMode === "existing" ? (
+            <div className="space-y-2">
+              <label
+                htmlFor="collectorSourcePoolId"
+                className="text-sm font-semibold text-slate-900"
+              >
+                {t("collectorReuse.select")}
+              </label>
+              <select
+                id="collectorSourcePoolId"
+                name="collectorSourcePoolId"
+                required
+                value={collectorSourcePoolId}
+                onChange={(event) =>
+                  setCollectorSourcePoolId(event.target.value)
+                }
+                className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950"
+              >
+                {reusableCollectors.map((collector) => (
+                  <option
+                    key={collector.sourcePoolId}
+                    value={collector.sourcePoolId}
+                  >
+                    {collector.displayName} —{" "}
+                    {t(
+                      collector.entityType === "COMPANY"
+                        ? "collectorAccount.company"
+                        : "collectorAccount.naturalPerson"
+                    )}{" "}
+                    — {collector.poolTitle}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+        </fieldset>
+      ) : (
+        <input type="hidden" name="collectorMode" value="new" />
+      )}
+
+      {collectorMode === "new" ? (
+        <div className="space-y-2">
+          <label
+            className="text-sm font-semibold text-slate-900"
+            htmlFor="collectorDisplayName"
+          >
+            {t("poolForms.collectorDisplayName")}
+          </label>
+          <input
+            className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+            value={collectorDisplayName}
+            onChange={(event) => setCollectorDisplayName(event.target.value)}
+            id="collectorDisplayName"
+            maxLength={120}
+            name="collectorDisplayName"
+            placeholder={t("poolForms.collectorDisplayNamePlaceholder")}
+            required
+          />
+          <FieldError message={safeState.fieldErrors.collectorDisplayName} />
+        </div>
+      ) : null}
 
       <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900">
         {t("poolForms.securityNotice")}
