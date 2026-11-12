@@ -70,6 +70,7 @@ export default async function PoolManagementPage({
             contributionMode: pool.contributionMode,
             fixedUnitPriceCents: pool.fixedUnitPriceCents,
             canEditFixedPrice:
+              !pool.archivedAt &&
               pool.contributionMode === "FIXED" &&
               pool.contributions.length === 0,
             id: pool.id,
@@ -78,6 +79,7 @@ export default async function PoolManagementPage({
             eventType: pool.eventType,
             closingDate: pool.closingDate,
             closingDateInputValue,
+            archivedAt: pool.archivedAt,
             status: pool.status
           }}
         />

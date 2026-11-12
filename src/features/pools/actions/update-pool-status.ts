@@ -26,6 +26,7 @@ export type PoolStatusActionState = {
 function revalidatePoolPaths(poolId: string, slug: string): void {
   revalidatePath(`/dashboard/pools/${poolId}`);
   revalidatePath(`/p/${slug}`);
+  revalidatePath("/dashboard");
 }
 
 export async function closePoolAction(
@@ -159,6 +160,5 @@ export async function archivePoolAction(
     };
   }
   revalidatePoolPaths(pool.id, pool.slug);
-  revalidatePath("/dashboard");
   return { error: null, successMessage: t("actions.poolArchived") };
 }

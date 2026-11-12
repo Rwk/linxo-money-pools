@@ -2,19 +2,61 @@ import Link from "next/link";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
-import { listPoolsByCreatorId } from "@/features/pools/data-access/pool-repository";
+import { getPoolLifecycle } from "@/domain/pool/pool.rules";
+import {
+  listPoolsByCreatorId,
+  listPoolsByCreatorLifecycle
+} from "@/features/pools/data-access/pool-repository";
 import { PoolCard } from "@/features/pools/components/pool-card";
 import { toPoolCardViewModel } from "@/features/pools/presenters/pool-presenters";
 import { t } from "@/i18n/t";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams
+}: { searchParams?: Promise<{ tab?: string }> } = {}) {
+  const tab = (await searchParams)?.tab;
+  const selected =
+    tab === "completed"
+      ? "COMPLETED"
+      : tab === "archived"
+        ? "ARCHIVED"
+        : "ACTIVE";
+  const tabs = [
+    {
+      key: "active",
+      state: "ACTIVE",
+      label: t("poolLifecycle.activePlural"),
+      empty: t("poolLifecycle.emptyActive")
+    },
+    {
+      key: "completed",
+      state: "COMPLETED",
+      label: t("poolLifecycle.completedPlural"),
+      empty: t("poolLifecycle.emptyCompleted")
+    },
+    {
+      key: "archived",
+      state: "ARCHIVED",
+      label: t("poolLifecycle.archivedPlural"),
+      empty: t("poolLifecycle.emptyArchived")
+    }
+  ] as const;
+  const now = new Date();
   const user = await requireLinxoSession();
-  const pools = await listPoolsByCreatorId(user.id);
+  const [pools, visiblePools] = await Promise.all([
+    listPoolsByCreatorId(user.id),
+    listPoolsByCreatorLifecycle(user.id, selected, now)
+  ]);
   const displayName = user.name ?? user.email;
   const poolCards = pools.map(toPoolCardViewModel);
-  const openPoolCount = pools.filter((pool) => pool.status === "OPEN").length;
+  const visibleCards = visiblePools.map(toPoolCardViewModel);
+  const openPoolCount = pools.filter(
+    (pool) => getPoolLifecycle(pool, now) === "ACTIVE"
+  ).length;
   const confirmedAmountTotal = poolCards.reduce((total, pool) => {
-    const numericValue = Number.parseFloat(pool.confirmedAmountLabel.replace(" EUR", ""));
+    const numericValue = Number.parseFloat(
+      pool.confirmedAmountLabel.replace(" EUR", "")
+    );
 
     return Number.isNaN(numericValue) ? total : total + numericValue;
   }, 0);
@@ -87,28 +129,43 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {poolCards.length === 0 ? (
+        <nav
+          aria-label={t("poolLifecycle.navigation")}
+          className="flex flex-wrap gap-2"
+        >
+          {tabs.map((tab) => (
+            <Link
+              key={tab.key}
+              href={`/dashboard?tab=${tab.key}`}
+              aria-current={selected === tab.state ? "page" : undefined}
+              className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold ${selected === tab.state ? "bg-[var(--accent)] text-[var(--accent-foreground)]" : "bg-white/80 text-slate-900 ring-1 ring-slate-900/10"}`}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
+        {visibleCards.length === 0 ? (
           <div className="rounded-[2rem] border border-dashed border-[var(--surface-border-strong)] bg-[var(--surface)] p-8 text-center shadow-[var(--shadow-soft)]">
             <div className="mx-auto max-w-2xl space-y-3">
               <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-                {t("dashboard.emptyTitle")}
+                {tabs.find((tab) => tab.state === selected)!.empty}
               </h2>
               <p className="text-sm leading-6 text-[var(--muted)] sm:text-base">
-                {t("dashboard.emptyBody")}
+                {t("poolLifecycle.emptyBody")}
               </p>
               <div className="pt-2">
                 <Link
                   className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--accent)] px-6 text-sm font-semibold whitespace-nowrap text-[var(--accent-foreground)] shadow-[var(--shadow-button)] transition hover:bg-[var(--accent-hover)]"
                   href="/dashboard/pools/new"
                 >
-                  {t("dashboard.createFirstPool")}
+                  {t("dashboard.createPool")}
                 </Link>
               </div>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
-            {poolCards.map((pool) => (
+            {visibleCards.map((pool) => (
               <PoolCard key={pool.id} pool={pool} />
             ))}
           </div>

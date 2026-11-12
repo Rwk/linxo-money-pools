@@ -215,7 +215,7 @@ export const fr = {
       "Pour rouvrir une cagnotte expirée, choisissez explicitement une nouvelle date de clôture valide.",
     closePool: "Clôturer la cagnotte",
     closingPool: "Clôture en cours...",
-    reopenPool: "Rouvrir la cagnotte",
+    reopenPool: "Réouvrir la cagnotte",
     reopeningPool: "Réouverture en cours..."
   },
   poolDetails: {
@@ -561,6 +561,29 @@ export const fr = {
     amountInvalid:
       "Le montant doit être un nombre positif avec au maximum deux décimales.",
     amountGreaterThanZero: "Le montant doit être supérieur à zéro."
+  },
+  poolLifecycle: {
+    active: "En cours",
+    completed: "Terminée",
+    archived: "Archivée",
+    activePlural: "En cours",
+    completedPlural: "Terminées",
+    archivedPlural: "Archivées",
+    navigation: "Cycle de vie des cagnottes",
+    emptyActive: "Aucune cagnotte en cours.",
+    emptyCompleted: "Aucune cagnotte terminée.",
+    emptyArchived: "Aucune cagnotte archivée.",
+    emptyBody: "Retrouvez vos autres cagnottes dans les onglets ou créez une nouvelle cagnotte.",
+    archivedTitle: "Cagnotte archivée",
+    contributionsClosed: "Nouvelles contributions fermées",
+    archivedBody: "Cette cagnotte est archivée définitivement. Ses détails ne peuvent plus être modifiés. Les contributions et l’historique des paiements restent consultables.",
+    paymentHistory: "La clôture et l’archivage préservent les contributions et les paiements déjà initiés. Leur suivi reste disponible.",
+    newClosingDate: "Nouvelle date de clôture",
+    archive: "Archiver définitivement",
+    archiveWarning: "Cette action est définitive : la cagnotte ne pourra être ni rouverte ni désarchivée. Les contributions et l’historique des paiements sont conservés.",
+    archiveConfirm: "Je confirme l’archivage définitif de cette cagnotte.",
+    confirmArchive: "Confirmer l’archivage définitif",
+    archiving: "Archivage en cours..."
   },
   statuses: {
     poolOpen: "Ouverte",

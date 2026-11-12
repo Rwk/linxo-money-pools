@@ -47,7 +47,7 @@ functional product requirements and their priorities remain unchanged.
 | Linxo API observability              | **Implemented, deployed**: `0f295cd`. Structured, privacy-conscious logging supports `LINXO_API_LOG_LEVEL=off\|error\|info`; disabled by default on Vercel.                                                                                                                   | Use safe diagnostics during investigation; deployment alone does not validate payments. See [API observability](./linxo-payments.md#api-observability).        |
 | Beneficiary complementary name       | **Implemented, locally validated**: `63a47fe`. The order builder normalizes this field to the documented character set and 140-character limit, with a nonempty fallback. DEV-3 checked serialized JSON and successful Sandbox order creation; focused regression tests pass. | Production deployment is unverified. Do not infer that this correction caused or resolved historical production failures.                                      |
 | Collector account reuse              | **Implemented locally; manual acceptance pending.** New pools can select an owner-scoped, provenance-bound alias/account pair or use the existing new-collector path. See [collector reuse](./collector-account-reuse.md).                                                    | Complete the documented Sandbox acceptance; legacy references without provenance/entity type are excluded. No production deployment is implied.                |
-| Pool lifecycle P1-A | **Implemented locally**, including permanent archive, atomic contribution acceptance and PostgreSQL concurrency tests. See [lifecycle verification](./pool-lifecycle.md). | P1-B tabs/controls and manual lifecycle acceptance remain pending. |
+| Pool lifecycle P1-A | **Implemented locally**, including permanent archive, atomic contribution acceptance and PostgreSQL concurrency tests. See [lifecycle verification](./pool-lifecycle.md). | P1-B tabs/controls implemented locally; manual Sandbox lifecycle acceptance remains pending. |
 | Remaining P0, P1 and P2 requirements | **Planned**. Existing visibility controls and dashboard redesigns are partial foundations, not evidence that these requirements are complete.                                                                                                                                 | Implement and validate after the local development prerequisite.                                                                                               |
 | Safe local development               | **Accepted; workstream closed**. DEV-1 through DEV-4 were implemented and manually accepted by the developer. See the acceptance record below.                                                                                                                                | Delayed authorization-to-execution transition remains an observation with an unconfirmed cause; it does not block acceptance of the environment.               |
 
@@ -60,7 +60,7 @@ functional product requirements and their priorities remain unchanged.
 | P0           | Public/private contribution amounts                           | Privacy holds across public pages, API responses and progress indicators; private totals remain complete. |
 | P1           | Collector account reuse                                       | Only the authenticated user's authorized Linxo resources can be selected.                                 |
 | P1           | Fixed-price contributions                                     | Server-enforced quantity and integer-cent calculation preserve existing payment behavior.                 |
-| P1           | Pool organization and archiving                               | Permanent owner-only archiving of completed pools (P1-A); three-tab UI remains P1-B.                                    |
+| P1           | Pool organization and archiving                               | Permanent owner-only archiving (P1-A) and three-tab owner UI (P1-B), locally implemented; manual P1-B acceptance pending.                                    |
 | P2           | Favorite payment providers                                    | Verified BIC configuration with the full bank list still accessible.                                      |
 | P2           | Dashboard redesign                                            | Desktop/mobile acceptance, coordinated with the three-tab organization.                                   |
 
@@ -155,8 +155,14 @@ after closure or archive. Existing orders, late webhooks and reconciliation rema
 operational. No database lock spans a Linxo request. See [lifecycle rules and
 verification](./pool-lifecycle.md).
 
-**P1-B remains planned:** dashboard tabs, lifecycle labels and management controls,
-including the permanent archive confirmation and explicit reopen-date input.
+**P1-B implemented locally; manual Sandbox acceptance pending:** dashboard tabs
+`En cours`, `Terminées`, `Archivées` use effective lifecycle classification. Cards
+and detail pages share consistent status labels. Owner controls expose close,
+reopen (with an explicit new date after expiry), and irreversible archive with
+confirmation. Archived details/history stay readable; mutation controls are hidden
+and payment reconciliation remains available. See the [UI acceptance
+checklist](./pool-lifecycle.md#manual-sandbox-acceptance-checklist--pending).
+This does not implement the P2 dashboard redesign.
 The additive `archivedAt` migration must ship with previous pending migrations
 at the future v1.1.0 production release; no production migration was applied.
 

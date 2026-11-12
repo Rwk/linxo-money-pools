@@ -1,7 +1,7 @@
 # Pool lifecycle and permanent archive — P1-A
 
-Implemented locally on 2026-11-12. P1-B dashboard tabs and management controls
-remain planned. No production migration, deployment or Linxo test transaction
+P1-A and P1-B implemented locally on 2026-11-12. Dashboard tabs and owner
+controls are implemented; manual Sandbox acceptance of P1-B remains pending. No production migration, deployment or Linxo test transaction
 was performed for this milestone.
 
 ## Findings and effective states
@@ -50,9 +50,11 @@ Authenticated owner actions reuse the existing close/reopen path and add
 - Archived pools cannot reopen or be edited. There is no unarchive operation.
   Reads remain owner-authorized and historical payment processing remains valid.
 
-`listPoolsByCreatorLifecycle(creatorId, lifecycle, now)` provides P1-B server-side
-classification. The database query is scoped to that creator before classification;
-it does not load all owners' data. Existing dashboard queries/layout are retained.
+`listPoolsByCreatorLifecycle(creatorId, lifecycle, now)` provides server-side
+classification for the P1-B dashboard. The database query is scoped to that creator before classification;
+it does not load all owners' data. The dashboard reuses this query for the selected tab and the existing owner query
+for global metrics (total pools and confirmed amounts across all three states).
+The in-progress count uses effective ACTIVE state.
 The helper currently loads that owner's pools and contributions using the existing
 repository selection; pagination/optimization is outside this milestone.
 
@@ -97,7 +99,7 @@ reconciliation, actual post-archive database order/status writes, and hidden
 amount totals. Linxo is mocked; this is automated compatibility evidence, not a
 claim of new manual Sandbox acceptance.
 
-## Verification
+## P1-A verification
 
 - Targeted lifecycle/payment/compatibility Vitest checks: 235 tests passed
   across 19 files.
@@ -119,21 +121,93 @@ claim of new manual Sandbox acceptance.
   encountered EPERM for Node subprocesses/Turbopack local ports; verification was
   rerun with execution permission. Build uses synthetic payment configuration.
 
-## Pending manual acceptance and P1-B
+## P1-B interface and action wiring
 
-Restart the Next development server after Prisma generation/migration so its
-cached client sees `archivedAt`. Keep local Sandbox-only configuration.
+Implemented locally; manual acceptance is **pending**. Dashboard navigation uses
+`/dashboard?tab=active|completed|archived`; absent or unknown values default to
+`active`. The three links are keyboard-accessible, wrap on small screens, expose
+`aria-current="page"`, and render distinct French empty states. Membership uses
+the owner-scoped P1-A query and shared lifecycle rules. No client state library,
+new schema, or P2 dashboard redesign was introduced.
 
-P1-A deliberately adds no tabs, archive button, confirmation dialog or separate
-editing page. Existing UI badges/control visibility are not yet archive-aware;
-server rules enforce the restrictions. P1-B must connect the owner-scoped
-classification and actions, display effective states, explain irreversible
-archive, and provide explicit closing-date input for expired reopening.
+Cards and private/public details consistently show `En cours`, `Terminée`, or
+`Archivée`. Non-active pools no longer show the contradictory payment-ready
+badge; public completed/archived pages show the existing closure message and no
+new-contribution form. No private management controls are exposed publicly.
 
-Manual P1-B acceptance must cover ACTIVE/COMPLETED/ARCHIVED membership,
-owner isolation, expiry and manual closure, expired OPEN reopening with a new
-date, refusal without a date, permanent archive and unchanged timestamp on
-repeat, rejection of fresh public contributions, readable owner history, and
-continued Sandbox authorization/late webhook/reconciliation for a previously
-accepted contribution. Verify public amount privacy and owner totals, including
-hidden amounts. Browser Sandbox acceptance for the new lifecycle remains pending.
+The existing owner action panel now uses shared lifecycle controls:
+
+- ACTIVE: close and existing owner editing.
+- COMPLETED: reopen and permanent archive, alongside permitted editing.
+- Expired COMPLETED (including persisted OPEN): reopen has a required, initially
+  empty `Nouvelle date de clôture` input, sent as `closingDate` FormData to the
+  existing P1-A action. Native required validation and server date validation
+  apply. No future date is invented. Unexpired manual closure needs no date input.
+- Archive: expand the native keyboard-accessible disclosure, read the irreversible
+  warning, select the required confirmation checkbox, then submit. The warning
+  explicitly says no reopening or unarchiving and preserves contribution/payment
+  history. The submit button stays disabled until confirmation; server ownership
+  and locked lifecycle checks remain authoritative.
+- ARCHIVED: clear archived notice; no close/reopen/archive, edit or collector-setup
+  controls. Details and contribution/payment history remain readable. A previously
+  open edit panel becomes read-only when archive props arrive. Status reconciliation
+  remains available; late callbacks/webhooks are unchanged.
+
+Status/error messages are announced through a live region. Pending lifecycle
+requests disable competing lifecycle submissions. Close/reopen/archive invalidate
+both the owner/public detail pages and dashboard. Existing price/quantity rules,
+amount privacy, API logs and payment error-handling semantics are preserved.
+
+### Automated P1-B verification
+
+- Targeted UI/lifecycle/payment/privacy/collector regression checks: 267 tests
+  passed across 24 files (including 25 new P1-B tests).
+- Full Vitest: 541 passed, 3 historical date-fixture failures, 15 opt-in local
+  database checks skipped. These database checks passed separately in P1-A;
+  this UI milestone adds no database mutation or migration.
+- ESLint: passed. Production build: passed with synthetic Linxo configuration.
+- Standalone TypeScript: the same eight historical test-fixture errors listed
+  under P1-A; no new application or P1-B test errors.
+- All external Linxo operations in the test suites are mocked. No new browser
+  banking simulation or manual webhook acceptance has been claimed.
+
+### Manual Sandbox acceptance checklist — pending
+
+Restart Next development after P1-A migration/client generation if needed. Use
+only local pools and authorized Sandbox accounts with fictional data. Prepare
+ACTIVE, manually CLOSED, expired OPEN, and archived fixtures through supported
+local flows. The earlier P1-A migration must be present in the local database.
+
+1. Sign in as owner. `/dashboard` defaults to `En cours`. Visit all three tabs,
+   reload/bookmark their URLs, and verify each pool appears in exactly one tab.
+   Test empty states; verify an unrelated owner's pools never appear. Check mobile
+   wrapping and keyboard focus/navigation.
+2. Open ACTIVE details, edit existing fields, then close. Verify `Terminée`, its
+   completed-tab membership, and no public contribution form. Cards/details must
+   agree. Existing contribution amounts and global metrics must be preserved.
+3. Reopen a manually closed, unexpired pool without changing its date. Verify
+   `En cours`, active-tab membership and working public contribution form.
+4. Open an expired OPEN pool: it must be `Terminée`, with reopen/archive actions.
+   Reopen with empty/past date must fail safely; an explicitly selected valid new
+   closing date succeeds. Verify persistence and active membership after refresh.
+5. On a completed pool expand `Archiver définitivement`. Read the warning. The
+   final button must remain disabled before checking confirmation. Archive, reload,
+   and verify `Archivées`, `Cagnotte archivée`, readable details/history, and no edit,
+   setup, reopen, close or archive controls. No unarchive action may exist.
+6. Use its public link: archive/expiry/closure must offer no contribution form or
+   private management controls. Verify hidden amounts remain `Montant masqué`,
+   public totals exclude them, and owner history/totals still include them.
+7. Manually complete the Sandbox banking simulation for a contribution accepted
+   before closure/archive. Confirm its existing handoff/callback still works, its
+   late webhook updates PostgreSQL, and owner reconciliation remains available.
+   Never initiate real transactions. Report browser/webhook outcomes separately
+   from automated test results.
+
+Known limits: classification refreshes on navigation/reload or action invalidation;
+there is no new expiry timer or background UI polling. The repository still loads
+that owner's existing contribution selection without new pagination. Existing
+remote-order uncertainty on lost Linxo responses is unchanged. P2 redesign is
+outside this milestone. No production connection, migration, push or deployment
+was performed. For the future v1.1.0 production release, deploy
+`20261112200000_permanent_pool_archive` with earlier pending migrations and
+regenerate Prisma Client before the corresponding application code serves traffic.

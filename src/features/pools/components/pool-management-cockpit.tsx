@@ -6,13 +6,13 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CopyToClipboardButton } from "@/components/copy-to-clipboard-button";
 import { StatusBadge } from "@/components/status-badge";
-import { canClosePool, canReopenPool } from "@/domain/pool/pool.rules";
-import { EVENT_TYPES, type EventType, type PoolStatus } from "@/domain/pool/pool.types";
+import { getPoolLifecycle } from "@/domain/pool/pool.rules";
+import { PoolLifecycleControls } from "./pool-lifecycle-controls";
 import {
-  closePoolAction,
-  reopenPoolAction,
-  type PoolStatusActionState
-} from "@/features/pools/actions/update-pool-status";
+  EVENT_TYPES,
+  type EventType,
+  type PoolStatus
+} from "@/domain/pool/pool.types";
 import { updatePoolAction } from "@/features/pools/actions/update-pool";
 import {
   getInitialManagePoolActionState,
@@ -43,6 +43,7 @@ type PoolManagementCockpitProps = {
     closingDate: Date;
     closingDateInputValue: string;
     status: PoolStatus;
+    archivedAt?: Date | null;
     contributionMode: ContributionMode;
     fixedUnitPriceCents: number | null;
     canEditFixedPrice: boolean;
@@ -98,11 +99,6 @@ function getEventLabel(eventType: EventType): string {
 
   return labels[eventType];
 }
-
-const initialPoolStatusActionState: PoolStatusActionState = {
-  error: null,
-  successMessage: null
-};
 
 function PoolManagementHeader({ pool }: { pool: PrivatePoolDetailViewModel }) {
   const configurationLabel =
@@ -262,15 +258,17 @@ export function PoolDetailsCard({
         {pool.contributionMode === "FIXED" ? (
           <p className="mt-2 text-sm text-[var(--muted)]">
             {t(
-              pool.canEditFixedPrice
-                ? "fixedContributions.priceEditable"
-                : "fixedContributions.priceLocked"
+              getPoolLifecycle(pool) === "ARCHIVED"
+                ? "poolLifecycle.archivedBody"
+                : pool.canEditFixedPrice
+                  ? "fixedContributions.priceEditable"
+                  : "fixedContributions.priceLocked"
             )}
           </p>
         ) : null}
       </div>
 
-      {!isEditing ? (
+      {!isEditing || getPoolLifecycle(pool) === "ARCHIVED" ? (
         <div className="mt-6 space-y-5">
           <StatusMessage successMessage={safeState.successMessage} />
           <div className="grid gap-4 md:grid-cols-2">
@@ -450,24 +448,12 @@ function ActionsCard({
     publicPath: string;
   };
 }) {
-  const showCloseAction = canClosePool(pool);
-  const showReopenAction = canReopenPool(pool);
-  const [statusState, statusFormAction, isStatusPending] = useActionState(
-    (previousState: typeof initialPoolStatusActionState) =>
-      showCloseAction
-        ? closePoolAction(pool.id, previousState)
-        : reopenPoolAction(pool.id, previousState),
-    initialPoolStatusActionState
-  );
   const [refreshState, refreshFormAction, isRefreshPending] = useActionState(
     refreshPoolContributionStatusesAction,
     initialRefreshPoolContributionStatusesActionState
   );
   const safeRefreshState =
     normalizeRefreshPoolContributionStatusesActionState(refreshState);
-  const statusActionLabel = showCloseAction
-    ? t("poolForms.closePool")
-    : t("poolForms.reopenPool");
 
   return (
     <section className="rounded-[1.9rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
@@ -481,9 +467,13 @@ function ActionsCard({
       </div>
 
       <div className="mt-6 flex flex-col gap-3">
-        <Button onClick={onToggleEditing} type="button">
-          {isEditing ? t("poolManagement.editClose") : t("poolManagement.editOpen")}
-        </Button>
+        {getPoolLifecycle(pool) !== "ARCHIVED" ? (
+          <Button onClick={onToggleEditing} type="button">
+            {isEditing
+              ? t("poolManagement.editClose")
+              : t("poolManagement.editOpen")}
+          </Button>
+        ) : null}
         <Link
           className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--secondary)] px-5 text-sm font-semibold text-[var(--secondary-foreground)] ring-1 ring-[var(--surface-border)] transition hover:bg-[var(--surface-strong)]"
           href={pool.publicPath}
@@ -492,38 +482,7 @@ function ActionsCard({
         </Link>
       </div>
 
-      <div className="mt-6 rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-slate-950">
-            {t("poolForms.lifecycleTitle")}
-          </p>
-          <p className="text-sm leading-6 text-slate-700">
-            {t("poolManagement.lifecycleHint")}
-          </p>
-          <p className="text-sm leading-6 text-slate-700">
-            {t("poolManagement.reopenHint")}
-          </p>
-        </div>
-
-        <form action={statusFormAction} className="mt-4 space-y-4">
-          <StatusMessage
-            error={statusState.error}
-            successMessage={statusState.successMessage}
-          />
-          {!showCloseAction && !showReopenAction ? (
-            <p className="text-sm leading-6 text-slate-700">
-              {t("poolForms.updateClosingDateToReopen")}
-            </p>
-          ) : null}
-          <Button disabled={isStatusPending} type="submit" variant="secondary">
-            {isStatusPending
-              ? showCloseAction
-                ? t("poolForms.closingPool")
-                : t("poolForms.reopeningPool")
-              : statusActionLabel}
-          </Button>
-        </form>
-      </div>
+      <PoolLifecycleControls key={getPoolLifecycle(pool)} pool={pool} />
 
       <div className="mt-6 rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
         <div className="space-y-2">
@@ -534,7 +493,9 @@ function ActionsCard({
             {t("poolManagement.refreshBody")}
           </p>
           {safeRefreshState.formError ? (
-            <p className="text-sm text-rose-700">{safeRefreshState.formError}</p>
+            <p className="text-sm text-rose-700">
+              {safeRefreshState.formError}
+            </p>
           ) : null}
           {safeRefreshState.successMessage ? (
             <p className="text-sm text-slate-700">
@@ -567,7 +528,9 @@ function ShareCard({ pool }: { pool: PrivatePoolDetailViewModel }) {
       </div>
 
       <div className="mt-6 rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
-        <p className="break-all text-sm font-medium text-slate-950">{pool.publicUrl}</p>
+        <p className="break-all text-sm font-medium text-slate-950">
+          {pool.publicUrl}
+        </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <CopyToClipboardButton text={pool.publicUrl} />
           <Link
@@ -582,7 +545,11 @@ function ShareCard({ pool }: { pool: PrivatePoolDetailViewModel }) {
   );
 }
 
-function ContributionSummaryCard({ pool }: { pool: PrivatePoolDetailViewModel }) {
+function ContributionSummaryCard({
+  pool
+}: {
+  pool: PrivatePoolDetailViewModel;
+}) {
   return (
     <section className="rounded-[1.9rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
       <div className="space-y-3">
@@ -672,7 +639,9 @@ function ContributionItem({
           ) : null}
         </div>
         <div className="space-y-2 text-sm text-slate-700 sm:text-right">
-          <p className="font-semibold text-slate-950">{contribution.amountLabel}</p>
+          <p className="font-semibold text-slate-950">
+            {contribution.amountLabel}
+          </p>
           <p>{contribution.selectedPaymentMethodLabel}</p>
           <StatusBadge size="sm" variant={contribution.cashInStatusVariant}>
             {contribution.cashInStatusLabel}
@@ -750,13 +719,21 @@ export function PoolManagementCockpit({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="order-1 space-y-6 xl:order-2">
-          <CollectorAccountSetupForm
-            collectorAliasId={collectorAliasId}
-            poolId={pool.id}
-            poolStatus={poolForEditing.status}
-          />
+          {getPoolLifecycle(poolForEditing) !== "ARCHIVED" ? (
+            <CollectorAccountSetupForm
+              collectorAliasId={collectorAliasId}
+              poolId={pool.id}
+              poolStatus={
+                getPoolLifecycle(poolForEditing) === "ACTIVE"
+                  ? "OPEN"
+                  : "CLOSED"
+              }
+            />
+          ) : null}
           <ActionsCard
-            isEditing={isEditing}
+            isEditing={
+              isEditing && getPoolLifecycle(poolForEditing) !== "ARCHIVED"
+            }
             onToggleEditing={() => setIsEditing((current) => !current)}
             pool={{
               ...poolForEditing,
@@ -767,7 +744,9 @@ export function PoolManagementCockpit({
 
         <div className="order-2 space-y-6 xl:order-1">
           <PoolDetailsCard
-            isEditing={isEditing}
+            isEditing={
+              isEditing && getPoolLifecycle(poolForEditing) !== "ARCHIVED"
+            }
             onCancelEditing={() => setIsEditing(false)}
             pool={{
               ...poolForEditing,

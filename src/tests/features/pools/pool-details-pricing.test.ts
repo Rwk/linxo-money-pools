@@ -13,6 +13,7 @@ vi.mock("@/features/pools/actions/update-pool", () => ({
 }));
 vi.mock("@/features/pools/actions/update-pool-status", () => ({
   closePoolAction: vi.fn(),
+  archivePoolAction: vi.fn(),
   reopenPoolAction: vi.fn()
 }));
 vi.mock("@/features/pools/actions/setup-collector-account", () => ({

@@ -1,3 +1,4 @@
+import { getPoolLifecycle, type PoolLifecycle } from "@/domain/pool/pool.rules";
 import { poolThemes } from "@/config/pool-themes";
 import { getCashInStatusLabel } from "@/domain/payment/cash-in-status";
 import { computePoolAmountVisibility } from "@/domain/pool/pool.totals";
@@ -22,7 +23,6 @@ import { t } from "@/i18n/t";
 import type { StatusBadgeVariant } from "@/components/status-badge";
 import {
   getCashInStatusBadgeVariant,
-  getPoolStatusBadgeVariant,
   toRawLinxoStatusBadge
 } from "@/presentation/status-badge-helpers";
 
@@ -109,10 +109,12 @@ function formatDate(date: Date): string {
   return dateFormatter.format(date);
 }
 
-function formatStatusLabel(status: string): string {
-  return status === "CLOSED"
-    ? t("statuses.poolClosed")
-    : t("statuses.poolOpen");
+function formatStatusLabel(lifecycle: PoolLifecycle): string {
+  return lifecycle === "ARCHIVED"
+    ? t("poolLifecycle.archived")
+    : lifecycle === "COMPLETED"
+      ? t("poolLifecycle.completed")
+      : t("poolLifecycle.active");
 }
 
 function formatPaymentMethodLabel(paymentMethod: string): string {
@@ -185,6 +187,7 @@ function toPoolDetailBaseViewModel(
   audience: "public" | "private"
 ): PoolDetailBaseViewModel {
   const theme = poolThemes[pool.eventType];
+  const lifecycle = getPoolLifecycle(pool);
   const amounts = computePoolAmountVisibility(
     pool.contributions.map(mapContributionToDomainContribution)
   );
@@ -210,8 +213,8 @@ function toPoolDetailBaseViewModel(
     themeEmoji: theme.emoji,
     themeCardClassName: theme.cardClassName,
     themeAccentClassName: theme.accentClassName,
-    statusLabel: formatStatusLabel(pool.status),
-    statusVariant: getPoolStatusBadgeVariant(pool.status),
+    statusLabel: formatStatusLabel(lifecycle),
+    statusVariant: lifecycle === "ACTIVE" ? "success" : "neutral",
     closingDateLabel: formatDate(pool.closingDate),
     createdDateLabel: formatDate(pool.createdAt),
     publicPath: getPublicPoolPath(pool.slug),
@@ -223,10 +226,18 @@ function toPoolDetailBaseViewModel(
     ...(audience === "public" && amounts.hasHiddenConfirmedContributions
       ? { hiddenAmountNotice: t("poolDetails.hiddenAmountsNotice") }
       : {}),
-    readinessLabel: collectorReady
-      ? t("pools.readinessReady")
-      : t("pools.readinessMissing"),
-    readinessVariant: collectorReady ? "success" : "warning",
+    readinessLabel:
+      lifecycle !== "ACTIVE"
+        ? t("poolLifecycle.contributionsClosed")
+        : collectorReady
+          ? t("pools.readinessReady")
+          : t("pools.readinessMissing"),
+    readinessVariant:
+      lifecycle !== "ACTIVE"
+        ? "neutral"
+        : collectorReady
+          ? "success"
+          : "warning",
     visibleContributionCountLabel:
       visibleContributions.length === 0
         ? t("pools.noVisibleContribution")

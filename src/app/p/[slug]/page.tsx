@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { isPoolOpenForContributions } from "@/domain/pool/pool.rules";
+import {
+  getPoolLifecycle,
+  isPoolOpenForContributions
+} from "@/domain/pool/pool.rules";
 import { PublicContributionForm } from "@/features/contributions/components/public-contribution-form";
 import { findPoolBySlug } from "@/features/pools/data-access/pool-repository";
 import {
@@ -45,7 +48,7 @@ export default async function PublicPoolPage({ params }: PublicPoolPageProps) {
 
         <PoolOverviewCard pool={viewModel} />
 
-        {!isOpenForContributions && pool.status === "CLOSED" ? (
+        {getPoolLifecycle(pool) !== "ACTIVE" ? (
           <section className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6">
             <h2 className="text-lg font-semibold text-amber-950">
               {t("pools.closedTitle")}
