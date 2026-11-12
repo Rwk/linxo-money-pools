@@ -9,6 +9,7 @@ vi.mock("@/features/contributions/data-access/contribution-repository", () => ({
 }));
 
 import { GET } from "@/app/api/contributions/[contributionId]/payment-status/route";
+import { t } from "@/i18n/t";
 
 function createContributionRecord(overrides: Record<string, unknown> = {}) {
   return {
@@ -65,6 +66,58 @@ describe("GET /api/contributions/[contributionId]/payment-status", () => {
 
     expect(response.status).toBe(404);
   });
+
+  it("does not read contribution data without an access token", async () => {
+    const response = await GET(
+      new Request(
+        "https://app.test/api/contributions/contribution_123/payment-status"
+      ),
+      {
+        params: Promise.resolve({ contributionId: "contribution_123" })
+      }
+    );
+    expect(response.status).toBe(404);
+    expect(
+      findContributionPaymentRecordByIdAndAccessToken
+    ).not.toHaveBeenCalled();
+  });
+
+  it.each(["PENDING", "EXECUTED", "REJECTED"])(
+    "never serializes a hidden amount for %s",
+    async (cashInStatus) => {
+      findContributionPaymentRecordByIdAndAccessToken.mockResolvedValue(
+        createContributionRecord({
+          hideAmount: true,
+          displayAsAnonymous: true,
+          cashInStatus,
+          amount: { toFixed: () => "918.73" }
+        })
+      );
+      const response = await GET(
+        new Request(
+          "https://app.test/api/contributions/contribution_123/payment-status?token=payment_token_123"
+        ),
+        {
+          params: Promise.resolve({ contributionId: "contribution_123" })
+        }
+      );
+      const payload = await response.json();
+      expect(payload.amountLabel).toBe(t("common.hiddenAmount"));
+      expect(payload.contributorLabel).toBe(t("common.anonymous"));
+      const json = JSON.stringify(payload);
+      for (const privateValue of [
+        "918.73",
+        "jane@example.com",
+        "Jane",
+        "Doe",
+        "order_123",
+        "payment_token_123",
+        "auth.linxo.test"
+      ]) {
+        expect(json).not.toContain(privateValue);
+      }
+    }
+  );
 
   it("returns a safe OPENED payload after the payment link was opened", async () => {
     findContributionPaymentRecordByIdAndAccessToken.mockResolvedValue(

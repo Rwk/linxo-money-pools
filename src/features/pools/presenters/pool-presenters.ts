@@ -1,6 +1,6 @@
 import { poolThemes } from "@/config/pool-themes";
 import { getCashInStatusLabel } from "@/domain/payment/cash-in-status";
-import { computePoolTotals } from "@/domain/pool/pool.totals";
+import { computePoolAmountVisibility } from "@/domain/pool/pool.totals";
 import {
   isContributionInProgressForPublicDisplay,
   isContributionConfirmed,
@@ -84,6 +84,7 @@ type PoolDetailBaseViewModel = PoolCardViewModel & {
   collectorDisplayName: string;
   confirmedAmountLabel: string;
   inProgressAmountLabel: string;
+  hiddenAmountNotice?: string;
 };
 
 export type PublicPoolDetailViewModel = PoolDetailBaseViewModel & {
@@ -150,7 +151,8 @@ function toContributionRowViewModel(
 
 function toPrivateContributionRowViewModel(pool: PoolWithContributions) {
   return pool.contributions.map((contribution) => {
-    const domainContribution = mapContributionToDomainContribution(contribution);
+    const domainContribution =
+      mapContributionToDomainContribution(contribution);
 
     return {
       id: contribution.id,
@@ -178,20 +180,28 @@ function toPrivateContributionRowViewModel(pool: PoolWithContributions) {
   });
 }
 
-function toPoolDetailBaseViewModel(pool: PoolWithContributions): PoolDetailBaseViewModel {
+function toPoolDetailBaseViewModel(
+  pool: PoolWithContributions,
+  audience: "public" | "private"
+): PoolDetailBaseViewModel {
   const theme = poolThemes[pool.eventType];
-  const totals = computePoolTotals(
+  const amounts = computePoolAmountVisibility(
     pool.contributions.map(mapContributionToDomainContribution)
   );
+  const totals =
+    audience === "public" ? amounts.publicTotals : amounts.privateTotals;
   const visibleContributions = pool.contributions
     .map(mapContributionToDomainContribution)
     .filter(isContributionVisibleOnPublicPage);
-  const confirmedVisibleCount = visibleContributions.filter(isContributionConfirmed).length;
+  const confirmedVisibleCount = visibleContributions.filter(
+    isContributionConfirmed
+  ).length;
   const inProgressVisibleCount = visibleContributions.filter(
     isContributionInProgressForPublicDisplay
   ).length;
   const collectorReady =
-    pool.collectorAuthorizedAccountId !== null && pool.collectorAliasId !== null;
+    pool.collectorAuthorizedAccountId !== null &&
+    pool.collectorAliasId !== null;
 
   return {
     id: pool.id,
@@ -210,6 +220,9 @@ function toPoolDetailBaseViewModel(pool: PoolWithContributions): PoolDetailBaseV
     collectorDisplayName: pool.collectorDisplayName,
     confirmedAmountLabel: `${totals.confirmedAmount} EUR`,
     inProgressAmountLabel: `${totals.inProgressAmount} EUR`,
+    ...(audience === "public" && amounts.hasHiddenConfirmedContributions
+      ? { hiddenAmountNotice: t("poolDetails.hiddenAmountsNotice") }
+      : {}),
     readinessLabel: collectorReady
       ? t("pools.readinessReady")
       : t("pools.readinessMissing"),
@@ -229,8 +242,10 @@ function toPoolDetailBaseViewModel(pool: PoolWithContributions): PoolDetailBaseV
   };
 }
 
-export function toPoolCardViewModel(pool: PoolWithContributions): PoolCardViewModel {
-  return toPoolDetailBaseViewModel(pool);
+export function toPoolCardViewModel(
+  pool: PoolWithContributions
+): PoolCardViewModel {
+  return toPoolDetailBaseViewModel(pool, "private");
 }
 
 export function toPublicPoolDetailViewModel(
@@ -239,7 +254,7 @@ export function toPublicPoolDetailViewModel(
   const visibleContributions = toContributionRowViewModel(pool);
 
   return {
-    ...toPoolDetailBaseViewModel(pool),
+    ...toPoolDetailBaseViewModel(pool, "public"),
     mode: "public",
     visibleContributionCount: visibleContributions.length,
     visibleContributions
@@ -264,7 +279,7 @@ export function toPrivatePoolDetailViewModel(
   );
 
   return {
-    ...toPoolDetailBaseViewModel(pool),
+    ...toPoolDetailBaseViewModel(pool, "private"),
     mode: "private",
     visibleContributionCount: allContributions.filter((contribution) =>
       visibleContributionIds.has(contribution.id)

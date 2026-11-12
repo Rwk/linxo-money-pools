@@ -74,8 +74,13 @@ as a separate contract issue.
 
 **Public/private contribution amounts:**
 
-- The public total includes only publicly visible contribution amounts. Indicate
-  that some contributions are hidden when applicable.
+- The public confirmed total includes only confirmed contributions whose amounts
+  are public. Public in-progress amounts also exclude hidden amounts. A generic
+  French notice explains that hidden amounts are excluded when applicable.
+- Business decision: this is amount privacy, not contribution anonymity. Keep
+  the existing public rows, contributor-name visibility rules and "Montant masqué"
+  labels. The earlier requirement to conceal the number of hidden contributions
+  is withdrawn; their rows remain countable. Do not expose their monetary sum.
 - Public pages, all public API responses and progress indicators must never
   disclose hidden amounts or data allowing their reconstruction, including
   through aggregate totals or differences between exposed values.
@@ -86,6 +91,10 @@ as a separate contract issue.
   include `EXECUTED` and `COLLECTED`, as described in
   [Contribution statuses](./contribution-statuses.md). Visibility changes must
   not alter payment state or make incomplete payments count as confirmed.
+
+The public/private calculation and regression coverage are implemented locally;
+see [amount privacy and manual acceptance](./contribution-amount-privacy.md).
+Production deployment and manual acceptance of this P0 change remain unverified.
 
 ### P1 — Functional improvements
 

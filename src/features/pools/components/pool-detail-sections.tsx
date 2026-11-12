@@ -44,19 +44,31 @@ export function PoolOverviewCard({ pool }: { pool: PoolDetailViewModel }) {
 
         <div className="grid gap-4 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="font-semibold text-slate-950">{t("poolDetails.collector")}</p>
+            <p className="font-semibold text-slate-950">
+              {t("poolDetails.collector")}
+            </p>
             <p>{pool.collectorDisplayName}</p>
           </div>
           <div>
-            <p className="font-semibold text-slate-950">{t("poolDetails.closingDate")}</p>
+            <p className="font-semibold text-slate-950">
+              {t("poolDetails.closingDate")}
+            </p>
             <p>{pool.closingDateLabel}</p>
           </div>
           <div>
-            <p className="font-semibold text-slate-950">{t("poolDetails.confirmedAmount")}</p>
+            <p className="font-semibold text-slate-950">
+              {t(
+                pool.mode === "public"
+                  ? "poolDetails.publicConfirmedAmount"
+                  : "poolDetails.privateConfirmedAmount"
+              )}
+            </p>
             <p>{pool.confirmedAmountLabel}</p>
           </div>
           <div>
-            <p className="font-semibold text-slate-950">{t("poolDetails.shareLink")}</p>
+            <p className="font-semibold text-slate-950">
+              {t("poolDetails.shareLink")}
+            </p>
             <div className="mt-1 flex flex-wrap items-center gap-3">
               <Link
                 className="text-teal-700 underline-offset-4 transition hover:underline"
@@ -87,16 +99,35 @@ export function PoolDetailSections({
       {showOverview ? <PoolOverviewCard pool={pool} /> : null}
 
       <section className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6">
-        <h2 className="text-lg font-semibold text-slate-950">{t("poolDetails.totalsTitle")}</h2>
+        <h2 className="text-lg font-semibold text-slate-950">
+          {t("poolDetails.totalsTitle")}
+        </h2>
+        {pool.mode === "public" && pool.hiddenAmountNotice ? (
+          <p className="mt-3 text-sm text-[var(--muted)]">
+            {pool.hiddenAmountNotice}
+          </p>
+        ) : null}
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm text-[var(--muted)]">{t("poolDetails.confirmed")}</p>
+            <p className="text-sm text-[var(--muted)]">
+              {t(
+                pool.mode === "public"
+                  ? "poolDetails.publicConfirmedAmount"
+                  : "poolDetails.privateConfirmedAmount"
+              )}
+            </p>
             <p className="mt-1 text-xl font-semibold text-slate-950">
               {pool.confirmedAmountLabel}
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm text-[var(--muted)]">{t("poolDetails.inProgress")}</p>
+            <p className="text-sm text-[var(--muted)]">
+              {t(
+                pool.mode === "public"
+                  ? "poolDetails.publicInProgressAmount"
+                  : "poolDetails.inProgress"
+              )}
+            </p>
             <p className="mt-1 text-xl font-semibold text-slate-950">
               {pool.inProgressAmountLabel}
             </p>
@@ -117,9 +148,11 @@ export function PoolDetailSections({
         <h2 className="text-lg font-semibold text-slate-950">
           {t("poolDetails.visibleContributions")}
         </h2>
-          {pool.visibleContributionCount === 0 ? (
-          <EmptyContributionState message={t("poolDetails.noVisibleContributions")} />
-          ) : pool.mode === "public" ? (
+        {pool.visibleContributionCount === 0 ? (
+          <EmptyContributionState
+            message={t("poolDetails.noVisibleContributions")}
+          />
+        ) : pool.mode === "public" ? (
           <ul className="mt-4 space-y-3">
             {pool.visibleContributions.map((contribution) => (
               <li

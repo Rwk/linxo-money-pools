@@ -521,7 +521,7 @@ function ContributionSummaryCard({ pool }: { pool: PrivatePoolDetailViewModel })
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-            {t("poolDetails.confirmed")}
+            {t("poolDetails.privateConfirmedAmount")}
           </p>
           <p className="mt-2 text-xl font-semibold text-slate-950">
             {pool.confirmedAmountLabel}

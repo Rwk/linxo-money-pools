@@ -141,7 +141,7 @@ export const fr = {
     metrics: {
       totalPools: "Cagnottes créées",
       openPools: "Cagnottes ouvertes",
-      confirmedAmount: "Montant confirmé"
+      confirmedAmount: "Montant confirmé total"
     },
     emptyTitle: "Vous n'avez pas encore créé de cagnotte.",
     emptyBody:
@@ -224,6 +224,11 @@ export const fr = {
     confirmedAmount: "Montant confirmé",
     shareLink: "Lien de partage",
     totalsTitle: "Totaux de la cagnotte",
+    publicConfirmedAmount: "Montant confirmé public",
+    privateConfirmedAmount: "Montant confirmé total",
+    publicInProgressAmount: "Montant public en cours",
+    hiddenAmountsNotice:
+      "Certains montants sont masqués et ne sont pas inclus dans le total public.",
     confirmed: "Confirmée",
     inProgress: "En cours",
     statusTitle: "Statut des contributions et paiements",
