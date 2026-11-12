@@ -48,6 +48,7 @@ functional product requirements and their priorities remain unchanged.
 | Beneficiary complementary name       | **Implemented, locally validated**: `63a47fe`. The order builder normalizes this field to the documented character set and 140-character limit, with a nonempty fallback. DEV-3 checked serialized JSON and successful Sandbox order creation; focused regression tests pass. | Production deployment is unverified. Do not infer that this correction caused or resolved historical production failures.                                      |
 | Collector account reuse              | **Implemented locally; manual acceptance pending.** New pools can select an owner-scoped, provenance-bound alias/account pair or use the existing new-collector path. See [collector reuse](./collector-account-reuse.md).                                                    | Complete the documented Sandbox acceptance; legacy references without provenance/entity type are excluded. No production deployment is implied.                |
 | Pool lifecycle P1-A | **Implemented locally**, including permanent archive, atomic contribution acceptance and PostgreSQL concurrency tests. See [lifecycle verification](./pool-lifecycle.md). | P1-B tabs/controls implemented locally; manual Sandbox lifecycle acceptance remains pending. |
+| Favorite payment providers P2 | **Implemented locally; manual Sandbox acceptance pending.** Approved historical-usage BIC list is applied to authorization preferences and shortening. | Check favorite-bank display, access to all banks, authorization and return. See [payment preferences](./linxo-payments.md#favorite-payment-providers). |
 | Remaining P0, P1 and P2 requirements | **Planned**. Existing visibility controls and dashboard redesigns are partial foundations, not evidence that these requirements are complete.                                                                                                                                 | Implement and validate after the local development prerequisite.                                                                                               |
 | Safe local development               | **Accepted; workstream closed**. DEV-1 through DEV-4 were implemented and manually accepted by the developer. See the acceptance record below.                                                                                                                                | Delayed authorization-to-execution transition remains an observation with an unconfirmed cause; it does not block acceptance of the environment.               |
 
@@ -61,7 +62,7 @@ functional product requirements and their priorities remain unchanged.
 | P1           | Collector account reuse                                       | Only the authenticated user's authorized Linxo resources can be selected.                                 |
 | P1           | Fixed-price contributions                                     | Server-enforced quantity and integer-cent calculation preserve existing payment behavior.                 |
 | P1           | Pool organization and archiving                               | Permanent owner-only archiving (P1-A) and three-tab owner UI (P1-B), locally implemented; manual P1-B acceptance pending.                                    |
-| P2           | Favorite payment providers                                    | Verified BIC configuration with the full bank list still accessible.                                      |
+| P2           | Favorite payment providers                                    | Approved historical-usage BIC configuration; full bank list remains accessible; manual Sandbox acceptance pending.                                      |
 | P2           | Dashboard redesign                                            | Desktop/mobile acceptance, coordinated with the three-tab organization.                                   |
 
 ## Product requirements
@@ -168,11 +169,17 @@ at the future v1.1.0 production release; no production migration was applied.
 
 ### P2 — User experience
 
-**Favorite payment providers:** configure `favorite_providers` on Linxo
-authorization URLs through a simple, centralized server-side configuration.
-Initial desired bank families are BPCE, Société Générale, Crédit Agricole, N26,
-Revolut, LCL and Crédit Mutuel **excluding Arkéa**. Exact BIC values must be
-verified before implementation; preserve access to the complete bank list.
+**Favorite payment providers — implemented locally, manual acceptance pending:**
+the product-approved ten BICs, in their approved order, were selected from an
+analysis of historical money pool payment orders. This decision supersedes the
+former provisional bank-family shortlist. The list is centralized in
+`src/infrastructure/linxo/linxo-authorization-url.ts`. Per the Linxo Payments
+contract, `favorite_providers` is passed through the shortening request's
+`query_params`, and added to the original authorization URL used as fallback.
+It is a display preference, not a whitelist; other supported banks remain
+accessible through Linxo's complete bank list. See [the selected BICs, contract,
+verification and manual Sandbox checklist](./linxo-payments.md#favorite-payment-providers).
+No payment payload, return route, beneficiary, amount or status was changed.
 
 **Dashboard redesign:** improve visual hierarchy, primary actions, filter
 navigation, status presentation, distinction between informational tags and
@@ -273,7 +280,7 @@ Authentication and identity verification requirements remain undecided.
    validated; production deployment remains unverified. Retain the delayed
    authorization-to-execution observation without assigning an unconfirmed cause.
 3. Resume P0, then P1 and P2 in small changes with automated checks and targeted
-   manual acceptance. Follow the permanent-archiving decision and verify bank BICs
-   before their respective implementations.
+   manual acceptance. Follow the permanent-archiving decision and complete Sandbox acceptance of
+   the approved favorite-provider list.
 4. Validate the complete v1.1.0 release before creating its final tag. Pushes and
    deployments require approval.

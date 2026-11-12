@@ -1,3 +1,4 @@
+import { LINXO_FAVORITE_PROVIDERS_VALUE } from "@/infrastructure/linxo/linxo-authorization-url";
 import { describe, expect, it, vi } from "vitest";
 
 import { LinxoPaymentsApiError } from "@/infrastructure/linxo/linxo-payments-errors";
@@ -46,13 +47,11 @@ describe("LinxoPaymentsClient", () => {
     );
   });
   it("rejects malformed alias ownership metadata", async () => {
-    const fetchMock = vi
-      .fn<typeof fetch>()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ id: "alias" }), {
-          headers: { "content-type": "application/json" }
-        })
-      );
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ id: "alias" }), {
+        headers: { "content-type": "application/json" }
+      })
+    );
     const client = new LinxoPaymentsClient({
       fetch: fetchMock,
       config,
@@ -107,6 +106,46 @@ describe("LinxoPaymentsClient", () => {
         })
       })
     );
+  });
+
+  it("passes encoded favorites through the documented shorten body without modifying the returned short URL", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            short_auth_url: "https://short.url/abc?existing=1#fragment"
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        )
+      );
+    const client = new LinxoPaymentsClient({
+      fetch: fetchMock,
+      config,
+      tokenService: createTokenService()
+    });
+    await expect(
+      client.shortenOrderAuthUrl({
+        orderId: "order-123",
+        queryParams: {
+          locale: "fr_FR",
+          favorite_providers: LINXO_FAVORITE_PROVIDERS_VALUE
+        }
+      })
+    ).resolves.toEqual({
+      shortAuthUrl: "https://short.url/abc?existing=1#fragment"
+    });
+    const body = JSON.parse(fetchMock.mock.calls[0][1]!.body as string);
+    const params = new URLSearchParams(body.query_params);
+    expect(params.getAll("favorite_providers")).toEqual([
+      LINXO_FAVORITE_PROVIDERS_VALUE
+    ]);
+    expect(body.query_params).toContain("%2C");
+    expect(body.query_params).not.toContain("%252C");
+    expect(params.get("locale")).toBe("fr_FR");
+    expect(params.get("ask_for_alias")).toBe("false");
+    expect(params.has("providers")).toBe(false);
+    expect(params.has("provider_id")).toBe(false);
   });
 
   it("throws a typed api error for non-2xx responses", async () => {

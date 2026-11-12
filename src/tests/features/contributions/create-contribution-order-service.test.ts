@@ -1,3 +1,7 @@
+import {
+  LINXO_FAVORITE_PROVIDERS_VALUE,
+  withLinxoFavoriteProviders
+} from "@/infrastructure/linxo/linxo-authorization-url";
 import { PoolLifecycleError } from "@/domain/pool/pool.rules";
 import { ContributionPriceChangedError } from "@/domain/pool/pool.pricing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -196,13 +200,14 @@ describe("createContributionOrderForPool", () => {
     });
     expect(createContributionRecord).toHaveBeenCalled();
     expect(shortenOrderAuthUrl).toHaveBeenCalledWith({
-      orderId: "order_123"
+      orderId: "order_123",
+      queryParams: { favorite_providers: LINXO_FAVORITE_PROVIDERS_VALUE }
     });
     expect(updateContributionAfterOrderCreation).toHaveBeenCalledWith({
       contributionId: "contribution_123",
       linxoOrderId: "order_123",
       linxoOrderStatus: "NEW",
-      authUrl: "https://auth.linxo.test/order_123",
+      authUrl: withLinxoFavoriteProviders("https://auth.linxo.test/order_123"),
       shortAuthUrl: "https://short.linxo.test/order_123"
     });
     expect(markContributionInitiationFailed).not.toHaveBeenCalled();
@@ -548,4 +553,68 @@ describe("createContributionOrderForPool", () => {
       expect(deps.updateContributionAfterOrderCreation).not.toHaveBeenCalled();
     }
   );
+  it("uses customized fallback after shortening fails without changing order data or return URL", async () => {
+    const deps = fixedDependencies();
+    const returnUrl =
+      "https://app.test/return?pool_slug=gift&token=fictional#done";
+    const authUrl = `https://payments.invalid/authorize/order?locale=fr&redirect_url=${encodeURIComponent(returnUrl)}&favorite_providers=OLD#bank-list`;
+    deps.buildReturnUrl.mockReturnValue(returnUrl);
+    deps.createOrder.mockResolvedValue({
+      id: "fixed-order",
+      order_status: "NEW",
+      auth_url: authUrl
+    });
+    deps.shortenOrderAuthUrl.mockRejectedValue(
+      new Error("shortening unavailable")
+    );
+    await createContributionOrderForPool(fixedInput("2"), deps);
+    const saved = deps.updateContributionAfterOrderCreation.mock.calls[0][0];
+    const url = new URL(saved.authUrl!);
+    expect(saved.shortAuthUrl).toBeNull();
+    expect(url.searchParams.getAll("favorite_providers")).toEqual([
+      LINXO_FAVORITE_PROVIDERS_VALUE
+    ]);
+    expect(url.searchParams.get("redirect_url")).toBe(returnUrl);
+    expect(url.searchParams.get("locale")).toBe("fr");
+    expect(url.hash).toBe("#bank-list");
+    expect(deps.createOrder.mock.calls[0][0]).toMatchObject({
+      redirect_url: returnUrl,
+      instructions: [
+        {
+          amount: "25.00",
+          currency: "EUR",
+          beneficiary: {
+            schema: "ALIAS",
+            alias_id: openReadyPool.collectorAliasId
+          }
+        }
+      ]
+    });
+    expect(deps.createOrder.mock.calls[0][0]).not.toHaveProperty(
+      "favorite_providers"
+    );
+    expect(deps.shortenOrderAuthUrl).toHaveBeenCalledWith({
+      orderId: "fixed-order",
+      queryParams: { favorite_providers: LINXO_FAVORITE_PROVIDERS_VALUE }
+    });
+    expect(deps.markContributionInitiationFailed).not.toHaveBeenCalled();
+  });
+  it("keeps an unsafe-to-modify fallback intact without failing initiation", async () => {
+    const deps = fixedDependencies();
+    deps.createOrder.mockResolvedValue({
+      id: "fixed-order",
+      order_status: "NEW",
+      auth_url: "/provider-supplied-relative-link"
+    });
+    deps.shortenOrderAuthUrl.mockRejectedValue(
+      new Error("shortening unavailable")
+    );
+    await createContributionOrderForPool(fixedInput("1"), deps);
+    expect(deps.updateContributionAfterOrderCreation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        authUrl: "/provider-supplied-relative-link",
+        shortAuthUrl: null
+      })
+    );
+  });
 });

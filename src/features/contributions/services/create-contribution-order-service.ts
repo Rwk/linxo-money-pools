@@ -1,5 +1,9 @@
 import "server-only";
 import {
+  LINXO_FAVORITE_PROVIDERS_VALUE,
+  withLinxoFavoriteProviders
+} from "@/infrastructure/linxo/linxo-authorization-url";
+import {
   calculateContributionAmount,
   ContributionPriceChangedError
 } from "@/domain/pool/pool.pricing";
@@ -146,7 +150,9 @@ function buildLinxoOrderRequest(input: {
 }
 
 function getFallbackRedirectUrl(order: LinxoOrder): string | null {
-  return order.auth_url ?? null;
+  return order.auth_url
+    ? withLinxoFavoriteProviders(order.auth_url)
+    : (order.auth_url ?? null);
 }
 
 export async function createContributionOrderForPool(
@@ -222,7 +228,8 @@ export async function createContributionOrderForPool(
 
     try {
       const shortened = await dependencies.shortenOrderAuthUrl({
-        orderId: order.id
+        orderId: order.id,
+        queryParams: { favorite_providers: LINXO_FAVORITE_PROVIDERS_VALUE }
       });
 
       shortAuthUrl = shortened.shortAuthUrl;

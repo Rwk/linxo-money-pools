@@ -33,6 +33,77 @@ Runtime HTTP calls now have a server-only foundation:
 The application now creates orders, prepares a short payment URL, and routes
 contributors through an internal payment handoff page before they reach Linxo.
 
+## Favorite payment providers
+
+Implemented locally on 2026-11-13; **manual Sandbox acceptance pending**. The
+product-approved list was selected from an analysis of historical money pool
+payment orders supplied by the developer. These public bank identifiers are
+presentation configuration, separate from private collector/account data.
+
+Approved order (centralized in `src/infrastructure/linxo/linxo-authorization-url.ts`):
+
+```text
+BOUSFRPPXXX,CEPAFRPP131,FTNOFRP1XXX,SOGEFRPPXXX,CMCIFR2AXXX,REVOFRP2XXX,PSSTFRPPXXX,CCOPFRPPXXX,AGRIFRPP813,CCBPFRPPMAR
+```
+
+The [Linxo Payments contract](https://developers.linxo.com/payments/reference-direct-payment-api/)
+documents `favorite_providers` on the authorization flow: valid BICs customize the
+initial bank list, with “See all banks” providing access to the complete list.
+It is not a payment authorization whitelist. Actual displayed providers depend
+on Linxo's available providers and payment capabilities; their Sandbox appearance
+and ordering have not been manually verified in this milestone.
+
+The application receives `auth_url` from order creation; it does not construct
+that provider URL itself. Integration points:
+
+1. After order creation, the existing `POST /v1/orders/{order_id}/shorten` call
+   receives `favorite_providers` through its `queryParams` input. The existing
+   HTTP client serializes `query_params` using `URLSearchParams` and still forces
+   `ask_for_alias=false`. The returned short URL is retained unchanged: the
+   contract requires customization in the shortening body, rather than assuming
+   that arbitrary parameters appended to a short link will be forwarded.
+2. The original `auth_url`, retained as fallback if shortening fails, gets the
+   same approved list using `URL` and `searchParams.set`. Commas are encoded once;
+   an existing favorite parameter is replaced and duplicates are removed. Other
+   query values (including nested return URLs), repeated parameters and fragments
+   are preserved. Malformed/relative, non-HTTPS or credential-bearing URLs are
+   returned unchanged so preference customization cannot break the prior flow.
+3. The existing handoff and `/start-payment` route still prefer the stored short
+   URL, then the original/fallback URL. Direct links and QR codes use that same
+   path. Existing persisted orders/short links are not rewritten or re-shortened;
+   use a newly created contribution to test the preference.
+
+No changes to order payloads, payment amounts/currency, beneficiaries, statuses,
+webhook processing, callback routes, return URLs or database schema. No Linxo
+HTTP client change, credentials/configuration edit, real API call or production
+data operation was needed.
+
+Automated verification: 61 targeted tests passed across URL customization,
+shortening client, contribution initialization and final redirect. Full Vitest:
+554 passed, 3 historical date-fixture failures, 15 opt-in PostgreSQL checks skipped.
+The historical failures remain in `create-pool-action.test.ts` (one) and
+`update-pool-action.test.ts` (two), whose July 2026 dates have expired. ESLint and
+production build pass (synthetic payment configuration). Standalone TypeScript
+retains eight historical fixture errors: three Decimal stubs in
+`payment-handoff-presenter.test.ts`, three missing dependency methods in
+`sync-contribution-status.test.ts`, and two incomplete detail view-model fixtures
+in `pool-detail-sections*.test.ts(x)`. No new type error. All API calls in automated
+tests are mocked; no payment orders were created for verification.
+
+### Manual Sandbox acceptance — pending
+
+1. With existing local Sandbox configuration, create a new fictional contribution
+   in an ACTIVE pool with an authorized Sandbox collector.
+2. Follow the payment link (and optionally QR handoff) to Linxo's bank-selection
+   screen. Verify the available approved favorite banks appear first; record any
+   Sandbox capability/provider omissions separately.
+3. Use “See all banks” and confirm other supported banks remain accessible.
+4. Complete only a Sandbox banking simulation. Verify authorization still works,
+   the browser returns to the same pool, and existing status/webhook handling
+   continues normally. Never use real banking data or initiate a real transaction.
+5. Report results before marking this feature manually accepted. Existing short
+   links created before this change are expected to retain their old preferences.
+
 ## Collector account setup
 
 Before a pool can receive contributions in a future step, the pool creator must
@@ -44,7 +115,7 @@ configure a collector account in the protected dashboard.
   contribution order flow still uses `beneficiary: { schema: "ALIAS", alias_id }`
 - The app stores only safe Linxo references in the pool:
   `collectorAuthorizedAccountId` and `collectorAliasId`
-- The app does not store IBAN, BIC, account number, birth data, company KYC
+- The app does not store collector IBAN, BIC, account number, birth data, company KYC
   data, or natural person KYC data locally
 
 Collector reuse for new pools uses owner-scoped local references and a targeted
