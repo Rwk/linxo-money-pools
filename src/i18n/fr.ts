@@ -2,6 +2,10 @@ export const fr = {
   navigation: {
     homeLabel: "Linxo Cagnottes — Accueil",
     primary: "Navigation principale",
+    menu: "Menu",
+    openMenu: "Ouvrir le menu de navigation",
+    closeMenu: "Fermer le menu de navigation",
+    home: "Accueil",
     account: "Compte",
     skipToContent: "Aller au contenu"
   },
@@ -120,6 +124,9 @@ export const fr = {
     }
   },
   auth: {
+    developmentBadge: "Développement local",
+    developmentTitle: "Connectez-vous à votre environnement local",
+    developmentBody: "Utilisez le compte de test local pour accéder aux cagnottes. Aucune connexion Google n’est nécessaire.",
     title: "Connectez-vous avec votre compte Google Linxo",
     body:
       "Seuls les collaborateurs Linxo peuvent créer et gérer des cagnottes. Utilisez votre compte Google `@linxo.com` pour continuer. Les participants n'ont pas besoin de se connecter pour contribuer depuis un lien privé.",

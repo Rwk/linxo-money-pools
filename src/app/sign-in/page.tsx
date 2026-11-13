@@ -36,11 +36,17 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         <div className="space-y-6">
           <div className="space-y-3">
             <span className="inline-flex rounded-full bg-white/70 px-3 py-1 text-xs font-medium tracking-[0.18em] text-[var(--muted)] uppercase">
-              {t("common.employeeAccess")}
+              {t(
+                hasDevelopmentAuth
+                  ? "auth.developmentBadge"
+                  : "common.employeeAccess"
+              )}
             </span>
-            <h1 className="ui-page-title">{t("auth.title")}</h1>
+            <h1 className="ui-page-title">
+              {t(hasDevelopmentAuth ? "auth.developmentTitle" : "auth.title")}
+            </h1>
             <p className="text-base leading-7 text-[var(--muted)]">
-              {t("auth.body")}
+              {t(hasDevelopmentAuth ? "auth.developmentBody" : "auth.body")}
             </p>
           </div>
 
@@ -63,15 +69,14 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
                 label={t("common.signInDevelopment")}
                 redirectTo={callbackUrl || "/dashboard"}
               />
-            ) : null}
-            {hasGoogleOAuthCredentials || !hasDevelopmentAuth ? (
+            ) : (
               <SignInButton
                 provider="google"
                 disabled={!hasGoogleOAuthCredentials}
                 label={t("common.signInWithGoogle")}
                 redirectTo={callbackUrl || "/dashboard"}
               />
-            ) : null}
+            )}
             <Link className={buttonClassName("tertiary")} href="/">
               {t("common.backToHome")}
             </Link>

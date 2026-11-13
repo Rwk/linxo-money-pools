@@ -20,6 +20,7 @@ vi.mock("@/auth", () => ({
 }));
 import SignInPage from "@/app/sign-in/page";
 import { SignInButton } from "@/components/auth/sign-in-button";
+import { t } from "@/i18n/t";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
 afterEach(() => {
@@ -40,7 +41,19 @@ describe("authentication interface", () => {
     const page = await SignInPage({ searchParams: Promise.resolve({}) });
     const html = renderToStaticMarkup(page);
     expect(html.includes("Connexion développeur")).toBe(enabled);
-    expect(html.includes("Se connecter avec Google")).toBe(google || !enabled);
+    expect(html.includes("Se connecter avec Google")).toBe(!enabled);
+    expect((html.match(/<button/g) ?? []).length).toBe(1);
+    expect(html).toContain(t(enabled ? "auth.developmentTitle" : "auth.title"));
+    expect(html).toContain(
+      renderToStaticMarkup(
+        React.createElement(
+          React.Fragment,
+          null,
+          t(enabled ? "auth.developmentBody" : "auth.body")
+        )
+      )
+    );
+    if (enabled) expect(html).not.toContain(t("auth.credentialsMissing"));
   });
 
   it("uses the same Auth.js sign-in and sign-out server actions", async () => {

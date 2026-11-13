@@ -1,6 +1,8 @@
 # DESIGN-1 — Linxo Cagnottes foundations
 
-Implemented locally on 2026-11-13. **Manual visual acceptance pending.**
+Implemented locally on 2026-11-13. The developer accepted the overall visual
+direction after review. The sign-in/mobile-header follow-up is implemented;
+**manual acceptance of these corrections remains pending**.
 This milestone introduces shared foundations and navigation. DESIGN-2 through
 DESIGN-6 remain separate work; this is not a complete page redesign.
 
@@ -98,12 +100,44 @@ navigation visibility from `auth()` using the existing Linxo-domain/session-ID
 criteria; it changes no provider, session callback, authentication or authorization
 rule. Protected pages/actions still enforce their own server guards.
 
-`SiteNavigation` uses wrapping flex rows, with no hamburger menu or extra state
-library. The home/brand link is always visible. Authenticated users see
-`Mes cagnottes`, `Créer une cagnotte` and the existing sign-out server action,
-visually grouped as account actions. Visitors see `Se connecter` to `/sign-in`,
-which continues to offer development login when enabled and Google as configured.
-The sign-in page does not repeat the header's sign-in link.
+`SiteNavigation` keeps one horizontal header row. Below 768 px, the brand stays
+left and a native `Menu` button stays right; the navigation disclosure opens
+beneath the header without increasing the closed header's height. At 768 px and
+above, destinations are directly visible and the menu trigger is hidden. Both
+views share one navigation DOM tree, including the existing sign-out server
+action. No menu library is added.
+
+Authenticated navigation contains `Mes cagnottes`, `Créer une cagnotte` and
+`Se déconnecter`. Anonymous mobile navigation contains home and sign-in; on the
+sign-in page the extra sign-in link is omitted. The brand/home link remains
+visible at every width. FAQ is still deferred until DESIGN-2.
+
+The disclosure button exposes `aria-expanded`, `aria-controls` and a French
+open/close accessible name. Native button Enter/Space activation and normal Tab
+navigation apply. Opening focuses the first destination; Escape closes and returns
+focus to the trigger. Selection, submission, outside pointer/focus movement and
+route changes close it. Crossing the desktop breakpoint resets the disclosure
+and moves focus to a visible control when required. The panel is positioned within
+the header's horizontal bounds; the brand can truncate at unusually narrow widths.
+Desktop navigation remains available regardless of disclosure state.
+
+### Exclusive authentication option
+
+The sign-in server component uses `hasDevelopmentAuth` exported by the existing
+Auth.js configuration. It renders exactly one authentication button:
+
+- Effective local development mode (`NODE_ENV=development`,
+  `ENABLE_DEV_AUTH=true`, no managed Vercel environment): `Connexion développeur`,
+  local-development badge, heading and explanation. Google credentials are not
+  required, and a configured Google provider is not also displayed.
+- Development mode disabled/absent, or production: `Se connecter avec Google`
+  alone, preserving the Linxo employee restriction and existing missing-credentials
+  disabled state. In production the existing server guard excludes the development
+  provider even if `ENABLE_DEV_AUTH=true` is accidentally supplied.
+
+No client environment checks, provider/session changes, credential changes or
+`.env.local` edits are introduced. Return destinations and Auth.js server actions
+are preserved.
 
 Current destinations expose `aria-current="page"`. Pool-detail routes mark the
 owner collection current; the creation route marks only creation current.
@@ -152,6 +186,14 @@ Automated verification:
   in `sync-contribution-status.test.ts`, and two incomplete view-model fixtures
   in `pool-detail-sections*.test.ts(x)`. No new application/test type errors.
 
+Follow-up verification (2026-11-13): 64 targeted tests pass across six files,
+including real server-configuration rendering in development/production, exclusive
+provider buttons/headings, mobile disclosure state, focus, Escape, route changes
+and breakpoint focus behavior. ESLint and the production build pass. The production
+build deliberately supplies `ENABLE_DEV_AUTH=true` with synthetic credentials;
+existing production guards keep development authentication disabled. No broader
+suite or new manual browser acceptance is claimed for this follow-up.
+
 Browser visual checks were attempted using the already available Chromium binary but could not launch:
 `libatk-1.0.so.0` is absent. No system package or browser framework was installed.
 Therefore desktop/mobile screenshots, visual overflow and browser keyboard checks
@@ -162,11 +204,15 @@ Manual checklist (desktop, 390 px mobile, and narrow 320 px):
 
 - Visit home, sign-in and a public pool anonymously. Check consistent identity,
   legible type, compact header, no horizontal overflow, no owner actions and no
-  FAQ link. Header navigation must wrap without clipping.
+  FAQ link. The closed mobile header must stay on one row. Open the menu, verify
+  destinations, close with Escape and check focus returns to its trigger. On
+  desktop destinations remain visible directly; check no duplicate actions.
 - Tab from the document start: the skip link becomes visible and moves focus to
   content. Every interactive element has a visible outline; order follows reading
   order. Verify ordinary and reduced-motion settings and 200% zoom.
-- Sign in using development authentication locally. Check one account action
+- Sign in using the developer option locally: Google must be absent and the
+  heading must describe local development. With development auth disabled, check
+  Google is the only option. Check one account action
   group, dashboard/creation destinations and active indication. Sign out and
   verify anonymous navigation returns. Verify production Google login in its
   configured environment separately; no provider configuration was changed.
@@ -178,5 +224,5 @@ Manual checklist (desktop, 390 px mobile, and narrow 320 px):
   fixed amounts, amount privacy, collector reuse, archival confirmation and payment
   handoff/return. Do not initiate real transactions during acceptance.
 
-Record developer acceptance before marking DESIGN-1 manually accepted. No push,
+Record developer acceptance of the sign-in/mobile corrections before starting DESIGN-2. No push,
 deployment or release tag was created by this task.

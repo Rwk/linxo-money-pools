@@ -1,3 +1,5 @@
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { Auth } from "@auth/core";
 import type { NextAuthConfig } from "next-auth";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -78,6 +80,37 @@ describe("development Auth.js configuration", () => {
         "@/auth/development-auth"
       );
       expect(await authorizeDevelopmentUser()).toBeNull();
+      expect(state.upsert).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    ["development", "true", true, true],
+    ["development", "true", false, true],
+    ["development", "false", true, false],
+    ["development", "", true, false],
+    ["production", "true", true, false],
+    ["production", "false", true, false]
+  ] as const)(
+    "renders one option using effective server configuration (%s, %s, Google=%s)",
+    async (mode, flag, google, development) => {
+      vi.stubEnv("NODE_ENV", mode);
+      vi.stubEnv("ENABLE_DEV_AUTH", flag);
+      vi.stubEnv("AUTH_GOOGLE_ID", google ? "fake-google-id" : "");
+      vi.stubEnv("AUTH_GOOGLE_SECRET", google ? "fake-google-secret" : "");
+      const { hasDevelopmentAuth, config } = await configuration();
+      expect(hasDevelopmentAuth).toBe(development);
+      const { default: SignInPage } = await import("@/app/sign-in/page");
+      const html = renderToStaticMarkup(
+        await SignInPage({ searchParams: Promise.resolve({}) })
+      );
+      expect((html.match(/<button/g) ?? []).length).toBe(1);
+      expect(html.includes("Connexion développeur")).toBe(development);
+      expect(html.includes("Se connecter avec Google")).toBe(!development);
+      if (mode === "production")
+        expect(config.providers).toEqual([
+          expect.objectContaining({ id: "google" })
+        ]);
       expect(state.upsert).not.toHaveBeenCalled();
     }
   );
