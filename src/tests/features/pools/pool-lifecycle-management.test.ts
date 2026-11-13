@@ -62,18 +62,18 @@ describe("lifecycle presentation and archived owner management", () => {
       })
     );
     expect(screen.getByText("History preserved")).toBeTruthy();
-    expect(screen.getByText(t("poolLifecycle.archivedTitle"))).toBeTruthy();
+    expect(screen.getByText("Archivée")).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: t("refresh.button") })
+      screen.getByRole("button", { name: t("poolManagement.syncAction") })
     ).toBeTruthy();
     expect(
-      screen.queryByRole("button", { name: t("poolManagement.editOpen") })
+      screen.queryByRole("button", { name: t("poolManagement.editAction") })
     ).toBeNull();
     expect(
-      screen.queryByRole("button", { name: t("poolForms.closePool") })
+      screen.queryByRole("button", { name: t("poolManagement.closeAction") })
     ).toBeNull();
     expect(
-      screen.queryByRole("button", { name: t("poolForms.reopenPool") })
+      screen.queryByRole("button", { name: t("poolManagement.reopenAction") })
     ).toBeNull();
     expect(screen.queryByText(t("poolLifecycle.archive"))).toBeNull();
     expect(container.querySelector("#collector-account")).toBeNull();

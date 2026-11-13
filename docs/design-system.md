@@ -351,33 +351,57 @@ This is the only public-pool display change in DESIGN-4.
 
 ### Owner management
 
-The actual pool title is the only page H1. Its effective lifecycle, closing date
-and primary actions sit together: `Modifier`, `Copier le lien`,
-`Voir la page publique`. Copy receives the exact existing public URL, once.
-Edit stays on this page: opening it focuses the title field; cancellation or a
-successful save returns focus to the edit trigger. `aria-expanded` and
-`aria-controls` describe the edit state. The existing successful-save guard is
-retained so editing can be reopened after saving.
+The actual pool title is the only page H1. Directly below it, a single compact
+metadata group shows the effective lifecycle, closing date, payment readiness and
+configured collector display name. Only lifecycle uses a noninteractive status
+badge. Readiness/collector/closing date are no longer repeated in the details,
+a separate configured panel or contribution summary. The edit form still offers
+the existing closing-date control.
 
-A native keyboard-operable `Cycle de vie` disclosure near the heading groups
-close/reopen/archive controls. The existing required future date for expired
-pools and explicit required archive-confirmation checkbox remain. Archived pools
-have no edit, collector setup, close, reopen or archive mutation control.
-Reconciliation remains available, including after closure/archive, because
-already accepted payments and late webhooks still need to finish.
+One wrapping action bar follows metadata. Common actions stay on the left:
+`Modifier`, `Copier le lien`, `Voir la page publique`. The right group contains
+`Synchroniser` and visible effective-state lifecycle actions: `Clôturer` for
+ACTIVE; `Réouvrir` and `Archiver` for COMPLETED. At desktop widths both groups
+share one row when space permits; on mobile they wrap with the same native
+buttons and touch targets. A named group uses ordinary Tab navigation, avoiding
+the arrow-key contract of an ARIA toolbar. Copy receives the exact public URL.
 
-Content order: heading/actions; missing collector form or compact configured
-summary; complete owner totals/contribution counts; details/edit; visible and
-incomplete payment history; manual reconciliation. A missing collector uses one
-existing form directly in the main full-width column, above totals. Its natural
-person/company fields and server validation/API behavior are retained, with
-responsive related-field grids. There is no narrow sidebar or link-only warning.
-The configured summary shows readiness and collector display name, without
-banking details. History preserves recorded names/emails, amounts and payment
-statuses. Owner confirmed totals still include amounts hidden publicly; public
-privacy rules and totals are unchanged.
+Editing stays on this page: opening it focuses the title field; cancellation or
+a successful save returns focus to its trigger. `aria-expanded` and
+`aria-controls` describe editing. The successful-save guard still allows editing
+to be reopened after saving.
+
+There is no `Cycle de vie` disclosure or explanatory panel on the owner page.
+`Clôturer` and non-expired reopening invoke existing actions directly. Expired
+reopening opens a small, titled native modal dialog with the required explicit
+new date; archiving opens a native dialog with the existing irreversible warning
+and required confirmation checkbox. Reopening the archive dialog resets its
+checkbox. Native `showModal()` supplies focus containment, Escape cancellation
+and focus return; Cancel also closes it. Errors remain by the action or inside
+the relevant dialog. Existing actions and lifecycle rules remain authoritative;
+there is no duplicated server policy.
+
+`Synchroniser` uses the existing reconciliation action only on explicit submit,
+with pending disablement and live success/error feedback beside the button. The
+original empty-result handling and per-contribution eligibility remain on the
+server. No new client eligibility rule is inferred from totals. The former
+standalone bottom synchronization panel is removed. Archived pools retain this
+existing reconciliation ability and read-only details/history, with no edit,
+collector setup, close, reopen or archive control. Already accepted payments and
+late webhooks still need to finish after closure/archive.
+
+Content order: heading/metadata/action bar; missing collector form if needed;
+complete owner totals/contribution counts; details/edit; visible and incomplete
+payment history. The developer accepted creation and the full-width collector
+form; this follow-up leaves them unchanged. A missing collector still uses one
+existing form in the main column above totals, with natural person/company fields
+and the same server validation/API behavior. History retains names/emails,
+amounts and statuses. Owner confirmed totals include amounts hidden publicly;
+public privacy rules and totals remain unchanged.
 
 ### Verification and remaining limitations
+
+Original DESIGN-4 verification (`6ba5ac3`, before toolbar follow-up):
 
 - 81 targeted tests pass across 11 files: optional description creation/editing,
   FREE/FIXED controls, reuse/new collector paths, collector entity choices,
@@ -406,6 +430,31 @@ privacy rules and totals are unchanged.
   visual acceptance remain the developer's next step. Headless emoji/font and
   native date-input rendering can differ from the developer's browser.
 
+### Consolidated toolbar follow-up verification
+
+DESIGN-4 remains **pending revised visual acceptance**. Creation and the full-width
+collector form were accepted by the developer; this focused correction changes
+only owner metadata/action presentation, shared lifecycle presentation, French
+labels and relevant regression tests.
+
+- 65 targeted tests pass across eight files: unified actions/destinations,
+  effective-state availability, date/confirmation dialogs, synchronization
+  placement/pending/feedback/no-auto-run, metadata deduplication, edit focus,
+  owner-only actions, archived reconciliation and preserved private history.
+- Full Vitest: 664 passed, 15 opt-in PostgreSQL checks skipped. ESLint and
+  production build pass. Standalone TypeScript retains the eight historical
+  fixture errors listed above; no new error.
+- Chromium checks cover 320, 390, 768, 1024 and 1440 px across ACTIVE,
+  COMPLETED, expired and ARCHIVED fixtures (20 combinations), without horizontal
+  overflow. Action groups share a row at 1024/1440 px. Ten native modal checks
+  verified keyboard opening, keeping background application controls outside the
+  Tab sequence, Escape and focus return. Eight page audits and four open-dialog
+  axe WCAG A/AA/2.1 AA audits found no violations. No hydration/browser errors.
+- Browser verification uses actual hydrated owner components, compiled CSS and
+  fictional fixtures with mocked actions. No real authentication, database write,
+  Linxo request or payment is performed. Native keyboard and responsive results
+  supplement the unit tests; developer visual/Sandbox acceptance is separate.
+
 ### Manual acceptance checklist — pending
 
 Use local fictional/Sandbox data and the existing development login:
@@ -420,13 +469,17 @@ Use local fictional/Sandbox data and the existing development login:
    description area on owner/public views. Save a populated multiline description
    again. Check other fields and the existing fixed-price locking rules.
 4. Check long accented/emoji titles, wrapping, touch targets and keyboard focus.
+   Check the metadata appears once below the title and common/management actions
+   share a compact desktop row. At narrow widths check wrapping without overflow.
    Open/close editing repeatedly; copy/paste the link and open the public page.
 5. Test active close, completed reopen, expired reopen with an explicit future
-   date, and archive with its required irreversible confirmation. Archived pools
+   date, and archive with its required irreversible confirmation. Test dialog
+   Tab focus containment, Escape/Cancel and focus return. Archived pools
    must stay read-only. Use disposable local pools for permanent archive checks.
 6. Compare complete owner confirmed totals (including hidden amounts), public
    totals excluding them, names and full payment history. Confirm reconciliation
-   is still available after closure/archive and another owner cannot manage the
+   is still available in the toolbar after closure/archive, runs only on click
+   and announces pending/success/error results. Another owner must not manage the
    pool. Do not claim new end-to-end Sandbox acceptance from automated checks.
 
 ## Boundaries for DESIGN-2 through DESIGN-6

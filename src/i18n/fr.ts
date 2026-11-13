@@ -330,6 +330,11 @@ export const fr = {
       "Aucune contribution en attente, échouée ou incomplète ne nécessite d'attention pour le moment."
   },
   poolManagement: {
+    metadata: "Informations de la cagnotte",
+    syncAction: "Synchroniser",
+    closeAction: "Clôturer",
+    reopenAction: "Réouvrir",
+    archiveAction: "Archiver",
     moreActions: "Cycle de vie",
     configuredSummary: "Compte collecteur configuré",
     ownerTotalsHint: "Les montants confirmés incluent les contributions dont le montant est masqué publiquement.",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   getPoolLifecycle,
@@ -34,8 +34,10 @@ function Result({ state }: { state: PoolStatusActionState }) {
 }
 
 export function PoolLifecycleControls({
-  pool
+  pool,
+  compact = false
 }: {
+  compact?: boolean;
   pool: Pick<Pool, "id" | "status" | "closingDate" | "archivedAt">;
 }) {
   const lifecycle = getPoolLifecycle(pool);
@@ -52,7 +54,153 @@ export function PoolLifecycleControls({
     initialState
   );
   const [confirmed, setConfirmed] = useState(false);
+  const reopenDialog = useRef<HTMLDialogElement>(null);
+  const archiveDialog = useRef<HTMLDialogElement>(null);
 
+  const statusForm = (
+    <form action={statusAction} className="space-y-4">
+      {!compact || expired ? <Result state={status} /> : null}
+      {lifecycle === "COMPLETED" && expired ? (
+        <div className="space-y-2">
+          <label
+            className="block text-sm font-semibold"
+            htmlFor={`reopen-date-${pool.id}`}
+          >
+            {t("poolLifecycle.newClosingDate")}
+          </label>
+          <p id={`reopen-hint-${pool.id}`} className="text-sm text-slate-700">
+            {t("poolForms.updateClosingDateToReopen")}
+          </p>
+          <input
+            className="ui-field"
+            id={`reopen-date-${pool.id}`}
+            aria-describedby={`reopen-hint-${pool.id}`}
+            name="closingDate"
+            type="date"
+            required
+          />
+        </div>
+      ) : null}
+      <Button
+        disabled={statusPending || archivePending}
+        type="submit"
+        variant="secondary"
+      >
+        {statusPending
+          ? lifecycle === "ACTIVE"
+            ? t("poolForms.closingPool")
+            : t("poolForms.reopeningPool")
+          : lifecycle === "ACTIVE"
+            ? t(compact ? "poolManagement.closeAction" : "poolForms.closePool")
+            : t(
+                compact ? "poolManagement.reopenAction" : "poolForms.reopenPool"
+              )}
+      </Button>
+    </form>
+  );
+  const archiveForm = (
+    <form action={archiveAction} className="mt-3 space-y-4">
+      <p className="text-sm text-slate-700">
+        {t("poolLifecycle.archiveWarning")}
+      </p>
+      <label className="flex items-start gap-3 text-sm">
+        <input
+          className="mt-1"
+          type="checkbox"
+          name="confirmArchive"
+          required
+          checked={confirmed}
+          onChange={(event) => setConfirmed(event.target.checked)}
+        />
+        {t("poolLifecycle.archiveConfirm")}
+      </label>
+      <Result state={archive} />
+      <Button
+        disabled={!confirmed || archivePending || statusPending}
+        type="submit"
+        variant="secondary"
+      >
+        {archivePending
+          ? t("poolLifecycle.archiving")
+          : t("poolLifecycle.confirmArchive")}
+      </Button>
+    </form>
+  );
+
+  if (compact) {
+    if (lifecycle === "ARCHIVED") return null;
+    return (
+      <div className="flex flex-wrap items-start gap-2">
+        {lifecycle === "COMPLETED" && expired ? (
+          <>
+            <Button
+              variant="secondary"
+              disabled={statusPending || archivePending}
+              aria-haspopup="dialog"
+              onClick={() => reopenDialog.current?.showModal()}
+            >
+              {t("poolManagement.reopenAction")}
+            </Button>
+            <dialog
+              ref={reopenDialog}
+              aria-labelledby={`reopen-title-${pool.id}`}
+              className="m-auto w-[calc(100%_-_2rem)] max-w-md rounded-[var(--radius-surface)] border border-[var(--surface-border)] bg-white p-5 text-[var(--foreground)] backdrop:bg-black/30"
+            >
+              <h2
+                id={`reopen-title-${pool.id}`}
+                className="ui-section-title mb-4"
+              >
+                {t("poolManagement.reopenAction")}
+              </h2>
+              {statusForm}
+              <Button
+                className="mt-3"
+                variant="tertiary"
+                onClick={() => reopenDialog.current?.close()}
+              >
+                {t("common.cancel")}
+              </Button>
+            </dialog>
+          </>
+        ) : (
+          statusForm
+        )}
+        {lifecycle === "COMPLETED" ? (
+          <>
+            <Button
+              variant="secondary"
+              disabled={statusPending || archivePending}
+              aria-haspopup="dialog"
+              onClick={() => {
+                setConfirmed(false);
+                archiveDialog.current?.showModal();
+              }}
+            >
+              {t("poolManagement.archiveAction")}
+            </Button>
+            <dialog
+              ref={archiveDialog}
+              aria-labelledby={`archive-title-${pool.id}`}
+              className="m-auto w-[calc(100%_-_2rem)] max-w-md rounded-[var(--radius-surface)] border border-[var(--surface-border)] bg-white p-5 text-[var(--foreground)] backdrop:bg-black/30"
+            >
+              <h2 id={`archive-title-${pool.id}`} className="ui-section-title">
+                {t("poolLifecycle.archive")}
+              </h2>
+              {archiveForm}
+              <Button
+                className="mt-3"
+                variant="tertiary"
+                onClick={() => archiveDialog.current?.close()}
+              >
+                {t("common.cancel")}
+              </Button>
+            </dialog>
+          </>
+        ) : null}
+        {!expired ? <Result state={status} /> : null}
+      </div>
+    );
+  }
   if (lifecycle === "ARCHIVED")
     return (
       <div
@@ -70,74 +218,13 @@ export function PoolLifecycleControls({
       <p className="text-sm text-slate-700">
         {t("poolLifecycle.paymentHistory")}
       </p>
-      <form action={statusAction} className="space-y-4">
-        <Result state={status} />
-        {lifecycle === "COMPLETED" && expired ? (
-          <div className="space-y-2">
-            <label
-              className="block text-sm font-semibold"
-              htmlFor={`reopen-date-${pool.id}`}
-            >
-              {t("poolLifecycle.newClosingDate")}
-            </label>
-            <p id={`reopen-hint-${pool.id}`} className="text-sm text-slate-700">
-              {t("poolForms.updateClosingDateToReopen")}
-            </p>
-            <input
-              className="ui-field"
-              id={`reopen-date-${pool.id}`}
-              aria-describedby={`reopen-hint-${pool.id}`}
-              name="closingDate"
-              type="date"
-              required
-            />
-          </div>
-        ) : null}
-        <Button
-          disabled={statusPending || archivePending}
-          type="submit"
-          variant="secondary"
-        >
-          {statusPending
-            ? lifecycle === "ACTIVE"
-              ? t("poolForms.closingPool")
-              : t("poolForms.reopeningPool")
-            : lifecycle === "ACTIVE"
-              ? t("poolForms.closePool")
-              : t("poolForms.reopenPool")}
-        </Button>
-      </form>
+      {statusForm}
       {lifecycle === "COMPLETED" ? (
         <details className="rounded-xl border border-slate-200 p-3">
           <summary className="cursor-pointer text-sm font-semibold">
             {t("poolLifecycle.archive")}
           </summary>
-          <form action={archiveAction} className="mt-3 space-y-4">
-            <p className="text-sm text-slate-700">
-              {t("poolLifecycle.archiveWarning")}
-            </p>
-            <label className="flex items-start gap-3 text-sm">
-              <input
-                className="mt-1"
-                type="checkbox"
-                name="confirmArchive"
-                required
-                checked={confirmed}
-                onChange={(event) => setConfirmed(event.target.checked)}
-              />
-              {t("poolLifecycle.archiveConfirm")}
-            </label>
-            <Result state={archive} />
-            <Button
-              disabled={!confirmed || archivePending || statusPending}
-              type="submit"
-              variant="secondary"
-            >
-              {archivePending
-                ? t("poolLifecycle.archiving")
-                : t("poolLifecycle.confirmArchive")}
-            </Button>
-          </form>
+          {archiveForm}
         </details>
       ) : null}
     </div>

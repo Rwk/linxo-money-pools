@@ -192,22 +192,6 @@ export function PoolDetailsCard({
                 {getEventLabel(pool.eventType)}
               </p>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-                {t("poolDetails.collector")}
-              </p>
-              <p className="mt-2 text-lg font-semibold text-slate-950">
-                {pool.collectorDisplayName}
-              </p>
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-                {t("poolForms.closingDate")}
-              </p>
-              <p className="mt-2 text-lg font-semibold text-slate-950">
-                {pool.closingDateLabel}
-              </p>
-            </div>
           </div>
           {pool.description.trim() ? (
             <div>
@@ -351,35 +335,33 @@ function ReconciliationTool({ poolId }: { poolId: string }) {
     normalizeRefreshPoolContributionStatusesActionState(refreshState);
 
   return (
-    <section className="ui-surface">
-      <div className="min-w-0">
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-slate-950">
-            {t("poolManagement.refreshTitle")}
+    <div className="max-w-sm">
+      <form action={refreshFormAction}>
+        <input name="poolId" type="hidden" value={poolId} />
+        <Button
+          disabled={isRefreshPending}
+          type="submit"
+          variant="secondary"
+          title={t("poolManagement.refreshBody")}
+        >
+          {isRefreshPending
+            ? t("refresh.pending")
+            : t("poolManagement.syncAction")}
+        </Button>
+      </form>
+      <div aria-live="polite" className="text-sm">
+        {safeRefreshState.formError ? (
+          <p role="alert" className="mt-2 text-rose-700">
+            {safeRefreshState.formError}
           </p>
-          <p className="text-sm leading-6 text-slate-700">
-            {t("poolManagement.refreshBody")}
+        ) : null}
+        {safeRefreshState.successMessage ? (
+          <p className="mt-2 text-[var(--muted)]">
+            {safeRefreshState.successMessage}
           </p>
-          {safeRefreshState.formError ? (
-            <p className="text-sm text-rose-700">
-              {safeRefreshState.formError}
-            </p>
-          ) : null}
-          {safeRefreshState.successMessage ? (
-            <p className="text-sm text-slate-700">
-              {safeRefreshState.successMessage}
-            </p>
-          ) : null}
-        </div>
-
-        <form action={refreshFormAction} className="mt-4">
-          <input name="poolId" type="hidden" value={poolId} />
-          <Button disabled={isRefreshPending} type="submit" variant="secondary">
-            {isRefreshPending ? t("refresh.pending") : t("refresh.button")}
-          </Button>
-        </form>
+        ) : null}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -433,9 +415,6 @@ function ContributionSummaryCard({
           </p>
           <p className="mt-2 text-xl font-semibold text-slate-950">
             {pool.incompleteContributionCount}
-          </p>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            {pool.readinessLabel}
           </p>
         </div>
       </div>
@@ -565,43 +544,66 @@ export function PoolManagementCockpit({
   return (
     <div className="space-y-5">
       <header className="min-w-0 space-y-3">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[var(--muted)]">
+        <h1 className="ui-page-title break-words [overflow-wrap:anywhere]">
+          {pool.title}
+        </h1>
+        <div
+          className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[var(--muted)]"
+          role="group"
+          aria-label={t("poolManagement.metadata")}
+        >
           <StatusBadge size="sm" variant={pool.statusVariant}>
             {pool.statusLabel}
           </StatusBadge>
           <span>
             {t("poolForms.closingDate")} : {pool.closingDateLabel}
           </span>
-        </div>
-        <h1 className="ui-page-title break-words [overflow-wrap:anywhere]">
-          {pool.title}
-        </h1>
-        <div className="flex flex-wrap items-start gap-2">
-          {lifecycle !== "ARCHIVED" ? (
-            <button
-              type="button"
-              className={buttonClassName()}
-              ref={editButton}
-              aria-expanded={isEditing}
-              aria-controls="pool-details"
-              onClick={() => (isEditing ? cancelEditing() : setIsEditing(true))}
-            >
-              {isEditing
-                ? t("poolManagement.editClose")
-                : t("poolManagement.editAction")}
-            </button>
+          <span>{pool.readinessLabel}</span>
+          {collectorAliasId ? (
+            <span className="break-words [overflow-wrap:anywhere]">
+              {t("poolDetails.collector")} : {pool.collectorDisplayName}
+            </span>
           ) : null}
-          <CopyToClipboardButton text={pool.publicUrl} compact />
-          <Link className={buttonClassName("secondary")} href={pool.publicPath}>
-            {t("poolManagement.publicAction")}
-          </Link>
         </div>
-        <details className="max-w-xl">
-          <summary className="min-h-11 cursor-pointer list-item py-3 text-sm font-semibold text-[var(--accent)]">
-            {t("poolManagement.moreActions")}
-          </summary>
-          <PoolLifecycleControls key={lifecycle} pool={poolForEditing} />
-        </details>
+        <div
+          role="group"
+          aria-label={t("poolManagement.actionsTitle")}
+          className="flex flex-wrap items-start justify-between gap-3"
+        >
+          <div className="flex flex-wrap items-start gap-2">
+            {lifecycle !== "ARCHIVED" ? (
+              <button
+                type="button"
+                className={buttonClassName()}
+                ref={editButton}
+                aria-expanded={isEditing}
+                aria-controls="pool-details"
+                onClick={() =>
+                  isEditing ? cancelEditing() : setIsEditing(true)
+                }
+              >
+                {isEditing
+                  ? t("poolManagement.editClose")
+                  : t("poolManagement.editAction")}
+              </button>
+            ) : null}
+            <CopyToClipboardButton text={pool.publicUrl} compact />
+            <Link
+              className={buttonClassName("secondary")}
+              href={pool.publicPath}
+            >
+              {t("poolManagement.publicAction")}
+            </Link>
+          </div>
+          <div className="flex flex-wrap items-start gap-2">
+            <ReconciliationTool poolId={pool.id} />
+            <PoolLifecycleControls
+              key={lifecycle}
+              pool={poolForEditing}
+              compact
+            />
+          </div>
+        </div>
       </header>
 
       {!collectorAliasId && lifecycle !== "ARCHIVED" ? (
@@ -610,16 +612,6 @@ export function PoolManagementCockpit({
           poolId={pool.id}
           poolStatus={lifecycle === "ACTIVE" ? "OPEN" : "CLOSED"}
         />
-      ) : collectorAliasId ? (
-        <p className="flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
-          <StatusBadge size="sm" variant={pool.readinessVariant}>
-            {pool.readinessLabel}
-          </StatusBadge>
-          <span>
-            {t("poolManagement.configuredSummary")} ·{" "}
-            {pool.collectorDisplayName}
-          </span>
-        </p>
       ) : null}
       <ContributionSummaryCard pool={pool} />
       <PoolDetailsCard
@@ -646,8 +638,6 @@ export function PoolManagementCockpit({
         showTechnicalStatuses
         title={t("poolManagement.privateSectionTitle")}
       />
-
-      <ReconciliationTool poolId={pool.id} />
     </div>
   );
 }
