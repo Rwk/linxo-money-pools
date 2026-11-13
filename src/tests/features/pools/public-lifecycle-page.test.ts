@@ -38,4 +38,35 @@ describe("public lifecycle behavior", () => {
     );
     expect(html).toContain('data-testid="contribute"');
   });
+  it("explains expiry and permanent archival with the effective status and preserved history", async () => {
+    for (const [pool, body, label] of [
+      [
+        lifecyclePool({ closingDate: new Date("2000-01-01") }),
+        t("publicPool.expiredBody"),
+        "Terminée"
+      ],
+      [
+        lifecyclePool({ archivedAt: new Date() }),
+        t("publicPool.archivedBody"),
+        "Archivée"
+      ]
+    ] as const) {
+      mocks.find.mockResolvedValue(pool);
+      const html = renderToStaticMarkup(
+        await PublicPoolPage({ params: Promise.resolve({ slug: "pool" }) })
+      );
+      expect(html).toContain(body);
+      expect(html).toContain(label);
+      expect(html).toContain(t("poolDetails.visibleContributions"));
+      expect(html).not.toContain('data-testid="contribute"');
+    }
+  });
+  it("keeps an ACTIVE pool with no collector unavailable", async () => {
+    mocks.find.mockResolvedValue(lifecyclePool({ collectorAliasId: null }));
+    const html = renderToStaticMarkup(
+      await PublicPoolPage({ params: Promise.resolve({ slug: "pool" }) })
+    );
+    expect(html).toContain(t("pools.unavailableCollector"));
+    expect(html).not.toContain('data-testid="contribute"');
+  });
 });

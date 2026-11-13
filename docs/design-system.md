@@ -1,8 +1,8 @@
 # DESIGN-1 — Linxo Cagnottes foundations
 
-DESIGN-1 (including its sign-in/mobile follow-up), DESIGN-2 and DESIGN-3 are
-accepted by the developer. DESIGN-4 is implemented locally on 2026-11-13;
-**manual acceptance remains pending**. DESIGN-5 and DESIGN-6 remain separate work.
+DESIGN-1 through DESIGN-4 (including their follow-ups) are accepted by the
+developer. DESIGN-5 is implemented locally on 2026-11-13; **manual acceptance
+remains pending**. DESIGN-6 remains planned.
 
 ## Existing foundations and direction
 
@@ -325,7 +325,7 @@ system-font emoji coverage may differ from the developer’s browser.
 
 ## DESIGN-4 — Pool creation and owner management
 
-Implemented locally on 2026-11-13. **Developer visual acceptance pending.**
+Implemented locally on 2026-11-13. **Accepted by the developer in the DESIGN-5 request.**
 DESIGN-1, DESIGN-2 and DESIGN-3 are accepted according to the developer's
 DESIGN-4 request. DESIGN-5 and DESIGN-6 remain outside this change.
 
@@ -432,8 +432,8 @@ Original DESIGN-4 verification (`6ba5ac3`, before toolbar follow-up):
 
 ### Consolidated toolbar follow-up verification
 
-DESIGN-4 remains **pending revised visual acceptance**. Creation and the full-width
-collector form were accepted by the developer; this focused correction changes
+The developer confirmed **DESIGN-4 acceptance**, including the consolidated toolbar
+(`4e313bc`), in the DESIGN-5 request. This focused correction changes
 only owner metadata/action presentation, shared lifecycle presentation, French
 labels and relevant regression tests.
 
@@ -455,7 +455,7 @@ labels and relevant regression tests.
   Linxo request or payment is performed. Native keyboard and responsive results
   supplement the unit tests; developer visual/Sandbox acceptance is separate.
 
-### Manual acceptance checklist — pending
+### Manual acceptance checklist — DESIGN-4 accepted
 
 Use local fictional/Sandbox data and the existing development login:
 
@@ -482,13 +482,131 @@ Use local fictional/Sandbox data and the existing development login:
    and announces pending/success/error results. Another owner must not manage the
    pool. Do not claim new end-to-end Sandbox acceptance from automated checks.
 
+## DESIGN-5 — Public pool and contribution experience
+
+Implemented locally on 2026-11-13. **Developer manual acceptance pending.**
+This milestone changes public presentation, not payment/authentication/domain
+policies. DESIGN-4 acceptance was reported in the DESIGN-5 request; owner pages,
+creation, collector setup, dashboard, homepage and FAQ are unchanged here.
+
+### Public page and history
+
+`/p/[slug]` uses dedicated public header/history components and the existing
+`toPublicPoolDetailViewModel`. The older shared detail components remain intact
+for their existing consumers. A single H1 displays the actual title, beside a
+small existing DESIGN-3 event motif and effective-state label. Closing date,
+collector and the confirmed public amount are compact; the public URL is no
+longer printed prominently. Short descriptions keep line breaks; descriptions
+longer than 180 characters stay fully available in a native keyboard-operable
+`À propos de cette cagnotte` disclosure. Blank descriptions render no paragraph.
+The contribution form immediately follows the pool information.
+
+The header shows the confirmed public total once. History retains the separately
+labelled public in-progress amount and explains that in-progress contributions
+are not confirmed. Rows use light separators, name/amount, date and a static
+status badge instead of an individual large card. No financial calculation,
+filter or monetary indicator is introduced in these components: all values and
+visibility come from the unchanged public presenter/domain rules. Hidden amounts
+remain `Montant masqué`, their rows remain visible, and contributor-name choices
+remain independent. Hidden confirmed/in-progress amounts are excluded from the
+public totals, with the existing generic notice. Owner totals stay complete.
+There is no progress percentage, actual private total or hidden amount in new
+public metadata, attributes or client form props.
+
+The existing effective-state/payment-readiness gate still controls contribution
+availability. Completed, expired and archived pages retain history but no form;
+expiry and permanent archive now have concise, distinct explanatory copy. An
+ACTIVE pool without a collector retains its unavailable message. No public
+owner mutation controls are introduced.
+
+### Contribution form and payment feedback
+
+A single form surface groups `Vos coordonnées`, `Votre contribution`,
+`Moyen de paiement`, and `Sur la page publique`. Names stack below 640 px and
+share a row above it; email has a native email keyboard/autocomplete. The FREE
+amount stays editable with a decimal keyboard and comma-compatible text input.
+FIXED retains the stored unit price, native 1–10 quantity selector, unchanged
+integer-cent multiplication/formatting and live noneditable total. Submitted
+field names, expected-price reference, payment methods and privacy checkbox
+values are unchanged. Server validation, authoritative pricing and locks remain
+untouched.
+
+Instant and standard transfers use compact native radio options, with selected
+border/background and text labels. Both privacy choices retain their original
+semantics; concise copy explains that public masking does not hide information
+from the collector. Labels/errors are associated; error messages use alerts.
+Native controls and labels retain 44 px touch areas and existing focus styles.
+No UI library or motion is added.
+
+The primary CTA is `Continuer vers le paiement`, full width on mobile. Short
+context names Linxo Payments and explains confirmation follows transfer
+validation. The original action, pending disablement, safe server errors and
+redirect destinations remain. Clicking it does not claim payment success.
+
+Handoff and return pages use compact shared controls/surfaces and narrow-screen
+wrapping. Local polling, secure links, QR values, retry/reveal options, return
+synchronization and status mapping are unchanged. Status feedback is announced.
+The return disclaimer and synchronization warning remain. A confirmed/failed
+handoff no longer renders the generic QR-hidden/unavailable placeholder: the
+previous rendering could contradict the authoritative terminal message by saying
+it was still awaiting authorization or was not confirmed. This is a presentation
+correction only; no status transition is changed.
+
+### Verification and limits
+
+- 46 targeted tests pass across six files, covering public header/long titles,
+  descriptions, hidden amounts/names/totals, submitted FREE/FIXED payloads,
+  quantity/total, both methods/privacy controls, CTA, pending disablement,
+  labelled errors, handoff/return states and closed/expired/archived/unready pools.
+- Full Vitest: 683 passed, 15 opt-in PostgreSQL checks skipped (73 files pass,
+  two skipped). Linxo calls are mocked; no payment order is created.
+- ESLint and production build pass. Standalone TypeScript retains the same eight
+  historical test-fixture errors documented in DESIGN-4 (Decimal stubs, missing
+  synchronization dependency and incomplete detail view models); no new error.
+- Chromium: 60 combinations across 320, 360, 390, 430, 768 and 1440 px and ten
+  states (FREE, FIXED, long title/description, completed, expired, archived,
+  missing collector, pending, confirmed, failed). No horizontal overflow or
+  hydration/browser error. The representative FREE first input appears at
+  679/655/597/573 px on the four narrow widths, within the 900 px preview viewport.
+  Narrow-screen names stack; quantity keyboard selection/live totals, both
+  payment methods, privacy and mocked submission/error feedback are exercised.
+  Twenty axe WCAG A/AA/2.1 AA audits at 320/1440 px found no violations.
+- Browser previews render the actual public route/components with fictional
+  read-only repository fixtures and a hydrated contribution form using a mocked
+  action. Handoff previews are read-only. They do not validate real owner login,
+  bank authorization, redirects or webhooks. Headless emoji/font and native
+  control rendering can differ from a personal smartphone. Manual visual and
+  Sandbox acceptance remain the developer's responsibility; DESIGN-6 is not
+  started and these checks are not a complete accessibility certification.
+
+### Manual acceptance checklist — DESIGN-5 pending
+
+Use fictional identities and authorized Linxo Sandbox resources only:
+
+1. At 320–430 px and desktop, open FREE/FIXED pools and check title, event motif,
+   description disclosure, public amount, first-field access and wrapping. Check
+   keyboard focus and labels, email/decimal keyboards and touch targets.
+2. Enter FREE amounts, try invalid values, and test FIXED quantities 1 and 10.
+   Check the live noneditable total, both transfer options, privacy checkboxes,
+   inline errors and `Continuer vers le paiement` loading state.
+3. Compare mixed visible/hidden and public/anonymous contribution rows. Hidden
+   rows must remain with `Montant masqué`; public totals must exclude their
+   amounts while owner totals stay complete. Check pending/confirmed labels.
+4. Complete a manually initiated Sandbox authorization, verify the secure link
+   and return to the correct pool, then compare pending/rejected/confirmed
+   feedback with the persisted/webhook status. Browser return alone must not be
+   displayed as confirmation. Check existing payment-link reveal/QR behavior.
+5. Open manually closed, expired, archived and missing-collector pools: no new
+   contribution form; useful status messages and existing history remain. Verify
+   an existing payment can still finish after closure/archive.
+
 ## Boundaries for DESIGN-2 through DESIGN-6
 
 1. DESIGN-2: homepage and FAQ accepted by the developer.
 2. DESIGN-3: compact dashboard accepted by the developer in the DESIGN-4 request.
-3. DESIGN-4: pool creation/management implemented locally, manual acceptance pending;
+3. DESIGN-4: pool creation/management accepted by the developer;
    retaining fixed prices, reuse, permanent archival confirmation and history.
-4. DESIGN-5: public/contribution flows; preserve hidden-amount privacy, the full
+4. DESIGN-5: public/contribution flows implemented locally, acceptance pending; preserve the full
    bank list, payment links, return routes and late webhook processing.
 5. DESIGN-6: mobile, keyboard/screen-reader audit and final cross-page consistency.
 

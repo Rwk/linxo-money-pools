@@ -449,10 +449,21 @@ export const fr = {
       "Seules des références Linxo sont stockées sur la cagnotte. L'IBAN, le BIC, le numéro de compte, les données de naissance et les informations KYC de la société ou de la personne physique ne sont pas stockés dans la base locale.",
     configureButton: "Configurer le compte collecteur"
   },
+  publicPool: {
+    about: "À propos de cette cagnotte",
+    pendingNotice: "Les contributions en cours ne sont pas encore confirmées.",
+    expiredBody: "La date de clôture est passée. Cette cagnotte ne reçoit plus de nouvelles contributions ; les paiements déjà initiés restent suivis.",
+    archivedBody: "Cette cagnotte est archivée définitivement. Les contributions et les paiements déjà initiés restent consultables."
+  },
   contributions: {
+    identity: "Vos coordonnées",
+    amountTitle: "Votre contribution",
+    privacy: "Sur la page publique",
+    privacyHint: "Le collecteur conserve vos coordonnées et votre montant.",
+    linxoHint: "Vous poursuivrez le paiement avec Linxo Payments. La contribution sera confirmée après validation du virement.",
     title: "Contribuer à cette cagnotte",
     body:
-      "Vous serez redirigé vers Linxo Payments puis vers votre banque pour autoriser le virement. Les contributions sont envoyées directement à {{collectorDisplayName}}, le collecteur de cette cagnotte.",
+      "Par virement bancaire, directement à {{collectorDisplayName}}.",
     contributorFirstName: "Prénom",
     contributorLastName: "Nom",
     amountPlaceholder: "25,00",
@@ -464,16 +475,16 @@ export const fr = {
     standardTransferBody:
       "Option de secours pour une autorisation classique de virement bancaire.",
     anonymousLabel:
-      "Afficher ma contribution comme anonyme sur la page publique",
+      "Masquer mon nom publiquement",
     hideAmountLabel:
-      "Masquer le montant de ma contribution sur la page publique",
+      "Masquer mon montant publiquement",
     warning:
       "Revenir depuis Linxo ne confirme pas à lui seul le succès. Cette étape lance uniquement le parcours d'autorisation bancaire.",
-    continueToBank: "Continuer vers l'autorisation bancaire"
+    continueToBank: "Continuer vers le paiement"
   },
   paymentHandoff: {
     badge: "Passage au paiement",
-    title: "Poursuivre votre contribution",
+    title: "Votre contribution",
     body:
       "Scannez le QR code avec votre téléphone ou poursuivez sur cet appareil pour ouvrir le parcours sécurisé d'autorisation bancaire.",
     pool: "Cagnotte",

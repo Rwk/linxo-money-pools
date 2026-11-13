@@ -763,3 +763,8 @@ textarea::placeholder {
     display: none;
   }
 }
+
+.public-payment-option:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--secondary);
+}
