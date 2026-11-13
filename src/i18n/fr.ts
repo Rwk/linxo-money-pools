@@ -6,6 +6,7 @@ export const fr = {
     openMenu: "Ouvrir le menu de navigation",
     closeMenu: "Fermer le menu de navigation",
     home: "Accueil",
+    faq: "FAQ",
     account: "Compte",
     skipToContent: "Aller au contenu"
   },
@@ -45,82 +46,140 @@ export const fr = {
     qrCodeLabel: "QR code de paiement"
   },
   home: {
-    title: "Créez, partagez et suivez des cagnottes Linxo.",
-    body:
-      "Les collaborateurs Linxo peuvent créer une cagnotte, partager un lien public non devinable et suivre les statuts de contribution envoyés via Linxo Payments.",
-    disclaimer:
-      "Ce produit aide à organiser les contributions. Il ne conserve pas les fonds et une contribution n'est confirmée qu'après les mises à jour de statut Linxo.",
-    signedInHint: "Vous êtes déjà connecté avec un compte collaborateur Linxo.",
-    heroHighlights: {
-      createPool: "Créez une cagnotte",
-      sharePublicLink: "Partagez un lien public",
-      collectSecureTransfers: "Recevez des contributions par virement sécurisé",
-      trackStatuses: "Suivez les statuts de paiement"
-    },
-    stepsTitle: "Comment cela fonctionne",
-    stepsBody:
-      "Un parcours simple pour lancer une cagnotte, la partager et suivre les contributions sans changer les flux de paiement existants.",
+    eyebrow: "Entre collègues",
+    title: "Les belles occasions",
+    titleAccent: "se partagent.",
+    body: "Anniversaire, départ, naissance ou événement entre collègues : créez une cagnotte et rassemblez les contributions simplement.",
+    accessNote:
+      "Connectez-vous pour créer ou gérer une cagnotte. Pour contribuer, le lien suffit.",
+    signedInNote:
+      "Partagez le lien : chacun peut contribuer sans créer de compte.",
+    stepsTitle: "Une attention commune, en toute simplicité.",
     steps: {
       create: {
-        title: "Créez une cagnotte",
-        body:
-          "Choisissez un titre, une description, une date de clôture et un type d'événement."
-      },
-      setupCollector: {
-        title: "Configurez le compte collecteur",
-        body:
-          "Les informations sont transmises à Linxo Payments pour enregistrer le compte de réception."
+        title: "Choisissez l’occasion",
+        body: "Donnez un titre à votre cagnotte et racontez l’occasion."
       },
       share: {
-        title: "Partagez le lien public",
-        body:
-          "Les participants peuvent accéder à la cagnotte sans créer de compte."
+        title: "Invitez les participants",
+        body: "Partagez le lien avec les personnes qui souhaitent participer."
       },
-      contribute: {
-        title: "Les participants contribuent",
-        body:
-          "Ils choisissent un montant et valident un virement via le parcours Linxo."
-      },
-      track: {
-        title: "Suivez les statuts",
-        body:
-          "Les webhooks et le rafraîchissement manuel permettent de suivre les contributions."
-      },
-      responsibility: {
-        title: "Le collecteur reste responsable",
-        body:
-          "Les fonds sont reçus directement par le collecteur désigné pour la cagnotte."
+      follow: {
+        title: "Suivez les contributions",
+        body: "Retrouvez les participations et leur état depuis votre espace."
       }
     },
-    trustTitle: "Sécurité et cadre de fonctionnement",
-    trustBody:
-      "L'application sépare l'accès de gestion, le partage public et le traitement des paiements pour garder un parcours clair et maîtrisé.",
-    trustPoints: {
-      employeeAccess:
-        "L'authentification Google pour la gestion est réservée aux collaborateurs `@linxo.com`.",
-      privateLinks:
-        "Les liens publics des cagnottes sont non devinables et peuvent être partagés sans compte participant.",
-      payments:
-        "Le parcours de paiement est géré par Linxo Payments et l'autorisation bancaire se fait hors de cette application.",
-      webhooks:
-        "Les webhooks aident à mettre à jour les statuts même si l'utilisateur ne revient pas immédiatement sur le site.",
-      kycStorage:
-        "L'application ne stocke pas localement l'IBAN ni les champs KYC du collecteur après leur transmission à Linxo.",
-      payerStorage:
-        "L'application ne stocke pas les coordonnées bancaires du payeur."
-    },
-    responsibilityTitle: "Responsabilités du collecteur",
-    responsibilityBody:
-      "Le rôle de l'application est d'orchestrer la cagnotte et le suivi des statuts, sans se substituer au collecteur.",
-    responsibilityPoints: {
-      directCollection:
-        "Les contributions sont collectées directement par le collecteur désigné.",
-      noEscrow:
-        "L'application n'agit pas comme compte de séquestre.",
-      noGuarantee:
-        "L'application ne garantit pas la redistribution au bénéficiaire final.",
-      collectorResponsible:
-        "Le collecteur reste responsable de l'usage des fonds conformément à ce qui a été annoncé."
+    helpTitle: "Une question avant de vous lancer ?",
+    helpBody:
+      "Contributions, confidentialité, gestion : les réponses sont dans la FAQ.",
+    faqLink: "Consulter la FAQ"
+  },
+  faq: {
+    title: "Des questions ? On vous aide.",
+    body: "Les réponses essentielles pour créer une cagnotte, participer et suivre les contributions.",
+    topics: "Thèmes de la FAQ",
+    startTitle: "Bien démarrer",
+    paymentsTitle: "Contributions et paiements",
+    privacyTitle: "Confidentialité",
+    managementTitle: "Gérer une cagnotte",
+    responsibilitiesTitle: "Sécurité et responsabilités",
+    questions: {
+      who: {
+        question: "Qui peut créer une cagnotte ?",
+        answer:
+          "La création et la gestion sont réservées aux utilisateurs autorisés connectés avec leur compte collaborateur Linxo. Les personnes qui contribuent par le lien public n’ont pas besoin de se connecter."
+      },
+      create: {
+        question: "Comment créer et partager une cagnotte ?",
+        answer:
+          "Connectez-vous, puis choisissez « Créer une cagnotte ». Renseignez l’occasion, les informations et la date de clôture, puis configurez ou sélectionnez un compte collecteur disponible. Partagez ensuite le lien public de la cagnotte avec les participants."
+      },
+      account: {
+        question: "Peut-on contribuer sans compte ?",
+        answer:
+          "Oui. Toute personne disposant du lien public peut ouvrir la cagnotte et contribuer si elle accepte encore les paiements. Aucun compte collaborateur Linxo n’est nécessaire pour participer."
+      },
+      pay: {
+        question: "Comment effectuer une contribution ?",
+        answer:
+          "Ouvrez le lien de la cagnotte et renseignez votre nom, votre prénom, votre adresse e-mail et votre participation. Le lien de paiement vous dirige vers Linxo Payments pour choisir votre banque et autoriser le virement. Vous pouvez ensuite revenir consulter l’état de votre contribution."
+      },
+      methods: {
+        question: "Quels moyens de paiement sont proposés ?",
+        answer:
+          "Les contributions se font en euros par virement standard ou instantané. Le formulaire permet de choisir le mode de virement ; sa disponibilité dépend des banques et des capacités proposées dans le parcours Linxo Payments."
+      },
+      return: {
+        question: "Le retour depuis la banque confirme-t-il le paiement ?",
+        answer:
+          "Non. Revenir sur la cagnotte après l’autorisation ne signifie pas que le virement a été exécuté. La contribution est confirmée lorsque les mises à jour de paiement reçues de Linxo Payments l’indiquent."
+      },
+      pending: {
+        question: "Que faire si un paiement est rejeté ou reste en cours ?",
+        answer:
+          "Un paiement rejeté n’est pas compté comme confirmé. Un paiement en cours peut encore évoluer : consultez son état ultérieurement ou demandez au propriétaire de l’actualiser depuis son espace. Aucun délai d’exécution précis n’est garanti par l’application."
+      },
+      fixed: {
+        question: "Une cagnotte peut-elle imposer un montant fixe ?",
+        answer:
+          "Oui, le créateur peut choisir un montant libre ou un prix unitaire fixe à la création. En mode fixe, le participant choisit une quantité de 1 à 10 et le total est calculé automatiquement. Le prix unitaire peut être modifié uniquement avant la première contribution, quel que soit son état."
+      },
+      amount: {
+        question: "Puis-je masquer le montant de ma contribution ?",
+        answer:
+          "Oui, l’option de masquage affiche « Montant masqué » sur la page publique. La contribution reste présente dans la liste et le total public exclut les montants masqués. Le propriétaire peut toujours voir chaque montant et le total complet."
+      },
+      name: {
+        question: "Puis-je masquer mon nom sur la liste publique ?",
+        answer:
+          "Oui, une option permet d’afficher « Anonyme » à la place du nom sur la page publique. Ce choix est indépendant du masquage du montant. Le nom et le prénom renseignés restent visibles par le propriétaire."
+      },
+      owner: {
+        question: "Quelles informations le propriétaire voit-il ?",
+        answer:
+          "Le propriétaire voit les noms, prénoms et adresses e-mail renseignés, les montants et l’état des contributions. Le masquage public du nom ou du montant ne lui cache pas ces informations."
+      },
+      reuse: {
+        question: "Puis-je réutiliser un compte collecteur ?",
+        answer:
+          "Lors de la création, un compte collecteur déjà configuré sur l’une de vos cagnottes peut être proposé dans la liste. Vous pouvez le sélectionner s’il est disponible, ou configurer un nouveau compte. Les comptes d’autres propriétaires ne sont pas proposés."
+      },
+      date: {
+        question: "Puis-je modifier la date de clôture ?",
+        answer:
+          "Oui, le propriétaire peut choisir une date de clôture valide dans les détails d’une cagnotte non archivée. Une cagnotte dont la date est dépassée n’accepte plus de nouvelles contributions. Les paiements déjà engagés peuvent continuer à être suivis."
+      },
+      reopen: {
+        question: "Une cagnotte terminée peut-elle être rouverte ?",
+        answer:
+          "Oui, tant qu’elle n’est pas archivée. Si la date de clôture est dépassée, vous devez choisir explicitement une nouvelle date valide lors de la réouverture. Une cagnotte clôturée manuellement avant son échéance peut conserver sa date."
+      },
+      archive: {
+        question: "Que se passe-t-il lors d’un archivage définitif ?",
+        answer:
+          "Seule une cagnotte terminée peut être archivée. L’archivage est définitif : elle ne peut être ni rouverte ni désarchivée et n’accepte plus de nouvelles contributions. Son historique reste consultable par le propriétaire. Le suivi des paiements déjà engagés continue après l’archivage."
+      },
+      funds: {
+        question: "L’application conserve-t-elle les fonds collectés ?",
+        answer:
+          "Non. Les virements passent par Linxo Payments et sont destinés au compte collecteur désigné. L’application de cagnottes ne détient pas les fonds et ne joue pas le rôle d’un compte de séquestre."
+      },
+      bankDetails: {
+        question:
+          "Comment sont traitées les coordonnées bancaires du collecteur ?",
+        answer:
+          "Les coordonnées bancaires et les informations nécessaires à la vérification du collecteur sont transmises à Linxo Payments lors de la configuration. L’application ne les enregistre pas localement ; elle conserve les références du compte et de son alias nécessaires aux paiements. Elle ne stocke pas les coordonnées bancaires du payeur."
+      },
+      linxo: {
+        question: "Quel est le rôle de Linxo Payments ?",
+        answer:
+          "Linxo Payments fournit le parcours de sélection de banque et d’autorisation du virement. Ses mises à jour permettent à l’application de suivre l’état des contributions. L’application affiche ce suivi dans les cagnottes."
+      },
+      responsibility: {
+        question: "Qui est responsable de la gestion de la cagnotte ?",
+        answer:
+          "Le propriétaire organise la cagnotte et le collecteur désigné reçoit les fonds. Le collecteur reste responsable de leur utilisation conformément à ce qui a été annoncé aux participants. L’application ne garantit pas leur redistribution au bénéficiaire final."
+      }
     }
   },
   auth: {

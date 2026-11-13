@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/components/navigation/site-header", () => ({
   SiteHeader: () => React.createElement("header", null, "Navigation fixture")
 }));
+vi.mock("@/auth", () => ({ auth: vi.fn().mockResolvedValue(null) }));
 import RootLayout from "@/app/layout";
 import HomePage from "@/app/page";
 import { t } from "@/i18n/t";
@@ -20,12 +21,13 @@ describe("design shell rendering", () => {
     expect(html).toContain("Navigation fixture");
     expect(html).toContain("<main>Fixture page</main>");
   });
-  it("preserves the homepage sections while leaving authentication in the global shell", async () => {
+  it("renders the compact homepage with a sign-in route and public FAQ", async () => {
     const html = renderToStaticMarkup(await HomePage());
     expect(html).toContain(t("home.title"));
     expect(html).toContain(t("home.stepsTitle"));
-    expect(html).toContain(t("home.trustTitle"));
-    expect(html).toContain(t("home.responsibilityTitle"));
+    expect(html).toContain(t("home.titleAccent"));
+    expect(html).toContain(t("home.helpTitle"));
+    expect(html).toContain('href="/faq"');
     expect(html).not.toContain(t("common.signOut"));
     expect(html).not.toContain(t("common.signInToManagePools"));
   });

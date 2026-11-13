@@ -186,7 +186,13 @@ export function SiteNavigation({
               {t("common.signIn")}
             </Link>
           ) : null}
-          {/* FAQ joins this navigation in DESIGN-2 when its content route exists. */}
+          <Link
+            className="site-nav-link"
+            href="/faq"
+            aria-current={pathname === "/faq" ? "page" : undefined}
+          >
+            {t("navigation.faq")}
+          </Link>
         </nav>
       </div>
     </header>

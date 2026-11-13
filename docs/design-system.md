@@ -1,10 +1,10 @@
 # DESIGN-1 — Linxo Cagnottes foundations
 
-Implemented locally on 2026-11-13. The developer accepted the overall visual
-direction after review. The sign-in/mobile-header follow-up is implemented;
-**manual acceptance of these corrections remains pending**.
-This milestone introduces shared foundations and navigation. DESIGN-2 through
-DESIGN-6 remain separate work; this is not a complete page redesign.
+DESIGN-1 and its sign-in/mobile follow-up are accepted following the developer's
+visual review. DESIGN-2 (homepage and public FAQ) is implemented locally on
+2026-11-13; **manual visual acceptance of DESIGN-2 remains pending**.
+The shared foundations remain in use. Homepage/FAQ are redesigned in DESIGN-2;
+DESIGN-3 through DESIGN-6 remain separate work.
 
 ## Existing foundations and direction
 
@@ -110,7 +110,9 @@ action. No menu library is added.
 Authenticated navigation contains `Mes cagnottes`, `Créer une cagnotte` and
 `Se déconnecter`. Anonymous mobile navigation contains home and sign-in; on the
 sign-in page the extra sign-in link is omitted. The brand/home link remains
-visible at every width. FAQ is still deferred until DESIGN-2.
+visible at every width. FAQ now links to `/faq` in both session modes, with
+`aria-current="page"` on the FAQ route; it appears once in the shared desktop/mobile
+navigation tree.
 
 The disclosure button exposes `aria-expanded`, `aria-controls` and a French
 open/close accessible name. Native button Enter/Space activation and normal Tab
@@ -145,16 +147,89 @@ owner collection current; the creation route marks only creation current.
 Home/dashboard duplicate auth/navigation CTAs were removed when moved into the
 shell; their content, metrics, cards and lifecycle tabs remain. Sign-in only
 adopts the shared surface/title/controls. Contextual page return links and empty
-state creation links are retained. FAQ navigation is deliberately deferred to
-DESIGN-2: no `/faq` link is shipped before its route/content exists.
+state creation links are retained. DESIGN-2 now provides the public `/faq` route.
 
 The new root header reads the session on public pages too, so their shell is
 rendered per request rather than statically cached with another visitor's account
 controls. No account data is displayed in the public header.
 
+## DESIGN-2 — Homepage, FAQ and event artwork
+
+Homepage: one compact hero headed “Les belles occasions se partagent.”, a short
+occasion-led introduction and a single primary action. Its server-derived session
+criteria match the shared header: authorized users go to `/dashboard/pools/new`,
+visitors go to `/sign-in`. No provider buttons are duplicated. A short note makes
+clear that contribution through a public link requires no account. Three plain
+steps and a restrained FAQ link replace the old nested-card workflow/security
+sections. Payment notices at the actual contribution/handoff screens are untouched.
+
+`src/components/illustrations/occasion-illustration.tsx` is original, local inline
+SVG artwork: birthday cake, farewell paper plane, birth cradle, and people sharing
+an occasion around a gift. Keep its flat petrol/coral/ivory palette, restrained
+outlines and distinctive silhouettes when adding event artwork later. Its 520×400
+viewBox scales without image requests; mobile height is capped at 224 px and
+desktop at 400 px. It is decorative (`aria-hidden`, `focusable="false"`), and all
+meaningful copy remains HTML. No animation, third-party art, image host, icon/menu
+package or web font is introduced. Pool cards and event selectors are unchanged.
+
+The public `/faq` page has five topic anchors and 19 native `<details>/<summary>`
+questions: getting started (3), contributions/payments (5), privacy (3), management
+(4), security/responsibilities (4). Each answer stays short. A decorative plus/minus
+indicates open state while native controls provide keyboard and assistive-technology
+semantics. New copy uses French nonbreaking punctuation and centralized `fr.ts`/`t`.
+
+Content was checked against current contribution input/visibility/totals rules,
+fixed-price calculations, owner presenters, collector services, lifecycle helpers
+and payment documentation. Useful disclosures from the former homepage are retained
+in the FAQ: separate name/amount privacy, complete owner visibility, bank return
+versus confirmation, direct collection, permanent archive and late payment follow-up.
+No fees, refund mechanism, processing deadline, regulatory guarantee, provider
+storage/deletion policy or new product capability is promised. Bank/method availability
+is worded conservatively; local developer authentication stays environment-specific.
+
+### DESIGN-2 visual acceptance checklist — pending
+
+- At 320/390 px, tablet and desktop widths, inspect headline, illustration balance,
+  early primary action, readable steps and absence of horizontal overflow. Check
+  the menu/FAQ link, active destination, focus outline and skip link.
+- Visit anonymously and signed in: sign-in versus creation CTA must route correctly;
+  no homepage Google/developer buttons or private owner data should appear.
+- Open `/faq` anonymously and from both navigation layouts. All five topic anchors
+  must work. Tab through summaries and toggle with Enter/Space; opening several
+  answers must preserve readable spacing and heading order.
+- Review wording for product accuracy, especially amount privacy versus public
+  names, complete owner information, payment confirmation and irreversible archive.
+- Confirm sign-in remains exclusive, then smoke-test unchanged pool/payment flows
+  with fictional Sandbox data. DESIGN-3/dashboard work has not started.
+
+DESIGN-2 verification (2026-11-13):
+
+- 48 targeted Vitest tests pass across five files (home/FAQ content and routes,
+  native accordions, shared desktop/mobile navigation and authentication behavior).
+- Full Vitest: 612 passed, 3 historical date-fixture failures, 15 local PostgreSQL
+  opt-in checks skipped. Historical failures remain in `create-pool-action.test.ts`
+  (one) and `update-pool-action.test.ts` (two), using expired July 2026 dates.
+- ESLint and production build pass. Standalone TypeScript retains the same eight
+  historical fixture errors: three Decimal stubs in
+  `payment-handoff-presenter.test.ts`, three missing dependency methods in
+  `sync-contribution-status.test.ts`, and two incomplete detail view-model fixtures
+  in `pool-detail-sections*.test.ts(x)`. No new application or test errors.
+- Chromium checks of anonymous `/` and `/faq` at 320, 390, 768, 1024 and 1440 px:
+  HTTP 200, no horizontal overflow or runtime JS errors, early hero CTA, one-line
+  mobile header, functional menu Enter/Escape/focus and native accordion Enter/Space.
+- axe WCAG A/AA/2.1 AA checks at 320 and 1440 px found no violations on either
+  page. This is automated evidence, not a complete accessibility certification or
+  developer acceptance. Signed-in hero routing is covered by mocked-session tests;
+  its browser appearance and actual sign-in remain on the manual checklist.
+- Screenshots were inspected for desktop/mobile composition. Existing Playwright/
+  Chromium tools were reused with libraries extracted only under `/tmp`; no system
+  package installation, project dependency, external image service or payment call.
+
+Visual acceptance by the developer is required before marking DESIGN-2 accepted.
+
 ## Boundaries for DESIGN-2 through DESIGN-6
 
-1. DESIGN-2: homepage and FAQ, then enable the FAQ navigation destination.
+1. DESIGN-2: homepage and FAQ implemented; visual acceptance pending.
 2. DESIGN-3: compact dashboard; preserve effective lifecycle classification,
    metrics, owner isolation and navigation routes.
 3. DESIGN-4: pool creation/management; migrate form/surface primitives gradually,
@@ -169,60 +244,3 @@ large-radius containers, utility spacing and some decorative gradients. Token
 colors, shadows and shared controls update globally; geometry is not overridden
 through blanket CSS selectors. This transitional mixture is deliberate until the
 corresponding page milestone. No visual acceptance is implied by automated tests.
-
-## Verification and manual acceptance
-
-Automated verification:
-
-- 145 targeted tests pass across 16 files: navigation/session visibility, native
-  button semantics, static statuses, contrast tokens, root/home/sign-in rendering,
-  development auth, pool pages, privacy/fixed prices and payment/webhook regressions.
-- Full Vitest: 588 passed, 3 historical failures, 15 local PostgreSQL opt-in checks
-  skipped. The historical failures are July 2026 date fixtures in
-  `create-pool-action.test.ts` (one) and `update-pool-action.test.ts` (two).
-- ESLint and production build pass. The build uses synthetic payment configuration.
-- Standalone TypeScript retains eight historical fixture errors: three Decimal
-  stubs in `payment-handoff-presenter.test.ts`, three missing dependency methods
-  in `sync-contribution-status.test.ts`, and two incomplete view-model fixtures
-  in `pool-detail-sections*.test.ts(x)`. No new application/test type errors.
-
-Follow-up verification (2026-11-13): 64 targeted tests pass across six files,
-including real server-configuration rendering in development/production, exclusive
-provider buttons/headings, mobile disclosure state, focus, Escape, route changes
-and breakpoint focus behavior. ESLint and the production build pass. The production
-build deliberately supplies `ENABLE_DEV_AUTH=true` with synthetic credentials;
-existing production guards keep development authentication disabled. No broader
-suite or new manual browser acceptance is claimed for this follow-up.
-
-Browser visual checks were attempted using the already available Chromium binary but could not launch:
-`libatk-1.0.so.0` is absent. No system package or browser framework was installed.
-Therefore desktop/mobile screenshots, visual overflow and browser keyboard checks
-remain pending. Production HTTP checks of `/` and `/sign-in` returned 200, with
-one header, the skip target and no anonymous owner links or broken FAQ links.
-
-Manual checklist (desktop, 390 px mobile, and narrow 320 px):
-
-- Visit home, sign-in and a public pool anonymously. Check consistent identity,
-  legible type, compact header, no horizontal overflow, no owner actions and no
-  FAQ link. The closed mobile header must stay on one row. Open the menu, verify
-  destinations, close with Escape and check focus returns to its trigger. On
-  desktop destinations remain visible directly; check no duplicate actions.
-- Tab from the document start: the skip link becomes visible and moves focus to
-  content. Every interactive element has a visible outline; order follows reading
-  order. Verify ordinary and reduced-motion settings and 200% zoom.
-- Sign in using the developer option locally: Google must be absent and the
-  heading must describe local development. With development auth disabled, check
-  Google is the only option. Check one account action
-  group, dashboard/creation destinations and active indication. Sign out and
-  verify anonymous navigation returns. Verify production Google login in its
-  configured environment separately; no provider configuration was changed.
-- Check authenticated dashboard, create/management forms, lifecycle/archived
-  views and public contribution/handoff screens. Statuses must read as static
-  information, buttons as actions. Ensure disabled, hover and focus states are
-  clear and existing controls have not clipped after adopting the compact button.
-- Check that functional flows remain usable with fictional local Sandbox data:
-  fixed amounts, amount privacy, collector reuse, archival confirmation and payment
-  handoff/return. Do not initiate real transactions during acceptance.
-
-Record developer acceptance of the sign-in/mobile corrections before starting DESIGN-2. No push,
-deployment or release tag was created by this task.

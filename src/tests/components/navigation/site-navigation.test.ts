@@ -45,7 +45,7 @@ describe("shared navigation", () => {
         .getAttribute("href")
     ).toBe("/sign-in");
     expect(container.querySelector('a[href^="/dashboard"]')).toBeNull();
-    expect(container.querySelector('a[href*="faq"]')).toBeNull();
+    expect(container.querySelectorAll('a[href="/faq"]')).toHaveLength(1);
     expect(
       screen.getByRole("navigation", { name: t("navigation.primary") })
     ).toBeTruthy();
@@ -151,7 +151,7 @@ describe("shared navigation", () => {
     expect(document.activeElement).toBe(
       screen.getByRole("link", { name: t("dashboard.title") })
     );
-    expect(within(nav).getAllByRole("link")).toHaveLength(2);
+    expect(within(nav).getAllByRole("link")).toHaveLength(3);
     expect(
       within(nav).getByRole("button", { name: "Logout fixture" })
     ).toBeTruthy();
@@ -178,7 +178,7 @@ describe("shared navigation", () => {
         .getAttribute("href")
     ).toBe("/sign-in");
     expect(container.querySelector('a[href^="/dashboard"]')).toBeNull();
-    expect(container.querySelector('a[href*="faq"]')).toBeNull();
+    expect(container.querySelectorAll('a[href="/faq"]')).toHaveLength(1);
     expect(document.activeElement).toBe(
       within(nav).getByRole("link", { name: t("navigation.home") })
     );
@@ -273,4 +273,30 @@ describe("shared navigation", () => {
       expect.any(Function)
     );
   });
+  it.each([true, false])(
+    "makes FAQ available once on desktop and in the mobile disclosure (signed in: %s)",
+    (signedIn) => {
+      state.path = "/faq";
+      const { container } = render(
+        React.createElement(SiteNavigation, { signedIn })
+      );
+      const faq = screen.getByRole("link", { name: t("navigation.faq") });
+      expect(faq.getAttribute("href")).toBe("/faq");
+      expect(faq.getAttribute("aria-current")).toBe("page");
+      expect(container.querySelectorAll('a[href="/faq"]')).toHaveLength(1);
+      fireEvent.click(
+        screen.getByRole("button", { name: t("navigation.openMenu") })
+      );
+      expect(
+        within(screen.getByRole("navigation")).getByRole("link", {
+          name: t("navigation.faq")
+        })
+      ).toBe(faq);
+      expect(
+        screen
+          .getByRole("button", { name: t("navigation.closeMenu") })
+          .getAttribute("aria-expanded")
+      ).toBe("true");
+    }
+  );
 });

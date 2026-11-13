@@ -49,7 +49,8 @@ functional product requirements and their priorities remain unchanged.
 | Collector account reuse              | **Implemented locally; manual acceptance pending.** New pools can select an owner-scoped, provenance-bound alias/account pair or use the existing new-collector path. See [collector reuse](./collector-account-reuse.md).                                                    | Complete the documented Sandbox acceptance; legacy references without provenance/entity type are excluded. No production deployment is implied.                |
 | Pool lifecycle P1-A | **Implemented locally**, including permanent archive, atomic contribution acceptance and PostgreSQL concurrency tests. See [lifecycle verification](./pool-lifecycle.md). | P1-B tabs/controls implemented locally; manual Sandbox lifecycle acceptance remains pending. |
 | Favorite payment providers P2 | **Implemented locally; manual Sandbox acceptance pending.** Approved historical-usage BIC list is applied to authorization preferences and shortening. | Check favorite-bank display, access to all banks, authorization and return. See [payment preferences](./linxo-payments.md#favorite-payment-providers). |
-| DESIGN-1 — Visual identity and shared UI | **Implemented locally; manual visual acceptance pending.** Central tokens, shared controls/statuses and session-aware global navigation; see [design reference](./design-system.md). | Desktop/mobile and keyboard acceptance; DESIGN-2 through DESIGN-6 remain separate milestones. |
+| DESIGN-1 — Visual identity and shared UI | **Accepted by the developer**, including exclusive sign-in and compact mobile navigation. Central tokens, shared controls/statuses and session-aware global navigation; see [design reference](./design-system.md). | DESIGN-2 homepage/FAQ implemented locally; DESIGN-3 through DESIGN-6 remain planned. |
+| DESIGN-2 — Homepage and public FAQ | **Implemented locally; manual visual acceptance pending.** Session-aware hero, original SVG occasion artwork and 19 questions across five FAQ themes. | Review desktop/mobile presentation and FAQ content; see [design reference](./design-system.md#design-2--homepage-faq-and-event-artwork). |
 | Remaining P0, P1 and P2 requirements | **Planned**. Existing visibility controls and dashboard redesigns are partial foundations, not evidence that these requirements are complete.                                                                                                                                 | Implement and validate after the local development prerequisite.                                                                                               |
 | Safe local development               | **Accepted; workstream closed**. DEV-1 through DEV-4 were implemented and manually accepted by the developer. See the acceptance record below.                                                                                                                                | Delayed authorization-to-execution transition remains an observation with an unconfirmed cause; it does not block acceptance of the environment.               |
 
@@ -197,8 +198,8 @@ payment, authentication, privacy or lifecycle contracts:
 
 | Milestone | Scope | Status |
 | --- | --- | --- |
-| DESIGN-1 | Identity, tokens, shared controls and global navigation | Implemented locally; manual visual acceptance pending. |
-| DESIGN-2 | Homepage and FAQ | Planned; FAQ navigation deferred until its route exists. |
+| DESIGN-1 | Identity, tokens, shared controls and global navigation | Accepted by the developer, including the sign-in/mobile follow-up. |
+| DESIGN-2 | Homepage and FAQ | Implemented locally; manual visual acceptance pending. Public `/faq` linked in desktop/mobile navigation for all visitors. |
 | DESIGN-3 | Compact dashboard | Planned. |
 | DESIGN-4 | Pool creation and management | Planned. |
 | DESIGN-5 | Public pool and contribution experience | Planned. |
