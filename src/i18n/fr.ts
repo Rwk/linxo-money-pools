@@ -8,6 +8,7 @@ export const fr = {
     home: "Accueil",
     faq: "FAQ",
     account: "Compte",
+    accountIdentity: "Compte de {{identity}}",
     skipToContent: "Aller au contenu"
   },
   common: {
@@ -200,6 +201,13 @@ export const fr = {
       "Les identifiants Google OAuth sont absents pour cet environnement. Ajoutez les valeurs côté serveur avant de tester la connexion collaborateur."
   },
   dashboard: {
+    compact: {
+      confirmedAmount: "Montant confirmé",
+      totalConfirmed: "Total confirmé",
+      totalScope: "Toutes vos cagnottes, archives incluses. Montants masqués compris.",
+      manage: "Gérer",
+      list: "Cagnottes de cet onglet"
+    },
     badge: "Tableau de bord",
     welcome: "Bienvenue, {{displayName}}",
     title: "Mes cagnottes",

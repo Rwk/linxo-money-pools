@@ -1,13 +1,16 @@
 import Link from "next/link";
 
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
-import { getPoolLifecycle } from "@/domain/pool/pool.rules";
+import { buttonClassName } from "@/components/ui/button";
 import {
   listPoolsByCreatorId,
   listPoolsByCreatorLifecycle
 } from "@/features/pools/data-access/pool-repository";
 import { PoolCard } from "@/features/pools/components/pool-card";
-import { toPoolCardViewModel } from "@/features/pools/presenters/pool-presenters";
+import {
+  getOwnerDashboardSummary,
+  toDashboardPoolViewModel
+} from "@/features/pools/presenters/dashboard-presenters";
 import { t } from "@/i18n/t";
 
 export default async function DashboardPage({
@@ -42,124 +45,71 @@ export default async function DashboardPage({
   ] as const;
   const now = new Date();
   const user = await requireLinxoSession();
-  const [pools, visiblePools] = await Promise.all([
+  const [ownerPools, ownerVisiblePools] = await Promise.all([
     listPoolsByCreatorId(user.id),
     listPoolsByCreatorLifecycle(user.id, selected, now)
   ]);
-  const displayName = user.name ?? user.email;
-  const poolCards = pools.map(toPoolCardViewModel);
-  const visibleCards = visiblePools.map(toPoolCardViewModel);
-  const openPoolCount = pools.filter(
-    (pool) => getPoolLifecycle(pool, now) === "ACTIVE"
-  ).length;
-  const confirmedAmountTotal = poolCards.reduce((total, pool) => {
-    const numericValue = Number.parseFloat(
-      pool.confirmedAmountLabel.replace(" EUR", "")
-    );
-
-    return Number.isNaN(numericValue) ? total : total + numericValue;
-  }, 0);
+  const pools = ownerPools.filter((pool) => pool.creatorId === user.id);
+  const visiblePools = ownerVisiblePools.filter(
+    (pool) => pool.creatorId === user.id
+  );
+  const { counts, confirmedAmountLabel } = getOwnerDashboardSummary(pools, now);
+  const visibleCards = visiblePools.map(toDashboardPoolViewModel);
 
   return (
-    <main className="px-4 py-8 sm:px-6 sm:py-10">
-      <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <div className="overflow-hidden rounded-[2.2rem] border border-[var(--surface-border)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
-          <div className="grid gap-6 px-6 py-8 md:px-8 md:py-10">
-            <div className="space-y-5">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex rounded-full bg-white/80 px-3 py-1 text-xs font-medium tracking-[0.18em] text-[var(--muted)] uppercase">
-                  {t("dashboard.badge")}
-                </span>
-                <p className="text-sm text-[var(--muted)]">{user.email}</p>
-              </div>
-
-              <div className="space-y-3">
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                  {t("dashboard.title")}
-                </h1>
-                <p className="text-sm font-medium text-slate-900 sm:text-base">
-                  {t("dashboard.welcome", { displayName })}
-                </p>
-                <p className="max-w-3xl text-sm leading-6 text-[var(--muted)] sm:text-base">
-                  {t("dashboard.description")}
-                </p>
-                <p className="max-w-3xl text-sm leading-6 text-[var(--muted)]">
-                  {t("dashboard.helper")}
-                </p>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[1.4rem] border border-[var(--surface-border)] bg-white/80 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-                    {t("dashboard.metrics.totalPools")}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-950">
-                    {poolCards.length}
-                  </p>
-                </div>
-                <div className="rounded-[1.4rem] border border-[var(--surface-border)] bg-white/80 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-                    {t("dashboard.metrics.openPools")}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-950">
-                    {openPoolCount}
-                  </p>
-                </div>
-                <div className="rounded-[1.4rem] border border-[var(--surface-border)] bg-white/80 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-                    {t("dashboard.metrics.confirmedAmount")}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-950">
-                    {confirmedAmountTotal.toFixed(2)} EUR
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+    <main className="dashboard-page">
+      <header className="dashboard-heading">
+        <div>
+          <h1 className="ui-page-title">{t("dashboard.title")}</h1>
         </div>
-
-        <nav
-          aria-label={t("poolLifecycle.navigation")}
-          className="flex flex-wrap gap-2"
+        <Link
+          className={buttonClassName("primary", "dashboard-create")}
+          href="/dashboard/pools/new"
         >
-          {tabs.map((tab) => (
-            <Link
-              key={tab.key}
-              href={`/dashboard?tab=${tab.key}`}
-              aria-current={selected === tab.state ? "page" : undefined}
-              className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold ${selected === tab.state ? "bg-[var(--accent)] text-[var(--accent-foreground)]" : "bg-white/80 text-slate-900 ring-1 ring-slate-900/10"}`}
-            >
-              {tab.label}
-            </Link>
+          {t("dashboard.createPool")}
+        </Link>
+      </header>
+      <dl className="dashboard-stats" aria-describedby="dashboard-total-scope">
+        <div>
+          <dt>{t("dashboard.compact.totalConfirmed")}</dt>
+          <dd>{confirmedAmountLabel}</dd>
+        </div>
+      </dl>
+      <p className="dashboard-total-scope" id="dashboard-total-scope">
+        {t("dashboard.compact.totalScope")}
+      </p>
+
+      <nav
+        aria-label={t("poolLifecycle.navigation")}
+        className="dashboard-tabs"
+      >
+        {tabs.map((tab) => (
+          <Link
+            key={tab.key}
+            href={`/dashboard?tab=${tab.key}`}
+            aria-current={selected === tab.state ? "page" : undefined}
+          >
+            <span>{tab.label}</span>
+            <span className="dashboard-tab-count">{counts[tab.state]}</span>
+          </Link>
+        ))}
+      </nav>
+      {visibleCards.length === 0 ? (
+        <section className="dashboard-empty">
+          <h2 className="ui-section-title">
+            {tabs.find((tab) => tab.state === selected)!.empty}
+          </h2>
+          <p>{t("poolLifecycle.emptyBody")}</p>
+        </section>
+      ) : (
+        <ul className="pool-list" aria-label={t("dashboard.compact.list")}>
+          {visibleCards.map((pool) => (
+            <li key={pool.id}>
+              <PoolCard pool={pool} />
+            </li>
           ))}
-        </nav>
-        {visibleCards.length === 0 ? (
-          <div className="rounded-[2rem] border border-dashed border-[var(--surface-border-strong)] bg-[var(--surface)] p-8 text-center shadow-[var(--shadow-soft)]">
-            <div className="mx-auto max-w-2xl space-y-3">
-              <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-                {tabs.find((tab) => tab.state === selected)!.empty}
-              </h2>
-              <p className="text-sm leading-6 text-[var(--muted)] sm:text-base">
-                {t("poolLifecycle.emptyBody")}
-              </p>
-              <div className="pt-2">
-                <Link
-                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--accent)] px-6 text-sm font-semibold whitespace-nowrap text-[var(--accent-foreground)] shadow-[var(--shadow-button)] transition hover:bg-[var(--accent-hover)]"
-                  href="/dashboard/pools/new"
-                >
-                  {t("dashboard.createPool")}
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {visibleCards.map((pool) => (
-              <PoolCard key={pool.id} pool={pool} />
-            ))}
-          </div>
-        )}
-      </section>
+        </ul>
+      )}
     </main>
   );
 }

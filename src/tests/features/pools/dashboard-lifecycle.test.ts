@@ -28,6 +28,7 @@ vi.mock("@/features/pools/components/pool-card", () => ({
 }));
 import DashboardPage from "@/app/(authenticated)/dashboard/page";
 import { getPoolLifecycle } from "@/domain/pool/pool.rules";
+import { dashboardContribution } from "../../test-support/dashboard-pool";
 import { lifecyclePool } from "../../test-support/lifecycle-pool";
 import { t } from "@/i18n/t";
 const pools = [
@@ -98,5 +99,27 @@ describe("dashboard lifecycle navigation", () => {
     await expect(DashboardPage()).rejects.toThrow("SIGN_IN");
     expect(mocks.list).not.toHaveBeenCalled();
     expect(mocks.filtered).not.toHaveBeenCalled();
+  });
+  it("does not display or aggregate another owner's records even if a repository response contains them", async () => {
+    const foreign = lifecyclePool({
+      id: "foreign",
+      creatorId: "other",
+      title: "Foreign pool",
+      contributions: [dashboardContribution()]
+    });
+    mocks.list.mockResolvedValue([...pools, foreign]);
+    mocks.filtered.mockResolvedValue([pools[0], foreign]);
+    const html = renderToStaticMarkup(await DashboardPage());
+    expect(html).toContain("Active pool");
+    expect(html).not.toContain("Foreign pool");
+    expect(html.replace(/\s/g, " ")).not.toContain("12,34");
+  });
+  it("keeps the primary creation route and compact all-state amount scope explicit", async () => {
+    const html = renderToStaticMarkup(await DashboardPage());
+    expect(html).toContain('href="/dashboard/pools/new"');
+    expect(html).toContain(t("dashboard.compact.totalScope"));
+    expect(html).not.toContain("fictional@example.com");
+    expect(html).toContain('class="dashboard-stats"');
+    expect(html).toContain('class="pool-list"');
   });
 });

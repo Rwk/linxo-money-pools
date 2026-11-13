@@ -299,4 +299,24 @@ describe("shared navigation", () => {
       ).toBe("true");
     }
   );
+  it("keeps the current signed-in identity accessible on the existing account action", async () => {
+    state.auth.mockResolvedValue({
+      user: {
+        id: "fictional-owner",
+        email: "test@linxo.com",
+        name: "Camille Fiction"
+      }
+    });
+    render(await SiteHeader());
+    expect(
+      screen.getByRole("form", {
+        name: t("navigation.accountIdentity", { identity: "Camille Fiction" })
+      })
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByRole("button", { name: t("common.signOut") })
+        .getAttribute("title")
+    ).toBe("Camille Fiction");
+  });
 });

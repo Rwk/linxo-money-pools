@@ -9,10 +9,14 @@ type CopyFeedbackStatus = "idle" | "success" | "error";
 
 type CopyToClipboardButtonProps = {
   text: string;
+  compact?: boolean;
+  describedBy?: string;
 };
 
 export function CopyToClipboardButton({
-  text
+  text,
+  compact = false,
+  describedBy
 }: CopyToClipboardButtonProps) {
   const [status, setStatus] = useState<CopyFeedbackStatus>("idle");
   const timeoutRef = useRef<number | null>(null);
@@ -48,11 +52,25 @@ export function CopyToClipboardButton({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <Button onClick={() => void handleCopyClick()} type="button" variant="secondary">
+    <div
+      className={
+        compact ? "copy-control-compact" : "flex flex-wrap items-center gap-3"
+      }
+    >
+      <Button
+        onClick={() => void handleCopyClick()}
+        type="button"
+        variant={compact ? "tertiary" : "secondary"}
+        className={compact ? "px-2" : undefined}
+        aria-describedby={describedBy}
+      >
         {t("common.copyLink")}
       </Button>
-      <span aria-live="polite" className="text-sm text-slate-700" role="status">
+      <span
+        aria-live="polite"
+        className={compact ? "copy-feedback-compact" : "text-sm text-slate-700"}
+        role="status"
+      >
         {status === "success"
           ? t("common.linkCopied")
           : status === "error"

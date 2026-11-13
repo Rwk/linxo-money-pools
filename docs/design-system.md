@@ -1,10 +1,9 @@
 # DESIGN-1 — Linxo Cagnottes foundations
 
-DESIGN-1 and its sign-in/mobile follow-up are accepted following the developer's
-visual review. DESIGN-2 (homepage and public FAQ) is implemented locally on
-2026-11-13; **manual visual acceptance of DESIGN-2 remains pending**.
-The shared foundations remain in use. Homepage/FAQ are redesigned in DESIGN-2;
-DESIGN-3 through DESIGN-6 remain separate work.
+DESIGN-1 (including its sign-in/mobile follow-up) and DESIGN-2 are accepted following
+the developer's visual review. DESIGN-3, the compact owner dashboard, is implemented
+locally on 2026-11-13; **manual acceptance remains pending**. DESIGN-4 through
+DESIGN-6 remain separate work.
 
 ## Existing foundations and direction
 
@@ -151,7 +150,9 @@ state creation links are retained. DESIGN-2 now provides the public `/faq` route
 
 The new root header reads the session on public pages too, so their shell is
 rendered per request rather than statically cached with another visitor's account
-controls. No account data is displayed in the public header.
+controls. Only the current signed-in user’s own identity labels their account
+action: a mobile-menu caption, a sign-out tooltip and a named form for assistive
+technology. Anonymous navigation receives no identity.
 
 ## DESIGN-2 — Homepage, FAQ and event artwork
 
@@ -187,7 +188,7 @@ No fees, refund mechanism, processing deadline, regulatory guarantee, provider
 storage/deletion policy or new product capability is promised. Bank/method availability
 is worded conservatively; local developer authentication stays environment-specific.
 
-### DESIGN-2 visual acceptance checklist — pending
+### DESIGN-2 visual acceptance checklist — accepted by developer
 
 - At 320/390 px, tablet and desktop widths, inspect headline, illustration balance,
   early primary action, readable steps and absence of horizontal overflow. Check
@@ -200,7 +201,7 @@ is worded conservatively; local developer authentication stays environment-speci
 - Review wording for product accuracy, especially amount privacy versus public
   names, complete owner information, payment confirmation and irreversible archive.
 - Confirm sign-in remains exclusive, then smoke-test unchanged pool/payment flows
-  with fictional Sandbox data. DESIGN-3/dashboard work has not started.
+  with fictional Sandbox data. This does not change the dashboard’s business rules.
 
 DESIGN-2 verification (2026-11-13):
 
@@ -225,13 +226,107 @@ DESIGN-2 verification (2026-11-13):
   Chromium tools were reused with libraries extracted only under `/tmp`; no system
   package installation, project dependency, external image service or payment call.
 
-Visual acceptance by the developer is required before marking DESIGN-2 accepted.
+The developer subsequently confirmed DESIGN-2 acceptance.
+
+## DESIGN-3 — Compact owner dashboard
+
+The owner dashboard uses a plain title and compact, inline confirmed total.
+Counts live on `En cours`, `Terminées`, `Archivées` links rather than repeating
+as large statistic cards. The existing selected/default tab and `?tab=` navigation
+are unchanged. The existing global creation action stays visible on desktop; a
+page-header creation action appears on mobile when global navigation is collapsed.
+The current account identity remains available through navigation, not a large
+separate welcome/email panel.
+
+One white list surface contains separated rows, not cards within cards. Each row
+has a 40 px original local SVG motif (birthday, birth, farewell, wedding, generic
+gift fallback), title/management link, effective status, UTC closing date formatted
+in French, owner confirmed amount and the existing visible-contribution count.
+Titles clamp to two lines with their full text accessible and available as a
+native tooltip; unusual characters are preserved/escaped. Event text remains
+accessible on mobile, where its icon provides the visual cue. Static status spans
+remain distinct from native links/buttons.
+
+Only an active pool needing collector setup repeats its payment-readiness warning;
+configured active and completed/archived rows avoid redundant readiness labels.
+Row actions are always available: visible `Gérer`, `Copier le lien`, and an external
+page icon with `Voir la page publique` accessible name/tooltip. No new menu or
+lifecycle operation is added. The full public URL is not printed in the row;
+the unchanged clipboard handler receives the exact existing `publicUrl`. The
+optional compact copy presentation preserves native buttons, live success/error
+feedback and default behavior everywhere else.
+
+### Amounts and data boundaries
+
+`dashboard-presenters.ts` reuses `computePoolTotals`, the existing private card
+presenter and `getPoolLifecycle`. The summary includes all of the owner’s pools,
+including completed/archived pools and hidden confirmed amounts. Each contribution
+is included once through its pool. Pending/rejected/new orders do not become
+confirmed merely for presentation. French euro formatting uses normalized domain
+totals, retaining exact cents without parsing formatted labels or converting large
+amounts to floating point. Other public/private detail presenters keep their
+existing format and privacy behavior.
+
+The contribution count keeps its existing meaning: publicly visible rows
+(confirmed and authorized/submitted in progress), including hidden-amount rows.
+It does not claim to count failed or not-yet-authorized records. Full history
+remains on the unchanged owner management page. Tab counts use the centralized
+effective lifecycle, including expired OPEN pools and archival precedence.
+
+The server session guard and both owner-scoped repository queries are retained;
+foreign-owner results are also excluded before presentation/aggregation. No
+schema, payment, authentication/ownership rule, fixed-price calculation, lifecycle
+transition or collector-reuse logic is changed.
+
+### Responsive presentation and acceptance — pending
+
+Below 640 px, rows stack their identity, amount and actions without using a data
+table; all action targets remain at least 44 px. Tablet uses a separate amount
+column; wide desktop places actions on the same row. At 320 px the lifecycle tabs
+and actions remain on one line in the representative preview. Counts/amounts use
+tabular numerals and event colors remain in the DESIGN-1 palette.
+
+- On desktop/tablet/mobile (including 320 px), check early list access, all three
+  tabs/counts/default/empty states, long accented/emoji titles and visible actions.
+- With a real local owner session, confirm only that owner’s pools appear and
+  that confirmed amounts include hidden amounts and archived pools. Compare the
+  displayed visible-contribution count to the unchanged management history.
+- Use `Gérer`, open a public page and copy its link. Paste it to confirm the full
+  original URL; check success/error feedback and keyboard names/focus. Check the
+  account identity in mobile navigation and the sign-out tooltip on desktop.
+- Verify public totals still exclude hidden confirmed amounts, and smoke-test
+  unchanged lifecycle/payment flows with fictional Sandbox data as appropriate.
+
+DESIGN-3 verification (2026-11-13):
+
+- 150 targeted tests pass across 12 files, including private/hidden totals,
+  counts, dates, exact URL copying, owner isolation, long titles, event fallback,
+  lifecycle transitions, payment initiation and webhook regression checks.
+- Full Vitest: 632 passed, 3 historical date-fixture failures, 15 opt-in PostgreSQL
+  checks skipped. Historical failures remain in `create-pool-action.test.ts` (one)
+  and `update-pool-action.test.ts` (two), with expired July 2026 dates.
+- ESLint and production build pass. Standalone TypeScript retains the eight
+  historical fixture errors already listed above; no new type error.
+- Browser previews cover all three tabs at 320, 390, 768, 1024 and 1440 px, with no
+  page overflow or overlapping row actions detected. A representative 1440×900
+  preview reaches the list at 286 px and shows six rows in its first viewport;
+  ordinary wide-desktop rows measure about 85 px high. Narrow-mobile actions and
+  tabs fit one row in the representative fixture. Long titles remain bounded.
+- axe WCAG A/AA/2.1 AA checks at 320 and 1440 px found no violations across the
+  three tab previews. This does not constitute a full accessibility certification
+  or developer visual acceptance.
+
+Browser visual previews use actual dashboard/row/navigation components and compiled CSS with
+fictional read-only repository/session fixtures. They do not authenticate a real
+user, write database data, create payments or validate real clipboard/browser
+routing. Clipboard and ownership contracts are covered by targeted tests; real
+session interaction and developer visual acceptance remain pending. Headless
+system-font emoji coverage may differ from the developer’s browser.
 
 ## Boundaries for DESIGN-2 through DESIGN-6
 
-1. DESIGN-2: homepage and FAQ implemented; visual acceptance pending.
-2. DESIGN-3: compact dashboard; preserve effective lifecycle classification,
-   metrics, owner isolation and navigation routes.
+1. DESIGN-2: homepage and FAQ accepted by the developer.
+2. DESIGN-3: compact dashboard implemented; developer visual acceptance pending.
 3. DESIGN-4: pool creation/management; migrate form/surface primitives gradually,
    retaining fixed prices, reuse, permanent archival confirmation and history.
 4. DESIGN-5: public/contribution flows; preserve hidden-amount privacy, the full

@@ -11,7 +11,13 @@ export async function SiteHeader() {
   return (
     <SiteNavigation
       signedIn={signedIn}
-      accountAction={signedIn ? <SignOutButton /> : null}
+      accountAction={
+        signedIn ? (
+          <SignOutButton
+            identity={session?.user?.name ?? session?.user?.email ?? undefined}
+          />
+        ) : null
+      }
     />
   );
 }
