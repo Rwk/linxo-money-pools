@@ -55,7 +55,7 @@ functional product requirements and their priorities remain unchanged.
 | DESIGN-4 — Pool creation and owner management | **Accepted by the developer**, including `4e313bc` consolidated actions. Optional descriptions, compact primary/lifecycle actions, full-width missing collector setup and preserved owner totals/history. | Acceptance reported in the DESIGN-5 request; see [owner conventions](./design-system.md#design-4--pool-creation-and-owner-management). |
 | DESIGN-5 — Public pool and contribution UX | **Manually accepted by the developer** in the DESIGN-6 request. Public event header, compact form/history, natural payment CTA and clearer status feedback. | See [public conventions](./design-system.md#design-5--public-pool-and-contribution-experience). No production deployment is implied. |
 | v1.1.0 functional improvements | **Implemented and manually accepted**, as confirmed in the DESIGN-6 request: amount privacy, collector reuse, fixed contributions/price editing, lifecycle/archive and favorite providers. | Release preparation is a separate task; production state is not verified by this UI pass. |
-| DESIGN-6 — Final interface polish | **Implemented locally; final developer acceptance pending.** Long owner content wraps, amount/status columns remain readable, owner/sign-in errors are announced, pending copy is simpler. | Complete final visual/accessibility acceptance; [inventory](./release-v1.1.0-inventory.md) is informational. No release/tag/deployment or production migration has been performed. |
+| DESIGN-6 — Final interface polish | **Manually accepted in the RELEASE-1 request.** Long owner content wraps, amount/status columns remain readable, owner/sign-in errors are announced, pending copy is simpler. | Acceptance is developer-reported; see [RELEASE-1 procedure](./release-v1.1.0-deployment.md). No v1.1.0 release/tag/deployment or production migration has been performed. |
 | Safe local development               | **Accepted; workstream closed**. DEV-1 through DEV-4 were implemented and manually accepted by the developer. See the acceptance record below.                                                                                                                                | Delayed authorization-to-execution transition remains an observation with an unconfirmed cause; it does not block acceptance of the environment.               |
 
 ## Prioritized milestones
@@ -207,7 +207,7 @@ payment, authentication, privacy or lifecycle contracts:
 | DESIGN-3 | Compact dashboard | Accepted by the developer in the DESIGN-4 request. |
 | DESIGN-4 | Pool creation and management | Accepted by the developer, including consolidated owner actions (`4e313bc`). |
 | DESIGN-5 | Public pool and contribution experience | Manually accepted by the developer, including `e28a806`. |
-| DESIGN-6 | Mobile, accessibility and final consistency | Implemented locally; final developer acceptance pending. See [final checks](./design-system.md#design-6--final-consistency-and-accessibility-pass) and [release inventory](./release-v1.1.0-inventory.md). |
+| DESIGN-6 | Mobile, accessibility and final consistency | Manually accepted in RELEASE-1, including `27dd519`. See [deployment readiness](./release-v1.1.0-deployment.md). |
 
 DESIGN-1 keeps the existing page layouts, except removing duplicate global
 navigation/account CTAs and using a shared sign-in surface. It introduces no
@@ -316,8 +316,8 @@ Authentication and identity verification requirements remain undecided.
 
 ## DESIGN-6 release-readiness snapshot
 
-DESIGN-1 through DESIGN-5 are manually accepted. DESIGN-6 is implemented locally
-and awaits final developer acceptance. Final checks: 137 targeted tests and 689
+DESIGN-1 through DESIGN-5 are manually accepted. DESIGN-6 is manually accepted
+by the developer in the RELEASE-1 request. Final checks: 137 targeted tests and 689
 full-suite tests pass, zero test failures, 15 opt-in PostgreSQL checks skipped;
 ESLint/build pass. Standalone TypeScript retains eight historical fixture errors,
 with no new error. Browser fixtures cover 36 views at four widths, followed by
@@ -328,3 +328,19 @@ The [release inventory](./release-v1.1.0-inventory.md) records the branch, audit
 HEAD, all commits and the three new migrations since `v1.0.0`, configuration
 considerations and remaining test debt. This records readiness information only;
 it does not start the production release process or confirm production state.
+
+## RELEASE-1 — Production readiness
+
+DESIGN-6 is manually accepted. Reviewed application candidate: `27dd519`; active
+Production source confirmed by the operator: `0f295cd` (22 commits behind the
+candidate). The three additive migrations were rehearsed successfully on a
+separate disposable PostgreSQL database with fictional historical data; both
+client schemas and all 15 optional database/concurrency tests pass.
+
+**BLOCKED — ACTION REQUIRED:** a usable Supabase backup/restore point is not yet
+confirmed; trusted Git write access in this workspace must be restored before
+RELEASE-2. Environment presence is operator-confirmed, not independently inspected.
+The eight historical TypeScript fixture errors remain; all Vitest checks, lint
+and build pass. See [exact refs, procedure, rollback limits and smoke checks](./release-v1.1.0-deployment.md).
+This is readiness documentation only: v1.1.0 is not marked deployed; no production
+database connection, migration, environment change, push, deployment or tag occurred.
