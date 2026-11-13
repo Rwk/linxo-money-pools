@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { hasGoogleOAuthCredentials, hasDevelopmentAuth } from "@/auth";
+import { Surface } from "@/components/ui/surface";
+import { buttonClassName } from "@/components/ui/button";
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { t } from "@/i18n/t";
 
@@ -29,16 +31,14 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const errorMessage = getErrorMessage(error);
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
-      <section className="w-full max-w-lg rounded-[2rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur md:p-10">
+    <main className="flex items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
+      <Surface className="w-full max-w-lg">
         <div className="space-y-6">
           <div className="space-y-3">
             <span className="inline-flex rounded-full bg-white/70 px-3 py-1 text-xs font-medium tracking-[0.18em] text-[var(--muted)] uppercase">
               {t("common.employeeAccess")}
             </span>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-              {t("auth.title")}
-            </h1>
+            <h1 className="ui-page-title">{t("auth.title")}</h1>
             <p className="text-base leading-7 text-[var(--muted)]">
               {t("auth.body")}
             </p>
@@ -56,7 +56,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             </div>
           ) : null}
 
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             {hasDevelopmentAuth ? (
               <SignInButton
                 provider="development"
@@ -72,15 +72,12 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
                 redirectTo={callbackUrl || "/dashboard"}
               />
             ) : null}
-            <Link
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/70 px-5 text-sm font-semibold text-slate-900 ring-1 ring-slate-900/10 transition"
-              href="/"
-            >
+            <Link className={buttonClassName("tertiary")} href="/">
               {t("common.backToHome")}
             </Link>
           </div>
         </div>
-      </section>
+      </Surface>
     </main>
   );
 }

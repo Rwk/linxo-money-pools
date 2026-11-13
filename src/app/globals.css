@@ -1,39 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --background: #eef4f8;
-  --background-elevated: #f8fbfd;
-  --foreground: #18324b;
-  --muted: #5d7187;
-  --surface: rgba(255, 255, 255, 0.92);
+  --background: #faf8f3;
+  --background-elevated: #ffffff;
+  --foreground: #19333b;
+  --muted: #59696d;
+  --surface: #ffffff;
   --surface-strong: #ffffff;
-  --surface-subtle: #f4f8fb;
-  --surface-border: rgba(24, 50, 75, 0.12);
-  --surface-border-strong: rgba(24, 50, 75, 0.18);
-  --accent: #0b7285;
-  --accent-hover: #095d6d;
-  --accent-foreground: #f8fbfd;
-  --secondary: #e9f3f7;
-  --secondary-foreground: #18324b;
-  --success: #0f9f73;
-  --success-surface: #e8faf3;
-  --success-border: #bfead8;
-  --danger: #c24545;
-  --danger-surface: #fdf0f0;
-  --danger-border: #f5c9c9;
-  --warning: #b7791f;
-  --warning-surface: #fff7e8;
-  --warning-border: #f2d6a2;
-  --info: #2563eb;
-  --info-surface: #eef4ff;
-  --info-border: #c8d8ff;
-  --neutral: #5f6f82;
-  --neutral-surface: #f2f5f8;
-  --neutral-border: #d6dee6;
-  --focus-ring: rgba(37, 99, 235, 0.22);
-  --shadow-card: 0 20px 45px rgba(15, 23, 42, 0.08);
-  --shadow-soft: 0 12px 26px rgba(15, 23, 42, 0.06);
-  --shadow-button: 0 14px 30px rgba(11, 114, 133, 0.2);
+  --surface-subtle: #f3f1eb;
+  --surface-border: #dcded8;
+  --surface-border-strong: #b9c3c0;
+  --accent: #086b70;
+  --accent-hover: #07575b;
+  --accent-foreground: #ffffff;
+  --celebration: #b74a36;
+  --celebration-surface: #ffede5;
+  --secondary: #e9f2ef;
+  --secondary-hover: #d9e9e3;
+  --secondary-foreground: #19333b;
+  --success: #176749;
+  --success-surface: #eaf5ed;
+  --success-border: #bed8c6;
+  --danger: #ad343c;
+  --danger-hover: #912b32;
+  --danger-surface: #fceef0;
+  --danger-border: #ebc4cb;
+  --warning: #805514;
+  --warning-surface: #fff5df;
+  --warning-border: #e7d19f;
+  --info: #255d91;
+  --info-surface: #edf4fc;
+  --info-border: #c5d8eb;
+  --neutral: #526368;
+  --neutral-surface: #f0f3f2;
+  --neutral-border: #d3dcda;
+  --focus-ring: #086b70;
+  --control-border: #748784;
+  --radius-control: 0.625rem;
+  --radius-surface: 1rem;
+  --radius-status: 0.25rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --font-body: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --shadow-card: 0 2px 8px rgb(25 51 59 / 0.05);
+  --shadow-soft: 0 1px 3px rgb(25 51 59 / 0.04);
+  --shadow-button: 0 0 0 transparent;
 }
 
 * {
@@ -41,10 +56,7 @@
 }
 
 html {
-  background:
-    radial-gradient(circle at top, rgba(37, 99, 235, 0.12), transparent 34%),
-    radial-gradient(circle at right top, rgba(15, 159, 115, 0.1), transparent 28%),
-    linear-gradient(180deg, #f8fbfd 0%, #eef4f8 100%);
+  background: var(--background);
 }
 
 body {
@@ -53,29 +65,32 @@ body {
   color: var(--foreground);
   background: transparent;
   line-height: 1.5;
-  font-family:
-    "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* Keep resets in the base layer so utility colors/type work on shared links. */
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
 }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
+summary:focus-visible,
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 0;
-  box-shadow: 0 0 0 4px var(--focus-ring);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
 }
 
 input,
@@ -87,5 +102,119 @@ textarea {
 
 input::placeholder,
 textarea::placeholder {
-  color: color-mix(in srgb, var(--muted) 72%, white);
+  color: var(--muted);
+  opacity: 1;
+}
+
+/* Opt-in primitives: migrate page-specific surfaces in DESIGN-2 through DESIGN-6. */
+.ui-surface {
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-surface);
+  background: var(--surface);
+  padding: var(--space-6);
+}
+
+.ui-page-title {
+  color: var(--foreground);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.ui-section-title {
+  color: var(--foreground);
+  font-size: 1.25rem;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+}
+
+.ui-field {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--foreground);
+  padding: var(--space-2) var(--space-3);
+  box-shadow: none;
+}
+.ui-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.ui-field[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--surface-border);
+}
+.site-header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: var(--space-3) var(--space-4);
+}
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  margin-right: auto;
+  color: var(--foreground);
+  font-size: 1.0625rem;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+.site-nav,
+.site-account {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.site-nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-control);
+}
+.site-nav-link:hover,
+.site-nav-link[aria-current="page"] {
+  background: var(--secondary);
+  color: var(--accent);
+}
+.site-nav-link[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-4);
+  z-index: 50;
+  padding: var(--space-3);
+  background: var(--foreground);
+  color: white;
+  border-radius: var(--radius-control);
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+@media (min-width: 640px) {
+  .site-header-inner {
+    padding-inline: var(--space-6);
+  }
 }

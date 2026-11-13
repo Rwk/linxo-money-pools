@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { SignOutButton } from "@/components/auth/sign-out-button";
 import { requireLinxoSession } from "@/features/auth/require-linxo-session";
 import { getPoolLifecycle } from "@/domain/pool/pool.rules";
 import {
@@ -65,7 +64,7 @@ export default async function DashboardPage({
     <main className="px-4 py-8 sm:px-6 sm:py-10">
       <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         <div className="overflow-hidden rounded-[2.2rem] border border-[var(--surface-border)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
-          <div className="grid gap-6 px-6 py-8 md:px-8 md:py-10 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+          <div className="grid gap-6 px-6 py-8 md:px-8 md:py-10">
             <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="inline-flex rounded-full bg-white/80 px-3 py-1 text-xs font-medium tracking-[0.18em] text-[var(--muted)] uppercase">
@@ -115,16 +114,6 @@ export default async function DashboardPage({
                   </p>
                 </div>
               </div>
-            </div>
-
-            <div className="flex flex-col gap-3 xl:items-end">
-              <Link
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--accent)] px-6 text-sm font-semibold whitespace-nowrap text-[var(--accent-foreground)] shadow-[var(--shadow-button)] transition hover:bg-[var(--accent-hover)]"
-                href="/dashboard/pools/new"
-              >
-                {t("dashboard.createPool")}
-              </Link>
-              <SignOutButton />
             </div>
           </div>
         </div>

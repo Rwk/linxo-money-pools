@@ -1,9 +1,3 @@
-import Link from "next/link";
-
-import { auth } from "@/auth";
-import { isLinxoEmail } from "@/auth/linxo-email-domain";
-import { SignInButton } from "@/components/auth/sign-in-button";
-import { SignOutButton } from "@/components/auth/sign-out-button";
 import { t } from "@/i18n/t";
 
 const heroHighlightKeys = [
@@ -39,9 +33,6 @@ const responsibilityPointKeys = [
 ] as const;
 
 export default async function HomePage() {
-  const session = await auth();
-  const isSignedIn = isLinxoEmail(session?.user?.email);
-
   return (
     <main className="px-4 py-8 sm:px-6 sm:py-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -79,24 +70,6 @@ export default async function HomePage() {
                     {t(`home.heroHighlights.${key}`)}
                   </span>
                 ))}
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                {isSignedIn ? (
-                  <>
-                    <Link
-                      className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)] shadow-[var(--shadow-button)] transition hover:bg-[var(--accent-hover)]"
-                      href="/dashboard"
-                    >
-                      {t("common.accessDashboard")}
-                    </Link>
-                    <p className="text-sm text-[var(--muted)]">
-                      {t("home.signedInHint")}
-                    </p>
-                  </>
-                ) : (
-                  <SignInButton label={t("common.signInToManagePools")} />
-                )}
               </div>
 
               <p className="max-w-2xl text-sm leading-6 text-[var(--muted)]">
@@ -140,8 +113,6 @@ export default async function HomePage() {
                     </div>
                   </div>
                 ))}
-
-                {isSignedIn ? <SignOutButton /> : null}
               </div>
             </div>
           </div>

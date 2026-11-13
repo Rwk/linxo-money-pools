@@ -6,9 +6,7 @@ type SignOutButtonProps = {
   redirectTo?: string;
 };
 
-export function SignOutButton({
-  redirectTo = "/"
-}: SignOutButtonProps) {
+export function SignOutButton({ redirectTo = "/" }: SignOutButtonProps) {
   return (
     <form
       action={async () => {
@@ -18,7 +16,7 @@ export function SignOutButton({
         });
       }}
     >
-      <Button type="submit" variant="secondary">
+      <Button type="submit" variant="tertiary">
         {t("common.signOut")}
       </Button>
     </form>

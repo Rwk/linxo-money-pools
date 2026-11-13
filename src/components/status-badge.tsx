@@ -21,15 +21,14 @@ const variantClasses: Record<StatusBadgeVariant, string> = {
     "border-[color:var(--danger-border)] bg-[color:var(--danger-surface)] text-[color:var(--danger)]",
   warning:
     "border-[color:var(--warning-border)] bg-[color:var(--warning-surface)] text-[color:var(--warning)]",
-  info:
-    "border-[color:var(--info-border)] bg-[color:var(--info-surface)] text-[color:var(--info)]",
+  info: "border-[color:var(--info-border)] bg-[color:var(--info-surface)] text-[color:var(--info)]",
   neutral:
     "border-[color:var(--neutral-border)] bg-[color:var(--neutral-surface)] text-[color:var(--neutral)]"
 };
 
 const sizeClasses: Record<StatusBadgeSize, string> = {
-  sm: "px-2.5 py-1 text-[11px]",
-  md: "px-3 py-1.5 text-xs"
+  sm: "px-2 py-0.5 text-xs",
+  md: "px-2 py-1 text-sm"
 };
 
 export function StatusBadge({
@@ -39,7 +38,7 @@ export function StatusBadge({
 }: StatusBadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border font-semibold uppercase tracking-[0.12em] ${variantClasses[variant]} ${sizeClasses[size]}`}
+      className={`inline-flex items-center rounded-[var(--radius-status)] border font-medium leading-5 ${variantClasses[variant]} ${sizeClasses[size]}`}
     >
       {children}
     </span>

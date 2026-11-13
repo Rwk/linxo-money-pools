@@ -49,6 +49,7 @@ functional product requirements and their priorities remain unchanged.
 | Collector account reuse              | **Implemented locally; manual acceptance pending.** New pools can select an owner-scoped, provenance-bound alias/account pair or use the existing new-collector path. See [collector reuse](./collector-account-reuse.md).                                                    | Complete the documented Sandbox acceptance; legacy references without provenance/entity type are excluded. No production deployment is implied.                |
 | Pool lifecycle P1-A | **Implemented locally**, including permanent archive, atomic contribution acceptance and PostgreSQL concurrency tests. See [lifecycle verification](./pool-lifecycle.md). | P1-B tabs/controls implemented locally; manual Sandbox lifecycle acceptance remains pending. |
 | Favorite payment providers P2 | **Implemented locally; manual Sandbox acceptance pending.** Approved historical-usage BIC list is applied to authorization preferences and shortening. | Check favorite-bank display, access to all banks, authorization and return. See [payment preferences](./linxo-payments.md#favorite-payment-providers). |
+| DESIGN-1 — Visual identity and shared UI | **Implemented locally; manual visual acceptance pending.** Central tokens, shared controls/statuses and session-aware global navigation; see [design reference](./design-system.md). | Desktop/mobile and keyboard acceptance; DESIGN-2 through DESIGN-6 remain separate milestones. |
 | Remaining P0, P1 and P2 requirements | **Planned**. Existing visibility controls and dashboard redesigns are partial foundations, not evidence that these requirements are complete.                                                                                                                                 | Implement and validate after the local development prerequisite.                                                                                               |
 | Safe local development               | **Accepted; workstream closed**. DEV-1 through DEV-4 were implemented and manually accepted by the developer. See the acceptance record below.                                                                                                                                | Delayed authorization-to-execution transition remains an observation with an unconfirmed cause; it does not block acceptance of the environment.               |
 
@@ -187,6 +188,26 @@ interactive controls, and desktop/mobile usability. Coordinate with the
 three-tab pool organization. Reuse existing UI components and centralized
 French translations; previous dashboard redesigns do not fulfill this new scope
 by themselves.
+
+## Visual redesign sequence
+
+The developer reports the functional v1.1.0 work manually validated in the local
+Sandbox environment. The visual redesign proceeds separately, without changing
+payment, authentication, privacy or lifecycle contracts:
+
+| Milestone | Scope | Status |
+| --- | --- | --- |
+| DESIGN-1 | Identity, tokens, shared controls and global navigation | Implemented locally; manual visual acceptance pending. |
+| DESIGN-2 | Homepage and FAQ | Planned; FAQ navigation deferred until its route exists. |
+| DESIGN-3 | Compact dashboard | Planned. |
+| DESIGN-4 | Pool creation and management | Planned. |
+| DESIGN-5 | Public pool and contribution experience | Planned. |
+| DESIGN-6 | Mobile, accessibility and final consistency | Planned. |
+
+DESIGN-1 keeps the existing page layouts, except removing duplicate global
+navigation/account CTAs and using a shared sign-in surface. It introduces no
+component framework, external font, schema migration or production change.
+See [tokens, compatibility limits and acceptance checklist](./design-system.md).
 
 ## Technical risks and dependencies
 

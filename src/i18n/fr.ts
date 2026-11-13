@@ -1,4 +1,10 @@
 export const fr = {
+  navigation: {
+    homeLabel: "Linxo Cagnottes — Accueil",
+    primary: "Navigation principale",
+    account: "Compte",
+    skipToContent: "Aller au contenu"
+  },
   common: {
     appName: "Linxo Cagnottes",
     appDescription: "Cagnottes propulsées par Linxo Payments.",
