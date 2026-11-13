@@ -25,7 +25,6 @@ const ManagePoolSchema = z
     description: z
       .string()
       .trim()
-      .min(1, t("validation.descriptionRequired"))
       .max(
         DESCRIPTION_MAX_LENGTH,
         t("validation.descriptionMax", { count: DESCRIPTION_MAX_LENGTH })

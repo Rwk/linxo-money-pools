@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { buttonClassName, Button } from "@/components/ui/button";
 import { CopyToClipboardButton } from "@/components/copy-to-clipboard-button";
 import { StatusBadge } from "@/components/status-badge";
 import { getPoolLifecycle } from "@/domain/pool/pool.rules";
@@ -100,86 +100,6 @@ function getEventLabel(eventType: EventType): string {
   return labels[eventType];
 }
 
-function PoolManagementHeader({ pool }: { pool: PrivatePoolDetailViewModel }) {
-  const configurationLabel =
-    pool.readinessVariant === "warning"
-      ? t("poolManagement.incompleteConfiguration")
-      : pool.readinessLabel;
-
-  return (
-    <section
-      className={`overflow-hidden rounded-[2.2rem] border shadow-[var(--shadow-card)] ${pool.themeCardClassName}`}
-    >
-      <div className="grid gap-6 px-6 py-8 md:px-8 md:py-10 xl:grid-cols-[minmax(0,1fr)_24rem] xl:items-start">
-        <div className="space-y-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${pool.themeCardClassName} ${pool.themeAccentClassName}`}
-            >
-              <span aria-hidden="true">{pool.themeEmoji}</span>
-              {pool.themeLabel}
-            </span>
-            <StatusBadge size="sm" variant={pool.statusVariant}>
-              {pool.statusLabel}
-            </StatusBadge>
-            <StatusBadge size="sm" variant={pool.readinessVariant}>
-              {configurationLabel}
-            </StatusBadge>
-          </div>
-
-          <div className="space-y-3">
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-              {pool.title}
-            </h1>
-            <p className="max-w-3xl text-sm leading-6 text-[var(--muted)] sm:text-base">
-              {t("poolManagement.helper")}
-            </p>
-            {pool.readinessVariant === "warning" ? (
-              <div className="max-w-3xl rounded-[1.5rem] border border-amber-300 bg-amber-50 px-5 py-4 text-amber-950 shadow-[var(--shadow-soft)]">
-                <p className="text-sm font-semibold">
-                  {t("poolManagement.collectorCalloutTitle")}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-amber-900">
-                  {t("poolManagement.collectorCalloutBody")}
-                </p>
-                <a
-                  className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-amber-500 px-4 text-sm font-semibold text-amber-950 transition hover:bg-amber-400"
-                  href="#collector-account"
-                >
-                  {t("poolManagement.collectorCalloutAction")}
-                </a>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="rounded-[1.6rem] border border-[var(--surface-border)] bg-white/80 p-5 shadow-[var(--shadow-soft)]">
-          <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-              {t("poolManagement.shareTitle")}
-            </p>
-            <p className="break-all text-sm font-medium text-slate-950">
-              {pool.publicUrl}
-            </p>
-            <p className="text-sm leading-6 text-[var(--muted)]">
-              {t("poolManagement.publicPreviewBody")}
-            </p>
-          </div>
-          <div className="mt-4 flex flex-col gap-3">
-            <CopyToClipboardButton text={pool.publicUrl} />
-            <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--accent-foreground)] shadow-[var(--shadow-button)] transition hover:bg-[var(--accent-hover)]"
-              href={pool.publicPath}
-            >
-              {t("poolManagement.openPublicPage")}
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function PoolDetailsCard({
   isEditing,
   onCancelEditing,
@@ -219,22 +139,14 @@ export function PoolDetailsCard({
   }, [onCancelEditing, safeState.successMessage, state]);
 
   return (
-    <section
-      className="rounded-[1.9rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]"
-      id="pool-details"
-    >
+    <section className="ui-surface min-w-0" id="pool-details">
       <div className="space-y-3">
         <h2 className="text-xl font-semibold text-slate-950">
           {t("poolManagement.detailsTitle")}
         </h2>
-        <p className="text-sm leading-6 text-[var(--muted)]">
-          {isEditing
-            ? t("poolManagement.editHint")
-            : t("poolManagement.detailsBody")}
-        </p>
       </div>
 
-      <div className="mt-5 rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+      <div className="mt-4 border-b border-[var(--surface-border)] pb-4">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
           {t("fixedContributions.mode")}
         </p>
@@ -269,18 +181,10 @@ export function PoolDetailsCard({
       </div>
 
       {!isEditing || getPoolLifecycle(pool) === "ARCHIVED" ? (
-        <div className="mt-6 space-y-5">
+        <div className="mt-4 space-y-4">
           <StatusMessage successMessage={safeState.successMessage} />
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-                {t("poolForms.title")}
-              </p>
-              <p className="mt-2 text-lg font-semibold text-slate-950">
-                {pool.title}
-              </p>
-            </div>
-            <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
                 {t("poolForms.eventType")}
               </p>
@@ -288,7 +192,7 @@ export function PoolDetailsCard({
                 {getEventLabel(pool.eventType)}
               </p>
             </div>
-            <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
                 {t("poolDetails.collector")}
               </p>
@@ -296,7 +200,7 @@ export function PoolDetailsCard({
                 {pool.collectorDisplayName}
               </p>
             </div>
-            <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
                 {t("poolForms.closingDate")}
               </p>
@@ -305,20 +209,22 @@ export function PoolDetailsCard({
               </p>
             </div>
           </div>
-          <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-              {t("poolForms.description")}
-            </p>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-900">
-              {pool.description}
-            </p>
-          </div>
+          {pool.description.trim() ? (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+                {t("poolForms.description")}
+              </p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-900">
+                {pool.description}
+              </p>
+            </div>
+          ) : null}
           <p className="text-sm text-[var(--muted)]">
             {t("pools.createdOn", { date: pool.createdDateLabel })}
           </p>
         </div>
       ) : (
-        <form action={formAction} className="mt-6 space-y-5">
+        <form action={formAction} className="mt-4 space-y-4">
           <StatusMessage
             error={safeState.formError}
             successMessage={safeState.successMessage}
@@ -332,7 +238,7 @@ export function PoolDetailsCard({
               {t("poolForms.title")}
             </label>
             <input
-              className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+              className="ui-field"
               defaultValue={safeState.values.title}
               id="title"
               maxLength={120}
@@ -348,15 +254,14 @@ export function PoolDetailsCard({
               className="text-sm font-semibold text-slate-900"
               htmlFor="description"
             >
-              {t("poolForms.description")}
+              {t("poolForms.descriptionOptional")}
             </label>
             <textarea
-              className="min-h-36 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+              className="ui-field min-h-24"
               defaultValue={safeState.values.description}
               id="description"
               maxLength={2000}
               name="description"
-              required
             />
             <FieldError message={safeState.fieldErrors.description} />
           </div>
@@ -370,7 +275,7 @@ export function PoolDetailsCard({
                 {t("poolForms.eventType")}
               </label>
               <select
-                className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                className="ui-field"
                 defaultValue={safeState.values.eventType}
                 id="eventType"
                 name="eventType"
@@ -393,7 +298,7 @@ export function PoolDetailsCard({
                 {t("poolForms.closingDate")}
               </label>
               <input
-                className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                className="ui-field"
                 defaultValue={safeState.values.closingDate}
                 id="closingDate"
                 name="closingDate"
@@ -418,7 +323,7 @@ export function PoolDetailsCard({
                 required
                 inputMode="decimal"
                 defaultValue={safeState.values.fixedUnitPrice}
-                className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950"
+                className="ui-field"
               />
               <FieldError message={safeState.fieldErrors.fixedUnitPrice} />
             </div>
@@ -437,17 +342,7 @@ export function PoolDetailsCard({
   );
 }
 
-function ActionsCard({
-  isEditing,
-  onToggleEditing,
-  pool
-}: {
-  isEditing: boolean;
-  onToggleEditing: () => void;
-  pool: PoolManagementCockpitProps["poolForEditing"] & {
-    publicPath: string;
-  };
-}) {
+function ReconciliationTool({ poolId }: { poolId: string }) {
   const [refreshState, refreshFormAction, isRefreshPending] = useActionState(
     refreshPoolContributionStatusesAction,
     initialRefreshPoolContributionStatusesActionState
@@ -456,35 +351,8 @@ function ActionsCard({
     normalizeRefreshPoolContributionStatusesActionState(refreshState);
 
   return (
-    <section className="rounded-[1.9rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
-      <div className="space-y-3">
-        <h2 className="text-xl font-semibold text-slate-950">
-          {t("poolManagement.actionsTitle")}
-        </h2>
-        <p className="text-sm leading-6 text-[var(--muted)]">
-          {t("poolManagement.actionsBody")}
-        </p>
-      </div>
-
-      <div className="mt-6 flex flex-col gap-3">
-        {getPoolLifecycle(pool) !== "ARCHIVED" ? (
-          <Button onClick={onToggleEditing} type="button">
-            {isEditing
-              ? t("poolManagement.editClose")
-              : t("poolManagement.editOpen")}
-          </Button>
-        ) : null}
-        <Link
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--secondary)] px-5 text-sm font-semibold text-[var(--secondary-foreground)] ring-1 ring-[var(--surface-border)] transition hover:bg-[var(--surface-strong)]"
-          href={pool.publicPath}
-        >
-          {t("poolManagement.openPublicPage")}
-        </Link>
-      </div>
-
-      <PoolLifecycleControls key={getPoolLifecycle(pool)} pool={pool} />
-
-      <div className="mt-6 rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+    <section className="ui-surface">
+      <div className="min-w-0">
         <div className="space-y-2">
           <p className="text-sm font-semibold text-slate-950">
             {t("poolManagement.refreshTitle")}
@@ -505,41 +373,11 @@ function ActionsCard({
         </div>
 
         <form action={refreshFormAction} className="mt-4">
-          <input name="poolId" type="hidden" value={pool.id} />
+          <input name="poolId" type="hidden" value={poolId} />
           <Button disabled={isRefreshPending} type="submit" variant="secondary">
             {isRefreshPending ? t("refresh.pending") : t("refresh.button")}
           </Button>
         </form>
-      </div>
-    </section>
-  );
-}
-
-function ShareCard({ pool }: { pool: PrivatePoolDetailViewModel }) {
-  return (
-    <section className="rounded-[1.9rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
-      <div className="space-y-3">
-        <h2 className="text-xl font-semibold text-slate-950">
-          {t("poolManagement.shareTitle")}
-        </h2>
-        <p className="text-sm leading-6 text-[var(--muted)]">
-          {t("poolManagement.shareBody")}
-        </p>
-      </div>
-
-      <div className="mt-6 rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
-        <p className="break-all text-sm font-medium text-slate-950">
-          {pool.publicUrl}
-        </p>
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <CopyToClipboardButton text={pool.publicUrl} />
-          <Link
-            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--secondary)] px-5 text-sm font-semibold text-[var(--secondary-foreground)] ring-1 ring-[var(--surface-border)] transition hover:bg-[var(--surface-strong)]"
-            href={pool.publicPath}
-          >
-            {t("poolManagement.openPublicPage")}
-          </Link>
-        </div>
       </div>
     </section>
   );
@@ -551,18 +389,18 @@ function ContributionSummaryCard({
   pool: PrivatePoolDetailViewModel;
 }) {
   return (
-    <section className="rounded-[1.9rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
+    <section className="ui-surface min-w-0">
       <div className="space-y-3">
         <h2 className="text-xl font-semibold text-slate-950">
           {t("poolManagement.summaryTitle")}
         </h2>
         <p className="text-sm leading-6 text-[var(--muted)]">
-          {t("poolManagement.summaryBody")}
+          {t("poolManagement.ownerTotalsHint")}
         </p>
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+      <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
             {t("poolDetails.privateConfirmedAmount")}
           </p>
@@ -570,7 +408,7 @@ function ContributionSummaryCard({
             {pool.confirmedAmountLabel}
           </p>
         </div>
-        <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
             {t("poolDetails.inProgress")}
           </p>
@@ -578,7 +416,7 @@ function ContributionSummaryCard({
             {pool.inProgressAmountLabel}
           </p>
         </div>
-        <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
             {t("poolManagement.visibleCount")}
           </p>
@@ -589,7 +427,7 @@ function ContributionSummaryCard({
             {pool.visibleContributionSummaryLabel}
           </p>
         </div>
-        <div className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
             {t("poolManagement.incompleteCount")}
           </p>
@@ -613,7 +451,7 @@ function ContributionItem({
   showTechnicalStatuses?: boolean;
 }) {
   return (
-    <li className="rounded-[1.35rem] border border-[var(--surface-border)] bg-white/80 p-4">
+    <li className="min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <p className="font-semibold text-slate-950">
@@ -684,7 +522,7 @@ function ContributionListSection({
   title: string;
 }) {
   return (
-    <section className="rounded-[1.9rem] border border-[var(--surface-border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
+    <section className="ui-surface min-w-0">
       <div className="space-y-3">
         <h2 className="text-xl font-semibold text-slate-950">{title}</h2>
         <p className="text-sm leading-6 text-[var(--muted)]">{body}</p>
@@ -692,7 +530,7 @@ function ContributionListSection({
       {contributions.length === 0 ? (
         <EmptyContributionState message={emptyMessage} />
       ) : (
-        <ul className="mt-6 space-y-3">
+        <ul className="mt-4 space-y-3">
           {contributions.map((contribution) => (
             <ContributionItem
               key={contribution.id}
@@ -713,66 +551,103 @@ export function PoolManagementCockpit({
 }: PoolManagementCockpitProps) {
   const [isEditing, setIsEditing] = useState(false);
 
+  const editButton = useRef<HTMLButtonElement>(null);
+  const lifecycle = getPoolLifecycle(poolForEditing);
+  useEffect(() => {
+    if (isEditing)
+      document.querySelector<HTMLInputElement>("#pool-details #title")?.focus();
+  }, [isEditing]);
+  function cancelEditing() {
+    setIsEditing(false);
+    editButton.current?.focus();
+  }
+
   return (
-    <div className="space-y-6">
-      <PoolManagementHeader pool={pool} />
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="order-1 space-y-6 xl:order-2">
-          {getPoolLifecycle(poolForEditing) !== "ARCHIVED" ? (
-            <CollectorAccountSetupForm
-              collectorAliasId={collectorAliasId}
-              poolId={pool.id}
-              poolStatus={
-                getPoolLifecycle(poolForEditing) === "ACTIVE"
-                  ? "OPEN"
-                  : "CLOSED"
-              }
-            />
+    <div className="space-y-5">
+      <header className="min-w-0 space-y-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[var(--muted)]">
+          <StatusBadge size="sm" variant={pool.statusVariant}>
+            {pool.statusLabel}
+          </StatusBadge>
+          <span>
+            {t("poolForms.closingDate")} : {pool.closingDateLabel}
+          </span>
+        </div>
+        <h1 className="ui-page-title break-words [overflow-wrap:anywhere]">
+          {pool.title}
+        </h1>
+        <div className="flex flex-wrap items-start gap-2">
+          {lifecycle !== "ARCHIVED" ? (
+            <button
+              type="button"
+              className={buttonClassName()}
+              ref={editButton}
+              aria-expanded={isEditing}
+              aria-controls="pool-details"
+              onClick={() => (isEditing ? cancelEditing() : setIsEditing(true))}
+            >
+              {isEditing
+                ? t("poolManagement.editClose")
+                : t("poolManagement.editAction")}
+            </button>
           ) : null}
-          <ActionsCard
-            isEditing={
-              isEditing && getPoolLifecycle(poolForEditing) !== "ARCHIVED"
-            }
-            onToggleEditing={() => setIsEditing((current) => !current)}
-            pool={{
-              ...poolForEditing,
-              publicPath: pool.publicPath
-            }}
-          />
+          <CopyToClipboardButton text={pool.publicUrl} compact />
+          <Link className={buttonClassName("secondary")} href={pool.publicPath}>
+            {t("poolManagement.publicAction")}
+          </Link>
         </div>
+        <details className="max-w-xl">
+          <summary className="min-h-11 cursor-pointer list-item py-3 text-sm font-semibold text-[var(--accent)]">
+            {t("poolManagement.moreActions")}
+          </summary>
+          <PoolLifecycleControls key={lifecycle} pool={poolForEditing} />
+        </details>
+      </header>
 
-        <div className="order-2 space-y-6 xl:order-1">
-          <PoolDetailsCard
-            isEditing={
-              isEditing && getPoolLifecycle(poolForEditing) !== "ARCHIVED"
-            }
-            onCancelEditing={() => setIsEditing(false)}
-            pool={{
-              ...poolForEditing,
-              closingDateLabel: pool.closingDateLabel,
-              createdDateLabel: pool.createdDateLabel,
-              collectorDisplayName: pool.collectorDisplayName
-            }}
-            poolId={pool.id}
-          />
-          <ShareCard pool={pool} />
-          <ContributionSummaryCard pool={pool} />
-          <ContributionListSection
-            body={t("poolManagement.visibleSectionBody")}
-            contributions={pool.visibleContributions}
-            emptyMessage={t("poolDetails.noVisibleContributions")}
-            title={t("poolManagement.visibleSectionTitle")}
-          />
-          <ContributionListSection
-            body={t("poolManagement.privateSectionBody")}
-            contributions={pool.incompleteContributions}
-            emptyMessage={t("poolDetails.noIncomplete")}
-            showTechnicalStatuses
-            title={t("poolManagement.privateSectionTitle")}
-          />
-        </div>
-      </div>
+      {!collectorAliasId && lifecycle !== "ARCHIVED" ? (
+        <CollectorAccountSetupForm
+          collectorAliasId={null}
+          poolId={pool.id}
+          poolStatus={lifecycle === "ACTIVE" ? "OPEN" : "CLOSED"}
+        />
+      ) : collectorAliasId ? (
+        <p className="flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
+          <StatusBadge size="sm" variant={pool.readinessVariant}>
+            {pool.readinessLabel}
+          </StatusBadge>
+          <span>
+            {t("poolManagement.configuredSummary")} ·{" "}
+            {pool.collectorDisplayName}
+          </span>
+        </p>
+      ) : null}
+      <ContributionSummaryCard pool={pool} />
+      <PoolDetailsCard
+        isEditing={isEditing && lifecycle !== "ARCHIVED"}
+        onCancelEditing={cancelEditing}
+        pool={{
+          ...poolForEditing,
+          closingDateLabel: pool.closingDateLabel,
+          createdDateLabel: pool.createdDateLabel,
+          collectorDisplayName: pool.collectorDisplayName
+        }}
+        poolId={pool.id}
+      />
+      <ContributionListSection
+        body={t("poolManagement.visibleSectionBody")}
+        contributions={pool.visibleContributions}
+        emptyMessage={t("poolDetails.noVisibleContributions")}
+        title={t("poolManagement.visibleSectionTitle")}
+      />
+      <ContributionListSection
+        body={t("poolManagement.privateSectionBody")}
+        contributions={pool.incompleteContributions}
+        emptyMessage={t("poolDetails.noIncomplete")}
+        showTechnicalStatuses
+        title={t("poolManagement.privateSectionTitle")}
+      />
+
+      <ReconciliationTool poolId={pool.id} />
     </div>
   );
 }

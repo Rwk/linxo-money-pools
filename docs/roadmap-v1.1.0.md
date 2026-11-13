@@ -49,9 +49,10 @@ functional product requirements and their priorities remain unchanged.
 | Collector account reuse              | **Implemented locally; manual acceptance pending.** New pools can select an owner-scoped, provenance-bound alias/account pair or use the existing new-collector path. See [collector reuse](./collector-account-reuse.md).                                                    | Complete the documented Sandbox acceptance; legacy references without provenance/entity type are excluded. No production deployment is implied.                |
 | Pool lifecycle P1-A | **Implemented locally**, including permanent archive, atomic contribution acceptance and PostgreSQL concurrency tests. See [lifecycle verification](./pool-lifecycle.md). | P1-B tabs/controls implemented locally; manual Sandbox lifecycle acceptance remains pending. |
 | Favorite payment providers P2 | **Implemented locally; manual Sandbox acceptance pending.** Approved historical-usage BIC list is applied to authorization preferences and shortening. | Check favorite-bank display, access to all banks, authorization and return. See [payment preferences](./linxo-payments.md#favorite-payment-providers). |
-| DESIGN-1 — Visual identity and shared UI | **Accepted by the developer**, including exclusive sign-in and compact mobile navigation. Central tokens, shared controls/statuses and session-aware global navigation; see [design reference](./design-system.md). | DESIGN-2 homepage/FAQ implemented locally; DESIGN-3 implemented locally; DESIGN-4 through DESIGN-6 remain planned. |
+| DESIGN-1 — Visual identity and shared UI | **Accepted by the developer**, including exclusive sign-in and compact mobile navigation. Central tokens, shared controls/statuses and session-aware global navigation; see [design reference](./design-system.md). | DESIGN-2 and DESIGN-3 accepted; DESIGN-4 implemented locally, acceptance pending; DESIGN-5/6 remain planned. |
 | DESIGN-2 — Homepage and public FAQ | **Accepted by the developer.** Session-aware hero, original SVG occasion artwork and 19 questions across five FAQ themes. | Acceptance reported by the developer; see [design reference](./design-system.md#design-2--homepage-faq-and-event-artwork). |
-| DESIGN-3 — Compact owner dashboard | **Implemented locally; manual visual acceptance pending.** Dense rows, event motifs, owner amounts in French euros, compact tabs/counts and exact public-link copying. | Review real owner desktop/mobile behavior; see [dashboard conventions](./design-system.md#design-3--compact-owner-dashboard). |
+| DESIGN-3 — Compact owner dashboard | **Accepted by the developer.** Dense rows, event motifs, owner amounts in French euros, compact tabs/counts and exact public-link copying. | Acceptance reported in the DESIGN-4 request; see [dashboard conventions](./design-system.md#design-3--compact-owner-dashboard). |
+| DESIGN-4 — Pool creation and owner management | **Implemented locally; manual visual acceptance pending.** Optional descriptions, compact primary/lifecycle actions, full-width missing collector setup and preserved owner totals/history. | Complete the [manual checklist](./design-system.md#design-4--pool-creation-and-owner-management); no DESIGN-5/6 work or deployment. |
 | Remaining P0, P1 and P2 requirements | **Planned**. Existing visibility controls and dashboard redesigns are partial foundations, not evidence that these requirements are complete.                                                                                                                                 | Implement and validate after the local development prerequisite.                                                                                               |
 | Safe local development               | **Accepted; workstream closed**. DEV-1 through DEV-4 were implemented and manually accepted by the developer. See the acceptance record below.                                                                                                                                | Delayed authorization-to-execution transition remains an observation with an unconfirmed cause; it does not block acceptance of the environment.               |
 
@@ -201,8 +202,8 @@ payment, authentication, privacy or lifecycle contracts:
 | --- | --- | --- |
 | DESIGN-1 | Identity, tokens, shared controls and global navigation | Accepted by the developer, including the sign-in/mobile follow-up. |
 | DESIGN-2 | Homepage and FAQ | Accepted by the developer. Public `/faq` linked in desktop/mobile navigation for all visitors. |
-| DESIGN-3 | Compact dashboard | Implemented locally; manual visual acceptance pending. |
-| DESIGN-4 | Pool creation and management | Planned. |
+| DESIGN-3 | Compact dashboard | Accepted by the developer in the DESIGN-4 request. |
+| DESIGN-4 | Pool creation and management | Implemented locally; manual visual acceptance pending. Three-section creation form, optional description and compact owner management. See [conventions and acceptance](./design-system.md#design-4--pool-creation-and-owner-management). |
 | DESIGN-5 | Public pool and contribution experience | Planned. |
 | DESIGN-6 | Mobile, accessibility and final consistency | Planned. |
 
@@ -219,6 +220,9 @@ Known technical debt and observations, **not automatically confirmed regressions
   observed TypeScript test-fixture errors. These counts are historical reports,
   not results of a fresh check for this documentation change; reassess in the
   isolated environment and distinguish baseline failures from regressions.
+  DESIGN-4 rerun: 658 tests pass, 15 opt-in PostgreSQL checks skipped; the three
+  remaining expired-date fixtures were updated in the creation/edit tests.
+  The eight historical TypeScript fixture errors remain; ESLint/build pass.
 - Collector aliases may be stored without verifying accessibility under the
   effective Linxo credentials.
 - Local development has historically used shared production resources.

@@ -10,6 +10,7 @@ function EmptyContributionState({ message }: { message: string }) {
 }
 
 function PoolDescription({ description }: { description: string }) {
+  if (!description.trim()) return null;
   return (
     <p className="max-w-3xl whitespace-pre-wrap text-base leading-7 text-slate-700">
       {description}

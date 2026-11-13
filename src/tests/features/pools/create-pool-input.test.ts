@@ -142,3 +142,35 @@ describe("closing date helper", () => {
     ).toBe(false);
   });
 });
+
+describe("optional description", () => {
+  it.each(["", "   \n  ", "  Une description existante  "])(
+    "accepts and trims %j",
+    (description) => {
+      const result = validateCreatePoolInput({
+        title: "Title",
+        description,
+        eventType: "OTHER",
+        closingDate: "2099-01-01",
+        collectorDisplayName: "Team"
+      });
+      expect(result.success).toBe(true);
+      if (result.success)
+        expect(result.data.description).toBe(description.trim());
+    }
+  );
+  it("keeps description length and title requirements", () => {
+    const result = validateCreatePoolInput({
+      title: " ",
+      description: "x".repeat(2001),
+      eventType: "OTHER",
+      closingDate: "2099-01-01",
+      collectorDisplayName: "Team"
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.fieldErrors.description).toBeTruthy();
+      expect(result.fieldErrors.title).toBeTruthy();
+    }
+  });
+});

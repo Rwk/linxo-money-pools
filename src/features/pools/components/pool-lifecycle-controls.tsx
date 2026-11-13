@@ -65,7 +65,7 @@ export function PoolLifecycleControls({
     );
 
   return (
-    <div className="mt-6 space-y-4 rounded-2xl border border-[var(--surface-border)] bg-white/80 p-4">
+    <div className="space-y-4 border-l-2 border-[var(--surface-border)] pl-4">
       <h3 className="text-sm font-semibold">{t("poolForms.lifecycleTitle")}</h3>
       <p className="text-sm text-slate-700">
         {t("poolLifecycle.paymentHistory")}
@@ -84,7 +84,7 @@ export function PoolLifecycleControls({
               {t("poolForms.updateClosingDateToReopen")}
             </p>
             <input
-              className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm"
+              className="ui-field"
               id={`reopen-date-${pool.id}`}
               aria-describedby={`reopen-hint-${pool.id}`}
               name="closingDate"

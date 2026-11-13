@@ -142,7 +142,7 @@ export function PoolManagementControls({
                 className="text-sm font-semibold text-slate-900"
                 htmlFor="description"
               >
-                {t("poolForms.description")}
+                {t("poolForms.descriptionOptional")}
               </label>
               <textarea
                 className="min-h-36 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
@@ -150,7 +150,6 @@ export function PoolManagementControls({
                 id="description"
                 maxLength={2000}
                 name="description"
-                required
               />
               <FieldError message={safeEditState.fieldErrors.description} />
             </div>

@@ -266,6 +266,12 @@ export const fr = {
       "Le compte collecteur doit encore être configuré avant que cette cagnotte puisse recevoir des contributions en ligne."
   },
   poolForms: {
+    requiredHint: "Les champs sont obligatoires, sauf la description.",
+    eventSection: "Votre événement",
+    contributionSection: "Les contributions",
+    descriptionOptional: "Description (facultative)",
+    freeHint: "Chaque contributeur choisit son montant.",
+    collectorNextStep: "Pour un nouveau compte, les coordonnées et le type de bénéficiaire seront demandés après la création.",
     title: "Titre",
     description: "Description",
     eventType: "Type d'événement",
@@ -324,6 +330,11 @@ export const fr = {
       "Aucune contribution en attente, échouée ou incomplète ne nécessite d'attention pour le moment."
   },
   poolManagement: {
+    moreActions: "Cycle de vie",
+    configuredSummary: "Compte collecteur configuré",
+    ownerTotalsHint: "Les montants confirmés incluent les contributions dont le montant est masqué publiquement.",
+    editAction: "Modifier",
+    publicAction: "Voir la page publique",
     helper:
       "Pilotez la préparation de la cagnotte, les actions de gestion et le suivi des contributions depuis un seul cockpit.",
     incompleteConfiguration: "Configuration incomplète",

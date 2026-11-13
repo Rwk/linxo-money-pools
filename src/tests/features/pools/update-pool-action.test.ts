@@ -51,7 +51,7 @@ describe("updatePoolAction", () => {
     formData.set("title", "Team gift");
     formData.set("description", "Shared contribution");
     formData.set("eventType", "BIRTHDAY");
-    formData.set("closingDate", "2026-07-05");
+    formData.set("closingDate", "2099-07-05");
 
     const result = await updatePoolAction(
       "pool_123",
@@ -63,40 +63,43 @@ describe("updatePoolAction", () => {
     expect(updatePoolRecord).not.toHaveBeenCalled();
   });
 
-  it("allows the owner to update editable fields", async () => {
-    vi.mocked(requireLinxoSession).mockResolvedValue({
-      id: "user_123",
-      email: "owner@linxo.com",
-      name: "Owner"
-    });
-    vi.mocked(findPoolByIdForCreator).mockResolvedValue({
-      id: "pool_123",
-      slug: "team-gift"
-    } as Awaited<ReturnType<typeof findPoolByIdForCreator>>);
-    vi.mocked(updatePoolRecord).mockResolvedValue(undefined);
+  it.each(["  Shared contribution updated  ", "", "   "])(
+    "allows the owner to update editable fields, including description %j",
+    async (description) => {
+      vi.mocked(requireLinxoSession).mockResolvedValue({
+        id: "user_123",
+        email: "owner@linxo.com",
+        name: "Owner"
+      });
+      vi.mocked(findPoolByIdForCreator).mockResolvedValue({
+        id: "pool_123",
+        slug: "team-gift"
+      } as Awaited<ReturnType<typeof findPoolByIdForCreator>>);
+      vi.mocked(updatePoolRecord).mockResolvedValue(undefined);
 
-    const formData = new FormData();
-    formData.set("title", "  Team gift updated  ");
-    formData.set("description", "  Shared contribution updated  ");
-    formData.set("eventType", "WEDDING");
-    formData.set("closingDate", "2026-07-05");
+      const formData = new FormData();
+      formData.set("title", "  Team gift updated  ");
+      formData.set("description", description);
+      formData.set("eventType", "WEDDING");
+      formData.set("closingDate", "2099-07-05");
 
-    const result = await updatePoolAction(
-      "pool_123",
-      getInitialManagePoolActionState(),
-      formData
-    );
+      const result = await updatePoolAction(
+        "pool_123",
+        getInitialManagePoolActionState(),
+        formData
+      );
 
-    expect(updatePoolRecord).toHaveBeenCalledWith({
-      poolId: "pool_123",
-      creatorId: "user_123",
-      title: "Team gift updated",
-      description: "Shared contribution updated",
-      eventType: "WEDDING",
-      closingDate: new Date("2026-07-05T23:59:59.999Z")
-    });
-    expect(revalidatePath).toHaveBeenCalledWith("/dashboard/pools/pool_123");
-    expect(revalidatePath).toHaveBeenCalledWith("/p/team-gift");
-    expect(result.successMessage).toBe(t("actions.poolUpdated"));
-  });
+      expect(updatePoolRecord).toHaveBeenCalledWith({
+        poolId: "pool_123",
+        creatorId: "user_123",
+        title: "Team gift updated",
+        description: description.trim(),
+        eventType: "WEDDING",
+        closingDate: new Date("2099-07-05T23:59:59.999Z")
+      });
+      expect(revalidatePath).toHaveBeenCalledWith("/dashboard/pools/pool_123");
+      expect(revalidatePath).toHaveBeenCalledWith("/p/team-gift");
+      expect(result.successMessage).toBe(t("actions.poolUpdated"));
+    }
+  );
 });

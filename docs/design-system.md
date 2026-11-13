@@ -1,9 +1,8 @@
 # DESIGN-1 — Linxo Cagnottes foundations
 
-DESIGN-1 (including its sign-in/mobile follow-up) and DESIGN-2 are accepted following
-the developer's visual review. DESIGN-3, the compact owner dashboard, is implemented
-locally on 2026-11-13; **manual acceptance remains pending**. DESIGN-4 through
-DESIGN-6 remain separate work.
+DESIGN-1 (including its sign-in/mobile follow-up), DESIGN-2 and DESIGN-3 are
+accepted by the developer. DESIGN-4 is implemented locally on 2026-11-13;
+**manual acceptance remains pending**. DESIGN-5 and DESIGN-6 remain separate work.
 
 ## Existing foundations and direction
 
@@ -278,7 +277,7 @@ foreign-owner results are also excluded before presentation/aggregation. No
 schema, payment, authentication/ownership rule, fixed-price calculation, lifecycle
 transition or collector-reuse logic is changed.
 
-### Responsive presentation and acceptance — pending
+### Responsive presentation and acceptance — DESIGN-3 accepted
 
 Below 640 px, rows stack their identity, amount and actions without using a data
 table; all action targets remain at least 44 px. Tablet uses a separate amount
@@ -320,14 +319,121 @@ Browser visual previews use actual dashboard/row/navigation components and compi
 fictional read-only repository/session fixtures. They do not authenticate a real
 user, write database data, create payments or validate real clipboard/browser
 routing. Clipboard and ownership contracts are covered by targeted tests; real
-session interaction and developer visual acceptance remain pending. Headless
+session interaction and developer visual acceptance were pending at that check.
+The developer subsequently confirmed DESIGN-3 acceptance in the DESIGN-4 request. Headless
 system-font emoji coverage may differ from the developer’s browser.
+
+## DESIGN-4 — Pool creation and owner management
+
+Implemented locally on 2026-11-13. **Developer visual acceptance pending.**
+DESIGN-1, DESIGN-2 and DESIGN-3 are accepted according to the developer's
+DESIGN-4 request. DESIGN-5 and DESIGN-6 remain outside this change.
+
+### Creation and descriptions
+
+Creation uses one form with three semantic fieldsets: `Votre événement`
+(title, event type/date in a responsive row, optional description),
+`Les contributions` (FREE/FIXED and conditional required price), and
+`Compte collecteur` (owner-scoped reuse or the existing new-collector path).
+Section dividers, shared `ui-field` controls and the shared submit button replace
+nested panels. The banking-label preview stays available in a native disclosure,
+including the unchanged normalization explanation. New collector identity and
+banking details remain in the existing post-creation setup flow.
+
+Description is optional in create/edit UI and both server validators. FormData
+without a description becomes `""`; trimming normalizes whitespace-only input to
+`""` before persistence. Existing populated descriptions retain their content and
+line breaks after the existing trim behavior. The 2,000-character limit and
+required title remain. The current non-null Prisma string stores an empty string;
+no migration is needed. Public overview and owner details omit the description
+paragraph/container when blank, including historical whitespace-only strings.
+This is the only public-pool display change in DESIGN-4.
+
+### Owner management
+
+The actual pool title is the only page H1. Its effective lifecycle, closing date
+and primary actions sit together: `Modifier`, `Copier le lien`,
+`Voir la page publique`. Copy receives the exact existing public URL, once.
+Edit stays on this page: opening it focuses the title field; cancellation or a
+successful save returns focus to the edit trigger. `aria-expanded` and
+`aria-controls` describe the edit state. The existing successful-save guard is
+retained so editing can be reopened after saving.
+
+A native keyboard-operable `Cycle de vie` disclosure near the heading groups
+close/reopen/archive controls. The existing required future date for expired
+pools and explicit required archive-confirmation checkbox remain. Archived pools
+have no edit, collector setup, close, reopen or archive mutation control.
+Reconciliation remains available, including after closure/archive, because
+already accepted payments and late webhooks still need to finish.
+
+Content order: heading/actions; missing collector form or compact configured
+summary; complete owner totals/contribution counts; details/edit; visible and
+incomplete payment history; manual reconciliation. A missing collector uses one
+existing form directly in the main full-width column, above totals. Its natural
+person/company fields and server validation/API behavior are retained, with
+responsive related-field grids. There is no narrow sidebar or link-only warning.
+The configured summary shows readiness and collector display name, without
+banking details. History preserves recorded names/emails, amounts and payment
+statuses. Owner confirmed totals still include amounts hidden publicly; public
+privacy rules and totals are unchanged.
+
+### Verification and remaining limitations
+
+- 81 targeted tests pass across 11 files: optional description creation/editing,
+  FREE/FIXED controls, reuse/new collector paths, collector entity choices,
+  owner hierarchy/history/totals, edit focus, lifecycle/read-only behavior,
+  reopening date, archive confirmation and owner-access/privacy guards.
+- Full Vitest: 658 passed, 15 opt-in PostgreSQL checks skipped (72 files passed,
+  two skipped). No test initiated a payment. The three previously failing
+  expired July 2026 fixtures in create/update action tests now use future dates;
+  their ownership, redirect and persistence assertions are exercised again.
+- ESLint and production build pass. Standalone TypeScript still reports eight
+  historical fixture errors: three Decimal stubs in
+  `payment-handoff-presenter.test.ts`, three missing dependency fields in
+  `sync-contribution-status.test.ts`, and two incomplete detail view-model
+  fixtures (`pool-detail-sections.test.ts` and the private `.test.tsx` fixture).
+  No new application type error. No database, auth, Linxo, locking or lifecycle
+  service/repository code was changed.
+- Chromium previews cover 320, 390, 768, 1024 and 1440 px in seven states:
+  creation/new collector, creation/reuse, configured, missing collector,
+  completed, expired and archived. No page overflow in 35 combinations.
+  Native lifecycle disclosure opens with keyboard Enter. axe WCAG A/AA/2.1 AA
+  found no violations in the 14 checks at 320 and 1440 px.
+- Browser previews use actual components and compiled production CSS with
+  fictional read-only fixtures and mocked server actions. They do not validate
+  real owner authentication, submissions, clipboard or Sandbox payments. React
+  tests cover edit/focus/entity/mode interactions; actual local browser use and
+  visual acceptance remain the developer's next step. Headless emoji/font and
+  native date-input rendering can differ from the developer's browser.
+
+### Manual acceptance checklist — pending
+
+Use local fictional/Sandbox data and the existing development login:
+
+1. At 320 px and desktop, create FREE and FIXED pools, with and without a
+   description. Check required title/date/price and inline errors, banking-label
+   preview, clear sections and visible submit. Try both collector reuse and new.
+2. On a pool missing its collector, check the single main-content setup form
+   above totals, both entity types and validation. Finish only with an authorized
+   Sandbox account. Confirm the compact ready summary afterwards.
+3. Edit an existing pool, clear its description and save; verify no empty
+   description area on owner/public views. Save a populated multiline description
+   again. Check other fields and the existing fixed-price locking rules.
+4. Check long accented/emoji titles, wrapping, touch targets and keyboard focus.
+   Open/close editing repeatedly; copy/paste the link and open the public page.
+5. Test active close, completed reopen, expired reopen with an explicit future
+   date, and archive with its required irreversible confirmation. Archived pools
+   must stay read-only. Use disposable local pools for permanent archive checks.
+6. Compare complete owner confirmed totals (including hidden amounts), public
+   totals excluding them, names and full payment history. Confirm reconciliation
+   is still available after closure/archive and another owner cannot manage the
+   pool. Do not claim new end-to-end Sandbox acceptance from automated checks.
 
 ## Boundaries for DESIGN-2 through DESIGN-6
 
 1. DESIGN-2: homepage and FAQ accepted by the developer.
-2. DESIGN-3: compact dashboard implemented; developer visual acceptance pending.
-3. DESIGN-4: pool creation/management; migrate form/surface primitives gradually,
+2. DESIGN-3: compact dashboard accepted by the developer in the DESIGN-4 request.
+3. DESIGN-4: pool creation/management implemented locally, manual acceptance pending;
    retaining fixed prices, reuse, permanent archival confirmation and history.
 4. DESIGN-5: public/contribution flows; preserve hidden-amount privacy, the full
    bank list, payment links, return routes and late webhook processing.

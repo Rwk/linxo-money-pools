@@ -36,17 +36,14 @@ export function CollectorAccountSetupForm(props: {
   });
 
   return (
-    <section
-      className="rounded-[1.75rem] border border-[var(--surface-border)] bg-white/80 p-6"
-      id="collector-account"
-    >
+    <section className="ui-surface min-w-0" id="collector-account">
       <div className="space-y-4">
         <div className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-950">
             {t("collectorAccount.title")}
           </h2>
           <p className="text-sm leading-6 text-slate-700">
-            {t("collectorAccount.body")}
+            {t("poolManagement.collectorMissingBody")}
           </p>
         </div>
 
@@ -63,20 +60,14 @@ export function CollectorAccountSetupForm(props: {
           </div>
         ) : (
           <>
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-              <p className="font-semibold text-amber-950">
-                {t("collectorAccount.missingTitle")}
-              </p>
-              <p className="mt-2">
-                {t("collectorAccount.missingBody")}
-              </p>
-            </div>
-
-            <form action={formAction} className="space-y-5">
+            <form
+              action={formAction}
+              className="grid min-w-0 gap-4 sm:grid-cols-2"
+            >
               <input name="poolId" type="hidden" value={props.poolId} />
 
               {safeState.formError ? (
-                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                <div className="sm:col-span-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
                   {safeState.formError}
                 </div>
               ) : null}
@@ -89,7 +80,7 @@ export function CollectorAccountSetupForm(props: {
                   {t("collectorAccount.accountHolderName")}
                 </label>
                 <input
-                  className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                  className="ui-field"
                   defaultValue={safeState.values.accountHolderName}
                   id="accountHolderName"
                   maxLength={120}
@@ -101,12 +92,15 @@ export function CollectorAccountSetupForm(props: {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900" htmlFor="iban">
+                <label
+                  className="text-sm font-semibold text-slate-900"
+                  htmlFor="iban"
+                >
                   {t("collectorAccount.iban")}
                 </label>
                 <input
                   autoComplete="off"
-                  className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm uppercase tracking-[0.08em] text-slate-950 outline-none transition focus:border-slate-400"
+                  className="ui-field"
                   defaultValue={safeState.values.iban}
                   id="iban"
                   inputMode="text"
@@ -125,7 +119,7 @@ export function CollectorAccountSetupForm(props: {
                   {t("collectorAccount.entityType")}
                 </label>
                 <select
-                  className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                  className="ui-field"
                   defaultValue={safeState.values.entityType}
                   id="entityType"
                   name="entityType"
@@ -136,14 +130,18 @@ export function CollectorAccountSetupForm(props: {
                   }
                   required
                 >
-                  <option value="NATURAL_PERSON">{t("collectorAccount.naturalPerson")}</option>
-                  <option value="COMPANY">{t("collectorAccount.company")}</option>
+                  <option value="NATURAL_PERSON">
+                    {t("collectorAccount.naturalPerson")}
+                  </option>
+                  <option value="COMPANY">
+                    {t("collectorAccount.company")}
+                  </option>
                 </select>
                 <FieldError message={safeState.fieldErrors.entityType} />
               </div>
 
               {entityType === "NATURAL_PERSON" ? (
-                <section className="space-y-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+                <section className="min-w-0 space-y-4 border-t border-[var(--surface-border)] pt-4 sm:col-span-2">
                   <div className="space-y-1">
                     <h3 className="text-sm font-semibold text-slate-950">
                       {t("collectorAccount.naturalPersonTitle")}
@@ -153,7 +151,7 @@ export function CollectorAccountSetupForm(props: {
                     </p>
                   </div>
 
-                  <div className="space-y-5">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <label
                         className="text-sm font-semibold text-slate-900"
@@ -162,7 +160,7 @@ export function CollectorAccountSetupForm(props: {
                         {t("collectorAccount.firstName")}
                       </label>
                       <input
-                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                        className="ui-field"
                         defaultValue={safeState.values.firstName}
                         id="firstName"
                         maxLength={120}
@@ -181,7 +179,7 @@ export function CollectorAccountSetupForm(props: {
                         {t("collectorAccount.surname")}
                       </label>
                       <input
-                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                        className="ui-field"
                         defaultValue={safeState.values.surname}
                         id="surname"
                         maxLength={120}
@@ -193,7 +191,7 @@ export function CollectorAccountSetupForm(props: {
                     </div>
                   </div>
 
-                  <div className="space-y-5">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <label
                         className="text-sm font-semibold text-slate-900"
@@ -202,7 +200,7 @@ export function CollectorAccountSetupForm(props: {
                         {t("collectorAccount.birthDate")}
                       </label>
                       <input
-                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                        className="ui-field"
                         defaultValue={safeState.values.birthDate}
                         id="birthDate"
                         name="birthDate"
@@ -220,7 +218,7 @@ export function CollectorAccountSetupForm(props: {
                         {t("collectorAccount.birthCity")}
                       </label>
                       <input
-                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                        className="ui-field"
                         defaultValue={safeState.values.birthCity}
                         id="birthCity"
                         maxLength={120}
@@ -239,7 +237,7 @@ export function CollectorAccountSetupForm(props: {
                         {t("collectorAccount.birthCountry")}
                       </label>
                       <input
-                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm uppercase tracking-[0.08em] text-slate-950 outline-none transition focus:border-slate-400"
+                        className="ui-field"
                         defaultValue={safeState.values.birthCountry}
                         id="birthCountry"
                         maxLength={2}
@@ -247,12 +245,14 @@ export function CollectorAccountSetupForm(props: {
                         placeholder="FR"
                         required
                       />
-                      <FieldError message={safeState.fieldErrors.birthCountry} />
+                      <FieldError
+                        message={safeState.fieldErrors.birthCountry}
+                      />
                     </div>
                   </div>
                 </section>
               ) : (
-                <section className="space-y-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+                <section className="min-w-0 space-y-4 border-t border-[var(--surface-border)] pt-4 sm:col-span-2">
                   <div className="space-y-1">
                     <h3 className="text-sm font-semibold text-slate-950">
                       {t("collectorAccount.companyTitle")}
@@ -270,12 +270,12 @@ export function CollectorAccountSetupForm(props: {
                       {t("collectorAccount.companyName")}
                     </label>
                     <input
-                      className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                      className="ui-field"
                       defaultValue={safeState.values.companyName}
                       id="companyName"
                       maxLength={160}
                       name="companyName"
-                        placeholder="Entreprise Exemple"
+                      placeholder="Entreprise Exemple"
                       required
                     />
                     <FieldError message={safeState.fieldErrors.companyName} />
@@ -290,7 +290,7 @@ export function CollectorAccountSetupForm(props: {
                         {t("collectorAccount.nationalIdentification")}
                       </label>
                       <input
-                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
+                        className="ui-field"
                         defaultValue={safeState.values.nationalIdentification}
                         id="nationalIdentification"
                         maxLength={120}
@@ -311,7 +311,7 @@ export function CollectorAccountSetupForm(props: {
                         {t("collectorAccount.country")}
                       </label>
                       <input
-                        className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm uppercase tracking-[0.08em] text-slate-950 outline-none transition focus:border-slate-400"
+                        className="ui-field"
                         defaultValue={safeState.values.companyCountry}
                         id="companyCountry"
                         maxLength={2}
@@ -319,17 +319,23 @@ export function CollectorAccountSetupForm(props: {
                         placeholder="FR"
                         required
                       />
-                      <FieldError message={safeState.fieldErrors.companyCountry} />
+                      <FieldError
+                        message={safeState.fieldErrors.companyCountry}
+                      />
                     </div>
                   </div>
                 </section>
               )}
 
-              <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-700">
+              <div className="text-sm text-[var(--muted)] sm:col-span-2">
                 {t("collectorAccount.storageNotice")}
               </div>
 
-              <Button disabled={isPending} type="submit">
+              <Button
+                className="sm:col-span-2 sm:justify-self-start"
+                disabled={isPending}
+                type="submit"
+              >
                 {isPending
                   ? t("common.configuring")
                   : t("collectorAccount.configureButton")}

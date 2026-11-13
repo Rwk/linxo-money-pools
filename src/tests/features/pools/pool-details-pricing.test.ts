@@ -126,7 +126,7 @@ describe("owner pool detail pricing", () => {
     expect(input.value).toBe("12.50");
     expect(input.required).toBe(true);
     expect(screen.getByLabelText(t("poolForms.title"))).toBeTruthy();
-    expect(screen.getByLabelText(t("poolForms.description"))).toBeTruthy();
+    expect(screen.getByLabelText(t("poolForms.descriptionOptional"))).toBeTruthy();
     expect(screen.getByLabelText(t("poolForms.closingDate"))).toBeTruthy();
   });
   it.each([false, true])(
