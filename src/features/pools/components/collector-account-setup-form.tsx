@@ -11,12 +11,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { t } from "@/i18n/t";
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message, id }: { message?: string; id: string }) {
   if (!message) {
     return null;
   }
 
-  return <p className="text-sm text-rose-700">{message}</p>;
+  return (
+    <p id={id} role="alert" className="text-sm text-rose-700">
+      {message}
+    </p>
+  );
 }
 
 export function CollectorAccountSetupForm(props: {
@@ -67,7 +71,10 @@ export function CollectorAccountSetupForm(props: {
               <input name="poolId" type="hidden" value={props.poolId} />
 
               {safeState.formError ? (
-                <div className="sm:col-span-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                <div
+                  role="alert"
+                  className="sm:col-span-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"
+                >
                   {safeState.formError}
                 </div>
               ) : null}
@@ -83,12 +90,21 @@ export function CollectorAccountSetupForm(props: {
                   className="ui-field"
                   defaultValue={safeState.values.accountHolderName}
                   id="accountHolderName"
+                  aria-invalid={!!safeState.fieldErrors.accountHolderName}
+                  aria-describedby={
+                    safeState.fieldErrors.accountHolderName
+                      ? "collector-accountHolderName-error"
+                      : undefined
+                  }
                   maxLength={120}
                   name="accountHolderName"
                   placeholder={t("poolForms.collectorDisplayNamePlaceholder")}
                   required
                 />
-                <FieldError message={safeState.fieldErrors.accountHolderName} />
+                <FieldError
+                  id="collector-accountHolderName-error"
+                  message={safeState.fieldErrors.accountHolderName}
+                />
               </div>
 
               <div className="space-y-2">
@@ -103,12 +119,21 @@ export function CollectorAccountSetupForm(props: {
                   className="ui-field"
                   defaultValue={safeState.values.iban}
                   id="iban"
+                  aria-invalid={!!safeState.fieldErrors.iban}
+                  aria-describedby={
+                    safeState.fieldErrors.iban
+                      ? "collector-iban-error"
+                      : undefined
+                  }
                   inputMode="text"
                   name="iban"
                   placeholder="FR76 3000 6000 0112 3456 7890 189"
                   required
                 />
-                <FieldError message={safeState.fieldErrors.iban} />
+                <FieldError
+                  id="collector-iban-error"
+                  message={safeState.fieldErrors.iban}
+                />
               </div>
 
               <div className="space-y-2">
@@ -122,6 +147,12 @@ export function CollectorAccountSetupForm(props: {
                   className="ui-field"
                   defaultValue={safeState.values.entityType}
                   id="entityType"
+                  aria-invalid={!!safeState.fieldErrors.entityType}
+                  aria-describedby={
+                    safeState.fieldErrors.entityType
+                      ? "collector-entityType-error"
+                      : undefined
+                  }
                   name="entityType"
                   onChange={(event) =>
                     setEntityType(
@@ -137,7 +168,10 @@ export function CollectorAccountSetupForm(props: {
                     {t("collectorAccount.company")}
                   </option>
                 </select>
-                <FieldError message={safeState.fieldErrors.entityType} />
+                <FieldError
+                  id="collector-entityType-error"
+                  message={safeState.fieldErrors.entityType}
+                />
               </div>
 
               {entityType === "NATURAL_PERSON" ? (
@@ -163,12 +197,21 @@ export function CollectorAccountSetupForm(props: {
                         className="ui-field"
                         defaultValue={safeState.values.firstName}
                         id="firstName"
+                        aria-invalid={!!safeState.fieldErrors.firstName}
+                        aria-describedby={
+                          safeState.fieldErrors.firstName
+                            ? "collector-firstName-error"
+                            : undefined
+                        }
                         maxLength={120}
                         name="firstName"
                         placeholder="Guy"
                         required
                       />
-                      <FieldError message={safeState.fieldErrors.firstName} />
+                      <FieldError
+                        id="collector-firstName-error"
+                        message={safeState.fieldErrors.firstName}
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -182,12 +225,21 @@ export function CollectorAccountSetupForm(props: {
                         className="ui-field"
                         defaultValue={safeState.values.surname}
                         id="surname"
+                        aria-invalid={!!safeState.fieldErrors.surname}
+                        aria-describedby={
+                          safeState.fieldErrors.surname
+                            ? "collector-surname-error"
+                            : undefined
+                        }
                         maxLength={120}
                         name="surname"
                         placeholder="Mauve"
                         required
                       />
-                      <FieldError message={safeState.fieldErrors.surname} />
+                      <FieldError
+                        id="collector-surname-error"
+                        message={safeState.fieldErrors.surname}
+                      />
                     </div>
                   </div>
 
@@ -203,11 +255,20 @@ export function CollectorAccountSetupForm(props: {
                         className="ui-field"
                         defaultValue={safeState.values.birthDate}
                         id="birthDate"
+                        aria-invalid={!!safeState.fieldErrors.birthDate}
+                        aria-describedby={
+                          safeState.fieldErrors.birthDate
+                            ? "collector-birthDate-error"
+                            : undefined
+                        }
                         name="birthDate"
                         required
                         type="date"
                       />
-                      <FieldError message={safeState.fieldErrors.birthDate} />
+                      <FieldError
+                        id="collector-birthDate-error"
+                        message={safeState.fieldErrors.birthDate}
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -221,12 +282,21 @@ export function CollectorAccountSetupForm(props: {
                         className="ui-field"
                         defaultValue={safeState.values.birthCity}
                         id="birthCity"
+                        aria-invalid={!!safeState.fieldErrors.birthCity}
+                        aria-describedby={
+                          safeState.fieldErrors.birthCity
+                            ? "collector-birthCity-error"
+                            : undefined
+                        }
                         maxLength={120}
                         name="birthCity"
                         placeholder="Paris"
                         required
                       />
-                      <FieldError message={safeState.fieldErrors.birthCity} />
+                      <FieldError
+                        id="collector-birthCity-error"
+                        message={safeState.fieldErrors.birthCity}
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -240,12 +310,19 @@ export function CollectorAccountSetupForm(props: {
                         className="ui-field"
                         defaultValue={safeState.values.birthCountry}
                         id="birthCountry"
+                        aria-invalid={!!safeState.fieldErrors.birthCountry}
+                        aria-describedby={
+                          safeState.fieldErrors.birthCountry
+                            ? "collector-birthCountry-error"
+                            : undefined
+                        }
                         maxLength={2}
                         name="birthCountry"
                         placeholder="FR"
                         required
                       />
                       <FieldError
+                        id="collector-birthCountry-error"
                         message={safeState.fieldErrors.birthCountry}
                       />
                     </div>
@@ -273,12 +350,21 @@ export function CollectorAccountSetupForm(props: {
                       className="ui-field"
                       defaultValue={safeState.values.companyName}
                       id="companyName"
+                      aria-invalid={!!safeState.fieldErrors.companyName}
+                      aria-describedby={
+                        safeState.fieldErrors.companyName
+                          ? "collector-companyName-error"
+                          : undefined
+                      }
                       maxLength={160}
                       name="companyName"
                       placeholder="Entreprise Exemple"
                       required
                     />
-                    <FieldError message={safeState.fieldErrors.companyName} />
+                    <FieldError
+                      id="collector-companyName-error"
+                      message={safeState.fieldErrors.companyName}
+                    />
                   </div>
 
                   <div className="grid gap-5 sm:grid-cols-2">
@@ -293,12 +379,21 @@ export function CollectorAccountSetupForm(props: {
                         className="ui-field"
                         defaultValue={safeState.values.nationalIdentification}
                         id="nationalIdentification"
+                        aria-invalid={
+                          !!safeState.fieldErrors.nationalIdentification
+                        }
+                        aria-describedby={
+                          safeState.fieldErrors.nationalIdentification
+                            ? "collector-nationalIdentification-error"
+                            : undefined
+                        }
                         maxLength={120}
                         name="nationalIdentification"
                         placeholder="439826121"
                         required
                       />
                       <FieldError
+                        id="collector-nationalIdentification-error"
                         message={safeState.fieldErrors.nationalIdentification}
                       />
                     </div>
@@ -314,12 +409,19 @@ export function CollectorAccountSetupForm(props: {
                         className="ui-field"
                         defaultValue={safeState.values.companyCountry}
                         id="companyCountry"
+                        aria-invalid={!!safeState.fieldErrors.companyCountry}
+                        aria-describedby={
+                          safeState.fieldErrors.companyCountry
+                            ? "collector-companyCountry-error"
+                            : undefined
+                        }
                         maxLength={2}
                         name="companyCountry"
                         placeholder="FR"
                         required
                       />
                       <FieldError
+                        id="collector-companyCountry-error"
                         message={safeState.fieldErrors.companyCountry}
                       />
                     </div>

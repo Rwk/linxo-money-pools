@@ -46,15 +46,16 @@ functional product requirements and their priorities remain unchanged.
 | Payment label sanitization           | **Implemented, deployed**: `d37253b`. Contract tests pass; the developer confirmed Sandbox orders for pool titles containing accents/emojis and successful browser payment simulation.                                                                                        | Local Sandbox acceptance is recorded in DEV-3/DEV-4. Historical production failures remain unattributed; local acceptance does not establish their resolution. |
 | Linxo API observability              | **Implemented, deployed**: `0f295cd`. Structured, privacy-conscious logging supports `LINXO_API_LOG_LEVEL=off\|error\|info`; disabled by default on Vercel.                                                                                                                   | Use safe diagnostics during investigation; deployment alone does not validate payments. See [API observability](./linxo-payments.md#api-observability).        |
 | Beneficiary complementary name       | **Implemented, locally validated**: `63a47fe`. The order builder normalizes this field to the documented character set and 140-character limit, with a nonempty fallback. DEV-3 checked serialized JSON and successful Sandbox order creation; focused regression tests pass. | Production deployment is unverified. Do not infer that this correction caused or resolved historical production failures.                                      |
-| Collector account reuse              | **Implemented locally; manual acceptance pending.** New pools can select an owner-scoped, provenance-bound alias/account pair or use the existing new-collector path. See [collector reuse](./collector-account-reuse.md).                                                    | Complete the documented Sandbox acceptance; legacy references without provenance/entity type are excluded. No production deployment is implied.                |
-| Pool lifecycle P1-A | **Implemented locally**, including permanent archive, atomic contribution acceptance and PostgreSQL concurrency tests. See [lifecycle verification](./pool-lifecycle.md). | P1-B tabs/controls implemented locally; manual Sandbox lifecycle acceptance remains pending. |
-| Favorite payment providers P2 | **Implemented locally; manual Sandbox acceptance pending.** Approved historical-usage BIC list is applied to authorization preferences and shortening. | Check favorite-bank display, access to all banks, authorization and return. See [payment preferences](./linxo-payments.md#favorite-payment-providers). |
-| DESIGN-1 — Visual identity and shared UI | **Accepted by the developer**, including exclusive sign-in and compact mobile navigation. Central tokens, shared controls/statuses and session-aware global navigation; see [design reference](./design-system.md). | DESIGN-2 through DESIGN-4 accepted; DESIGN-5 implemented locally, acceptance pending; DESIGN-6 remains planned. |
+| Collector account reuse              | **Manually accepted in the DESIGN-6 request.** New pools can select an owner-scoped, provenance-bound alias/account pair or use the existing new-collector path. See [collector reuse](./collector-account-reuse.md).                                                    | Legacy references without provenance/entity type remain excluded. No production deployment is implied.                |
+| Pool lifecycle P1-A | **Implemented locally**, including permanent archive, atomic contribution acceptance and PostgreSQL concurrency tests. See [lifecycle verification](./pool-lifecycle.md). | P1-A/P1-B manually accepted in the DESIGN-6 request; no production deployment is implied. |
+| Favorite payment providers P2 | **Manually accepted in the DESIGN-6 request.** Approved historical-usage BIC list is applied to authorization preferences and shortening. | Acceptance is developer-reported; see [payment preferences](./linxo-payments.md#favorite-payment-providers). |
+| DESIGN-1 — Visual identity and shared UI | **Accepted by the developer**, including exclusive sign-in and compact mobile navigation. Central tokens, shared controls/statuses and session-aware global navigation; see [design reference](./design-system.md). | DESIGN-2 through DESIGN-5 accepted; DESIGN-6 implemented, final acceptance pending. |
 | DESIGN-2 — Homepage and public FAQ | **Accepted by the developer.** Session-aware hero, original SVG occasion artwork and 19 questions across five FAQ themes. | Acceptance reported by the developer; see [design reference](./design-system.md#design-2--homepage-faq-and-event-artwork). |
 | DESIGN-3 — Compact owner dashboard | **Accepted by the developer.** Dense rows, event motifs, owner amounts in French euros, compact tabs/counts and exact public-link copying. | Acceptance reported in the DESIGN-4 request; see [dashboard conventions](./design-system.md#design-3--compact-owner-dashboard). |
 | DESIGN-4 — Pool creation and owner management | **Accepted by the developer**, including `4e313bc` consolidated actions. Optional descriptions, compact primary/lifecycle actions, full-width missing collector setup and preserved owner totals/history. | Acceptance reported in the DESIGN-5 request; see [owner conventions](./design-system.md#design-4--pool-creation-and-owner-management). |
-| DESIGN-5 — Public pool and contribution UX | **Implemented locally; manual acceptance pending.** Public event header, compact form/history, natural payment CTA and clearer status feedback. | Review 320–430 px/desktop and manually complete the documented Sandbox checklist. No production deployment or DESIGN-6 work. |
-| Remaining P0, P1 and P2 requirements | **Planned**. Existing visibility controls and dashboard redesigns are partial foundations, not evidence that these requirements are complete.                                                                                                                                 | Implement and validate after the local development prerequisite.                                                                                               |
+| DESIGN-5 — Public pool and contribution UX | **Manually accepted by the developer** in the DESIGN-6 request. Public event header, compact form/history, natural payment CTA and clearer status feedback. | See [public conventions](./design-system.md#design-5--public-pool-and-contribution-experience). No production deployment is implied. |
+| v1.1.0 functional improvements | **Implemented and manually accepted**, as confirmed in the DESIGN-6 request: amount privacy, collector reuse, fixed contributions/price editing, lifecycle/archive and favorite providers. | Release preparation is a separate task; production state is not verified by this UI pass. |
+| DESIGN-6 — Final interface polish | **Implemented locally; final developer acceptance pending.** Long owner content wraps, amount/status columns remain readable, owner/sign-in errors are announced, pending copy is simpler. | Complete final visual/accessibility acceptance; [inventory](./release-v1.1.0-inventory.md) is informational. No release/tag/deployment or production migration has been performed. |
 | Safe local development               | **Accepted; workstream closed**. DEV-1 through DEV-4 were implemented and manually accepted by the developer. See the acceptance record below.                                                                                                                                | Delayed authorization-to-execution transition remains an observation with an unconfirmed cause; it does not block acceptance of the environment.               |
 
 ## Prioritized milestones
@@ -66,8 +67,8 @@ functional product requirements and their priorities remain unchanged.
 | P0           | Public/private contribution amounts                           | Privacy holds across public pages, API responses and progress indicators; private totals remain complete. |
 | P1           | Collector account reuse                                       | Only the authenticated user's authorized Linxo resources can be selected.                                 |
 | P1           | Fixed-price contributions                                     | Server-enforced quantity and integer-cent calculation preserve existing payment behavior.                 |
-| P1           | Pool organization and archiving                               | Permanent owner-only archiving (P1-A) and three-tab owner UI (P1-B), locally implemented; manual P1-B acceptance pending.                                    |
-| P2           | Favorite payment providers                                    | Approved historical-usage BIC configuration; full bank list remains accessible; manual Sandbox acceptance pending.                                      |
+| P1           | Pool organization and archiving                               | Permanent owner-only archiving (P1-A) and three-tab owner UI (P1-B), manually accepted in the DESIGN-6 request.                                    |
+| P2           | Favorite payment providers                                    | Approved historical-usage BIC configuration; full bank list remains accessible; manually accepted in the DESIGN-6 request.                                      |
 | P2           | Dashboard redesign                                            | Desktop/mobile acceptance, coordinated with the three-tab organization.                                   |
 
 ## Product requirements
@@ -148,7 +149,7 @@ migration or deployment has been performed.
 | Completed   | Manually closed or expired, and not archived.       |
 | Archived    | Explicitly archived by the owner.                   |
 
-**P1-A implemented locally:** archiving is an explicit, permanent owner action,
+**P1-A implemented and manually accepted in the DESIGN-6 request:** archiving is an explicit, permanent owner action,
 allowed only for completed pools. Archived pools cannot be unarchived, reopened,
 edited or accept new contributions; their history remains readable to the owner.
 Reopening an expired pool (including one still persisted as `OPEN`) requires an
@@ -161,7 +162,7 @@ after closure or archive. Existing orders, late webhooks and reconciliation rema
 operational. No database lock spans a Linxo request. See [lifecycle rules and
 verification](./pool-lifecycle.md).
 
-**P1-B implemented locally; manual Sandbox acceptance pending:** dashboard tabs
+**P1-B implemented and manually accepted in the DESIGN-6 request:** dashboard tabs
 `En cours`, `Terminées`, `Archivées` use effective lifecycle classification. Cards
 and detail pages share consistent status labels. Owner controls expose close,
 reopen (with an explicit new date after expiry), and irreversible archive with
@@ -174,7 +175,7 @@ at the future v1.1.0 production release; no production migration was applied.
 
 ### P2 — User experience
 
-**Favorite payment providers — implemented locally, manual acceptance pending:**
+**Favorite payment providers — implemented and manually accepted in the DESIGN-6 request:**
 the product-approved ten BICs, in their approved order, were selected from an
 analysis of historical money pool payment orders. This decision supersedes the
 former provisional bank-family shortlist. The list is centralized in
@@ -205,8 +206,8 @@ payment, authentication, privacy or lifecycle contracts:
 | DESIGN-2 | Homepage and FAQ | Accepted by the developer. Public `/faq` linked in desktop/mobile navigation for all visitors. |
 | DESIGN-3 | Compact dashboard | Accepted by the developer in the DESIGN-4 request. |
 | DESIGN-4 | Pool creation and management | Accepted by the developer, including consolidated owner actions (`4e313bc`). |
-| DESIGN-5 | Public pool and contribution experience | Implemented locally; manual visual/Sandbox acceptance pending. Compact event header/history, mobile contribution form and payment feedback. See [public conventions/checklist](./design-system.md#design-5--public-pool-and-contribution-experience). |
-| DESIGN-6 | Mobile, accessibility and final consistency | Planned. |
+| DESIGN-5 | Public pool and contribution experience | Manually accepted by the developer, including `e28a806`. |
+| DESIGN-6 | Mobile, accessibility and final consistency | Implemented locally; final developer acceptance pending. See [final checks](./design-system.md#design-6--final-consistency-and-accessibility-pass) and [release inventory](./release-v1.1.0-inventory.md). |
 
 DESIGN-1 keeps the existing page layouts, except removing duplicate global
 navigation/account CTAs and using a shared sign-in surface. It introduces no
@@ -312,3 +313,18 @@ Authentication and identity verification requirements remain undecided.
    the approved favorite-provider list.
 4. Validate the complete v1.1.0 release before creating its final tag. Pushes and
    deployments require approval.
+
+## DESIGN-6 release-readiness snapshot
+
+DESIGN-1 through DESIGN-5 are manually accepted. DESIGN-6 is implemented locally
+and awaits final developer acceptance. Final checks: 137 targeted tests and 689
+full-suite tests pass, zero test failures, 15 opt-in PostgreSQL checks skipped;
+ESLint/build pass. Standalone TypeScript retains eight historical fixture errors,
+with no new error. Browser fixtures cover 36 views at four widths, followed by
+focused checks through six widths; no overflow or axe violation remains in those
+checks. See [final evidence/limitations](./design-system.md#design-6--final-consistency-and-accessibility-pass).
+
+The [release inventory](./release-v1.1.0-inventory.md) records the branch, audit
+HEAD, all commits and the three new migrations since `v1.0.0`, configuration
+considerations and remaining test debt. This records readiness information only;
+it does not start the production release process or confirm production state.

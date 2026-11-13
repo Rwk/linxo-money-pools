@@ -50,12 +50,16 @@ type PoolManagementCockpitProps = {
   };
 };
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message, id }: { message?: string; id: string }) {
   if (!message) {
     return null;
   }
 
-  return <p className="text-sm text-rose-700">{message}</p>;
+  return (
+    <p id={id} role="alert" className="text-sm text-rose-700">
+      {message}
+    </p>
+  );
 }
 
 function StatusMessage({
@@ -67,7 +71,10 @@ function StatusMessage({
 }) {
   if (error) {
     return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+      <div
+        role="alert"
+        className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"
+      >
         {error}
       </div>
     );
@@ -75,7 +82,10 @@ function StatusMessage({
 
   if (successMessage) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+      <div
+        role="status"
+        className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+      >
         {successMessage}
       </div>
     );
@@ -225,12 +235,19 @@ export function PoolDetailsCard({
               className="ui-field"
               defaultValue={safeState.values.title}
               id="title"
+              aria-invalid={!!safeState.fieldErrors.title}
+              aria-describedby={
+                safeState.fieldErrors.title ? "manage-title-error" : undefined
+              }
               maxLength={120}
               name="title"
               required
             />
             <p className="text-sm text-slate-600">{t("poolForms.titleHint")}</p>
-            <FieldError message={safeState.fieldErrors.title} />
+            <FieldError
+              id="manage-title-error"
+              message={safeState.fieldErrors.title}
+            />
           </div>
 
           <div className="space-y-2">
@@ -244,10 +261,19 @@ export function PoolDetailsCard({
               className="ui-field min-h-24"
               defaultValue={safeState.values.description}
               id="description"
+              aria-invalid={!!safeState.fieldErrors.description}
+              aria-describedby={
+                safeState.fieldErrors.description
+                  ? "manage-description-error"
+                  : undefined
+              }
               maxLength={2000}
               name="description"
             />
-            <FieldError message={safeState.fieldErrors.description} />
+            <FieldError
+              id="manage-description-error"
+              message={safeState.fieldErrors.description}
+            />
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
@@ -262,6 +288,12 @@ export function PoolDetailsCard({
                 className="ui-field"
                 defaultValue={safeState.values.eventType}
                 id="eventType"
+                aria-invalid={!!safeState.fieldErrors.eventType}
+                aria-describedby={
+                  safeState.fieldErrors.eventType
+                    ? "manage-eventType-error"
+                    : undefined
+                }
                 name="eventType"
                 required
               >
@@ -271,7 +303,10 @@ export function PoolDetailsCard({
                   </option>
                 ))}
               </select>
-              <FieldError message={safeState.fieldErrors.eventType} />
+              <FieldError
+                id="manage-eventType-error"
+                message={safeState.fieldErrors.eventType}
+              />
             </div>
 
             <div className="space-y-2">
@@ -285,11 +320,20 @@ export function PoolDetailsCard({
                 className="ui-field"
                 defaultValue={safeState.values.closingDate}
                 id="closingDate"
+                aria-invalid={!!safeState.fieldErrors.closingDate}
+                aria-describedby={
+                  safeState.fieldErrors.closingDate
+                    ? "manage-closingDate-error"
+                    : undefined
+                }
                 name="closingDate"
                 required
                 type="date"
               />
-              <FieldError message={safeState.fieldErrors.closingDate} />
+              <FieldError
+                id="manage-closingDate-error"
+                message={safeState.fieldErrors.closingDate}
+              />
             </div>
           </div>
 
@@ -303,13 +347,22 @@ export function PoolDetailsCard({
               </label>
               <input
                 id="fixedUnitPrice"
+                aria-invalid={!!safeState.fieldErrors.fixedUnitPrice}
+                aria-describedby={
+                  safeState.fieldErrors.fixedUnitPrice
+                    ? "manage-fixedUnitPrice-error"
+                    : undefined
+                }
                 name="fixedUnitPrice"
                 required
                 inputMode="decimal"
                 defaultValue={safeState.values.fixedUnitPrice}
                 className="ui-field"
               />
-              <FieldError message={safeState.fieldErrors.fixedUnitPrice} />
+              <FieldError
+                id="manage-fixedUnitPrice-error"
+                message={safeState.fieldErrors.fixedUnitPrice}
+              />
             </div>
           ) : null}
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -432,7 +485,7 @@ function ContributionItem({
   return (
     <li className="min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
+        <div className="min-w-0 flex-1 space-y-1">
           <p className="font-semibold text-slate-950">
             {contribution.contributorLabel}
           </p>
@@ -455,7 +508,7 @@ function ContributionItem({
             </p>
           ) : null}
         </div>
-        <div className="space-y-2 text-sm text-slate-700 sm:text-right">
+        <div className="shrink-0 space-y-2 text-sm text-slate-700 sm:text-right">
           <p className="font-semibold text-slate-950">
             {contribution.amountLabel}
           </p>
@@ -542,7 +595,7 @@ export function PoolManagementCockpit({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-5 [overflow-wrap:anywhere]">
       <header className="min-w-0 space-y-3">
         <h1 className="ui-page-title break-words [overflow-wrap:anywhere]">
           {pool.title}

@@ -1,8 +1,8 @@
 # DESIGN-1 — Linxo Cagnottes foundations
 
-DESIGN-1 through DESIGN-4 (including their follow-ups) are accepted by the
-developer. DESIGN-5 is implemented locally on 2026-11-13; **manual acceptance
-remains pending**. DESIGN-6 remains planned.
+DESIGN-1 through DESIGN-5 (including their follow-ups) are manually accepted by
+the developer. DESIGN-6 is implemented locally on 2026-11-13; **final developer
+acceptance remains pending**. No production release is started.
 
 ## Existing foundations and direction
 
@@ -484,7 +484,7 @@ Use local fictional/Sandbox data and the existing development login:
 
 ## DESIGN-5 — Public pool and contribution experience
 
-Implemented locally on 2026-11-13. **Developer manual acceptance pending.**
+Implemented locally on 2026-11-13. **Manually accepted by the developer in the DESIGN-6 request.**
 This milestone changes public presentation, not payment/authentication/domain
 policies. DESIGN-4 acceptance was reported in the DESIGN-5 request; owner pages,
 creation, collector setup, dashboard, homepage and FAQ are unchanged here.
@@ -575,11 +575,11 @@ correction only; no status transition is changed.
   read-only repository fixtures and a hydrated contribution form using a mocked
   action. Handoff previews are read-only. They do not validate real owner login,
   bank authorization, redirects or webhooks. Headless emoji/font and native
-  control rendering can differ from a personal smartphone. Manual visual and
-  Sandbox acceptance remain the developer's responsibility; DESIGN-6 is not
-  started and these checks are not a complete accessibility certification.
+  control rendering can differ from a personal smartphone. These were the DESIGN-5 verification limits before acceptance. The developer
+  subsequently accepted DESIGN-5 in the DESIGN-6 request. These checks are not
+  a complete accessibility certification.
 
-### Manual acceptance checklist — DESIGN-5 pending
+### Manual acceptance checklist — DESIGN-5 accepted
 
 Use fictional identities and authorized Linxo Sandbox resources only:
 
@@ -600,19 +600,113 @@ Use fictional identities and authorized Linxo Sandbox resources only:
    contribution form; useful status messages and existing history remain. Verify
    an existing payment can still finish after closure/archive.
 
+## DESIGN-6 — Final consistency and accessibility pass
+
+Implemented locally on 2026-11-13; **pending final developer acceptance**.
+DESIGN-1 through DESIGN-5 and the listed v1.1.0 functional improvements were
+manually accepted in the developer's DESIGN-6 request. This pass leaves the
+accepted layouts, visual tokens and business services intact.
+
+### Observable issues and small corrections
+
+- A 320 px owner fixture with valid-length unbroken names/email and a long
+  description URL produced a 15,104 px document before correction. The owner
+  content now permits wrapping anywhere without deleting/truncating recorded
+  text or changing mailto destinations. In the contribution rows, the identity
+  column can shrink while the monetary/status column retains its natural width:
+  long names cannot squeeze amounts or status labels into a narrow vertical strip.
+- Owner edit and collector validation displayed text without error announcements
+  or associations to their controls. Both now use stable error IDs,
+  `aria-describedby`, `aria-invalid` and `role="alert"`. Edit success uses
+  `role="status"`. Existing create-pool service errors and sign-in errors also
+  receive an alert role. Existing validation, action payloads and collector-field
+  clearing remain unchanged; no banking values are echoed by these changes.
+- Public pending-payment copy now says `Le paiement est en cours. Nous attendons
+  sa confirmation.` instead of explaining the internal local-status update.
+  Confirmed, rejected, return, privacy and irreversible-archive meanings remain.
+
+The long reuse selector was inspected and did **not** overflow, so it was left
+unchanged. Main pages already use the accepted typography, controls, static
+statuses, event motifs and palette; they were not redesigned again. No dependency,
+new animation, schema, authentication, authorization, pricing, lifecycle, Linxo,
+webhook, reconciliation or environment change is included.
+
+### Verification evidence and limits
+
+- Six focused regressions cover edit/collector/create/sign-in announcements,
+  associated invalid fields, collector sensitive-field clearing, and preservation
+  of full long-text/link content. Before the correction, five failed and the
+  content-preservation test passed; afterwards all six pass.
+- 137 targeted tests across 12 files pass, including shell/tokens, exclusive
+  sign-in/provider gating, navigation/focus, homepage/FAQ, owner controls,
+  lifecycle dialogs, privacy, public form and payment-status behavior.
+- Full Vitest: **689 passed, zero failures, 15 skipped**, with 74 files passing
+  and two skipped. The skipped checks are the opt-in local PostgreSQL and
+  fixed-price concurrency suites (`LOCAL_DATABASE_CHECK=1`); they were not run in
+  this visual pass. They are explicit skips, not failing checks.
+- ESLint and production build pass. Standalone TypeScript **still fails with
+  eight pre-existing fixture errors**, matching the pre-DESIGN-6 reports: three
+  Decimal stubs in `payment-handoff-presenter.test.ts` (64/82/99), three missing
+  `findContributionByLinxoOrderId` dependencies in `sync-contribution-status.test.ts`
+  (47/76/131), and incomplete public/private detail fixtures in
+  `pool-detail-sections.test.ts` and `pool-detail-sections-private.test.tsx`.
+  No new type error was introduced. These fixtures were not repaired by this task.
+- Browser matrix: 36 actual-page fixtures at 320, 390, 768 and 1440 px (144
+  combinations), with one main landmark/H1, no horizontal overflow or hydration
+  error. It includes anonymous/authenticated home and navigation, FAQ, developer/
+  Google/configuration/error sign-in, all dashboard tabs/empty state, new/reused
+  collector creation, owner lifecycle/missing-collector/long-text states, public
+  FREE/FIXED/lifecycle/unready/long-text pages, six handoff states (including QR)
+  and four return states. Seventy-two axe WCAG A/AA/2.1 AA page audits report no
+  violations. Native FAQ keyboard opening, mobile menu Enter/Escape/focus return,
+  eight lifecycle modal focus/date/Escape checks and dynamic collector errors
+  are exercised.
+- After the final row-width adjustment, 36 focused browser combinations across
+  320, 390, 430, 768, 1024 and 1440 px recheck long owner content/status readability,
+  collector setup, long reuse options, public FIXED, FAQ and sign-in error.
+  Twelve additional axe audits pass. Skip-link keyboard activation reaches
+  `main-content` at 320/1440 px. The checks supplement the full matrix rather
+  than claiming every page was audited at every possible width.
+- Fixtures use actual pages/components and compiled production CSS, with mocked
+  auth, repositories, actions and payment-status responses. Interactive islands
+  are hydrated; no real login, database mutation, payment initiation or remote
+  service request occurs. No functional defect was confirmed in this pass.
+  Existing historical observations are listed in the release inventory.
+
+No automated audit constitutes a complete screen-reader, device or visual
+acceptance. Real smartphone fonts/emoji, Google OAuth, clipboard/navigation and
+bank authorization remain outside these fictional browser fixtures. The
+production build uses synthetic process-only configuration; `.env.local` is not
+edited and no production resources are verified or operated.
+
+### Final manual acceptance checklist — pending
+
+1. Review the normal home/FAQ/sign-in/dashboard/create/manage/public/return
+   journeys on a personal smartphone and desktop. Confirm colors, compactness,
+   fonts/emoji, long names/URLs and empty/error states; retain the accepted layout.
+2. Use keyboard only: skip link, mobile menu, FAQ, edit/cancel, expired reopening
+   and archive dialogs. Check visible focus, Escape/Cancel/focus return and the
+   existing irreversible confirmation. Check invalid edit/collector inputs and
+   error announcements with a real screen reader.
+3. Smoke-test both public modes and privacy options with fictional Sandbox data:
+   quantity/amount, secure payment/return links, pending/failed/confirmed feedback
+   and closed/archived views. Existing functional acceptance stands; this visual
+   audit does not replace a real bank simulation or webhook observation.
+4. Confirm final DESIGN-6 acceptance before a separate release-preparation task.
+   Review [the informational release inventory](./release-v1.1.0-inventory.md),
+   including historical TypeScript debt and the migration/client prerequisites.
+
 ## Boundaries for DESIGN-2 through DESIGN-6
 
 1. DESIGN-2: homepage and FAQ accepted by the developer.
 2. DESIGN-3: compact dashboard accepted by the developer in the DESIGN-4 request.
 3. DESIGN-4: pool creation/management accepted by the developer;
    retaining fixed prices, reuse, permanent archival confirmation and history.
-4. DESIGN-5: public/contribution flows implemented locally, acceptance pending; preserve the full
+4. DESIGN-5: public/contribution flows accepted by the developer; preserve the full
    bank list, payment links, return routes and late webhook processing.
-5. DESIGN-6: mobile, keyboard/screen-reader audit and final cross-page consistency.
+5. DESIGN-6: final consistency/accessibility pass implemented; developer acceptance pending.
 
 No database migration, Auth.js logic change, lifecycle/payment code change or
-unrelated dashboard redesign is included here. Legacy pages still use their own
-large-radius containers, utility spacing and some decorative gradients. Token
-colors, shadows and shared controls update globally; geometry is not overridden
-through blanket CSS selectors. This transitional mixture is deliberate until the
-corresponding page milestone. No visual acceptance is implied by automated tests.
+unrelated dashboard redesign is included here. Existing non-routed/legacy detail helpers retain their presentation; this pass
+does not rewrite unused components or override geometry through blanket CSS
+selectors. No final visual acceptance is implied by automated tests.

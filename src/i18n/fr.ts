@@ -528,7 +528,7 @@ export const fr = {
       waitingForScan:
         "Ouvrez le lien de paiement sécurisé depuis votre téléphone ou poursuivez sur cet appareil.",
       pending:
-        "La contribution est toujours en cours. Elle n'est pas confirmée tant que le statut local n'a pas été mis à jour."
+        "Le paiement est en cours. Nous attendons sa confirmation."
     }
   },
   returnPage: {
